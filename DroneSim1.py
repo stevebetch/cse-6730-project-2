@@ -1,8 +1,21 @@
 from DroneType1 import *
 from HMINT import *
 from CAOC import *
+import math, time, thread, sys
 import pp
 
+
+#setup the parallel python
+# tuple of all parallel python servers to connect with
+ppservers = ()
+#ppservers = ("10.0.0.1",)
+
+
+job_server = pp.Server(ppservers=ppservers)
+print "Starting pp with", job_server.get_ncpus(), "workers"
+
+#Start the timer
+start_time = time.time()
 
 # parameters (later get from file)
 numDrones = 3
@@ -26,6 +39,20 @@ for i in range(numDrones):
 # Run simulation
 controller.run()
 
+
+
+
 def createNewDroneLP():
     pass
+
+
+
+
+
+
+
+
+
+print "Time elapsed: ", time.time() - start_time, "s"
+job_server.print_stats()
     
