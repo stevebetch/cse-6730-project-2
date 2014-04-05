@@ -28,6 +28,7 @@ class GenMap:
 
 
 
+
 class streetNode:
     def __init__(obj):
         self.nextNode=obj
@@ -45,12 +46,51 @@ class streetNode:
     def setProb(probNum):
         self.prob=probNum
 
+    def setLeng(obj):
+        self.length=obj
+
 class intersecNode:
     def __init__(obj):
         self.numRoads=4.0 #number of road nodes connected to an intersection
         self.Nodes=[obj]
         self.prob=1.0
         self.targets=[] #Probabily will not use this. Or needs to be changed to a queue of some sort
+
+    def getRoadnode():
+        nodeout=[]
+        for i in Nodes
+            nodeout.append([i,self.Nodes[i]])
+
+    def setRoadnode(obj): #Most likely need to change this
+        self.Nodes=obj
+
+    def setProb(obj):
+        self.prob=obj
+
+
+class EntryNode:
+    def __init__():
+        self.nextNode=[]
+        self.prob=1.0
+        self.length=10.0
+
+    def setNextNode(obj):
+        self.nextNode=obj
+
+    def setProb(probNum):
+        self.prob=probNum
+
+    def setLeng(obj):
+        self.length=obj
+
+
+
+
+
+
+
+
+
 
 
 
