@@ -41,4 +41,3 @@ class CAOC (LogicalProcess):
             # determine message type and process accordingly
             pass    
 
-#test change
