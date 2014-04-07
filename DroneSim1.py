@@ -10,9 +10,9 @@ import math, time, sys
 # Function definitions
 #
 
-def createNewDroneLP(droneType):
+def createNewDroneLP(id, droneType):
     print('Creating new drone of type ' + droneType)
-    return Drone(droneType, caoc)
+    return Drone(id, droneType, caoc)
 
 def initEnv():
     print('Environment initialized')
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     
     # create drone entities
     for i in range(numDrones):
-        drone = createNewDroneLP(typeOfDrone)
+        drone = createNewDroneLP(i, typeOfDrone)
         controller.addDrone(drone)
         
     # Run simulation

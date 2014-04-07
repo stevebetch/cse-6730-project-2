@@ -21,6 +21,7 @@ class DroneSimController:
         self.caoc = caoc
         self.imint = imint
         self.drones = []
+        self.gvt = 0
         
     def __call__(self):
         self.run()

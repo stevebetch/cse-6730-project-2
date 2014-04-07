@@ -4,10 +4,12 @@ from LogicalProcess import *
 class IMINT (LogicalProcess):
     
     # instance variable list
-    #controller
+    #id - unique id for component
+    #controller - the simulation executive
         
     def __init__(self):
-        pass
+        LogicalProcess.__init__(self)
+        self.id = 'IMINT'
     
     def __call__(self):
         self.run()

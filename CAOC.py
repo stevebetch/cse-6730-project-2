@@ -1,17 +1,20 @@
 import sys, time
 from HMINT import *
-from multiprocessing import Queue
+from multiprocessing import Queue, Lock
 from LogicalProcess import *
 
 class CAOC (LogicalProcess):
     "Central Air Operations Center"
     
     # instance variable list
-    #hmint
-    #priorityQueue
-    #controller
+    #id - Unique ID for this object
+    #hmint - HMINT component supplying target info
+    #priorityQueue - queue of available targets
+    #controller - the simulation executive
     
     def __init__(self):
+        LogicalProcess.__init__(self)
+        self.id = 'CAOC'
         self.priorityQueue = Queue()
         
     def __call__(self):
@@ -36,9 +39,11 @@ class CAOC (LogicalProcess):
     def getPriorityQueue(self):
         return self.priorityQueue
     
-    def getNextTarget(self):
-        return self.priorityQueue.get()
-        
+    def getNextTarget(self, lock, location, radius):
+        lock.aquire
+        target =  self.priorityQueue.get()
+        lock.release
+        return target
     
     def handleMessage(self, msg):
             # determine message type and process accordingly

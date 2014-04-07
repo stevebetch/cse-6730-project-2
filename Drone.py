@@ -2,18 +2,21 @@ import sys
 from LogicalProcess import *
 from Map import GenMap
 from nodes import EntryNode
+from multiprocessing import Lock
 import random
 
 class Drone (LogicalProcess):
 
-    def __init__(self, droneType, caoc):
+    # instance argument list
+    #id - unique id of drone
+    #controller - the simulation executive
+    #droneType - descriptive
+
+    def __init__(self, id, droneType, caoc):
+        LogicalProcess.__init__(self)
         self.droneType = droneType
         self.caoc = caoc
-        # instance argument list
-        self.instList=[]
-        #controller
-        self.controller=[]
-        #droneType
+        self.id = id
      
         self.LocalSimTime=0 #current simulation time for the drone
         self.MatenanceActionTime=144000 #how much time until we need to land for maintainance (40 hr engine overhaul (yes andrew it should be 100hr), ect)
@@ -75,6 +78,10 @@ class Drone (LogicalProcess):
 
     def updateCurNode(self,obj):
         self.currentNode=obj
+        
+    def getNewTargetFromCAOC(self):
+        lock = Lock()
+        self.caoc.getNextTarget(lock, None, None)
 
     def run(self):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
