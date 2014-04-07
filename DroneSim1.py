@@ -12,7 +12,7 @@ import math, time, sys
 
 def createNewDroneLP(droneType):
     print('Creating new drone of type ' + droneType)
-    return Drone(droneType)
+    return Drone(droneType, caoc)
 
 def initEnv():
     print('Environment initialized')
@@ -36,6 +36,7 @@ if __name__ == '__main__':
     typeOfDrone = "DroneType1"
     startTime = 1
     endTime = 7*24*60
+    numTargets = 10
     
     #
     # initialization
@@ -46,8 +47,9 @@ if __name__ == '__main__':
     
     # CAOC/HMINT
     caoc = CAOC()
-    hmint = HMINT(caoc)
+    hmint = HMINT(numTargets)
     caoc.setHMINT(hmint)
+    hmint.setCAOC(caoc)
     
     # IMINT
     imint = initIMINT()
@@ -65,6 +67,7 @@ if __name__ == '__main__':
     # Run simulation
     pController = Process(group=None, target=controller, name='Drone Sim Controller Process')
     pController.start()
+    pController.join()
     
     print "Time elapsed: ", time.time() - start_time, "s"
     #job_server.print_stats()

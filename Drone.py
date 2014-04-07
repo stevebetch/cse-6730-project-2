@@ -6,8 +6,9 @@ import random
 
 class Drone (LogicalProcess):
 
-    def __init__(self, droneType):
+    def __init__(self, droneType, caoc):
         self.droneType = droneType
+        self.caoc = caoc
         # instance argument list
         self.instList=[]
         #controller
@@ -25,6 +26,9 @@ class Drone (LogicalProcess):
         self.ypos=0 #current y location
         self.EntNode=[]
         self.currentNode=[]
+        
+    def __call__(self):
+        self.run()        
     
     def setController(self, controller):
         self.controller = controller
@@ -72,7 +76,9 @@ class Drone (LogicalProcess):
     def updateCurNode(self,obj):
         self.currentNode=obj
 
-
+    def run(self):
+        # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
+        print('Drone process running')    
 
 
 

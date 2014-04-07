@@ -1,6 +1,7 @@
 import sys
 from Drone import *
 from LadderQueue import *
+from multiprocessing import Process
 
 class DroneSimController:
     
@@ -9,9 +10,11 @@ class DroneSimController:
     #fel
     #gvt
     #drones
+    #caoc
+    #imint
     
     def __initFEL__(self):
-        self.fel = LadderQueue   
+        self.fel = LadderQueue()
     
     def __init__(self, caoc, imint):
         self.__initFEL__()
@@ -42,7 +45,38 @@ class DroneSimController:
         gvt = min(minTimesList)
         
     def run(self):
+        
+        # Self
         print('Drone Sim Controller running')
         
+        # IMINT
+        pIMINT = Process(group=None, target=self.imint, name='IMINT Process')
+        pIMINT.start()
+        
+        # Drones
+        pDrones = []
+        for i in range(0, len(self.drones)):
+            dronename = 'Drone %d process' % (i)
+            pDrone = Process(group=None, target=self.drones[i], name=dronename) 
+            pDrones.append(pDrone)
+            pDrone.start()
+        
+        # HMINT/CAOC
+        pCAOC = Process(group=None, target=self.caoc, name='HMINT/CAOC Process')
+        pCAOC.start()        
+        
+        # Verify all processes running
+        while (not pIMINT.is_alive()):
+            time.sleep(100)
+        print('Detected IMINT alive')
+        while (not pCAOC.is_alive()):
+            time.sleep(100) 
+        print('Detected CAOC/HMINT alive')
+        for i in range(0, len(self.drones)):
+            dronename = 'Drone %d process' % (i)
+            pDrone = pDrones[i]
+            while (not pDrone.is_alive()):
+                time.sleep(100)
+            print('Detected drone alive')
     
     

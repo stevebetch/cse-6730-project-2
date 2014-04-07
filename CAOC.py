@@ -1,4 +1,4 @@
-import sys
+import sys, time
 from HMINT import *
 from multiprocessing import Queue
 from LogicalProcess import *
@@ -14,19 +14,20 @@ class CAOC (LogicalProcess):
     def __init__(self):
         self.priorityQueue = Queue()
         
+    def __call__(self):
+        self.run()
+        
     def setController(self, controller):
         self.controller = controller
         
     def setHMINT(self, hmint):
         self.hmint = hmint
-
-    # Runs CAOC process (incl HMINT)
-    def run(self):
-        hmint.start()
         
     def addTarget(self, target):
         priority = self.getPriority(target)
-        self.priorityQueue.put(priority, target)
+        #self.priorityQueue.put(priority, target)
+        self.priorityQueue.put(target)
+        print('CAOC Added target to priority queue')
     
     def getPriority(self, target):
         # generate priority
@@ -35,11 +36,17 @@ class CAOC (LogicalProcess):
     def getPriorityQueue(self):
         return self.priorityQueue
     
-    def getNextTarget(self, neighborhood):
-        return self.priorityQueue.get(neighborhood)
+    def getNextTarget(self):
+        return self.priorityQueue.get()
+        
     
     def handleMessage(self, msg):
             # determine message type and process accordingly
             # IS IT WORKING
             pass    
 
+    def run(self):
+        print('CAOC/HMINT Running')
+        self.hmint.start()
+        
+        

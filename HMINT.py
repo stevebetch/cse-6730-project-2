@@ -1,5 +1,6 @@
 import sys
 from CAOC import *
+from Target import *
 
 class HMINT:
     "Human intelligence"
@@ -8,23 +9,29 @@ class HMINT:
     #caoc
     #running = false
     
-    def __init__(self, caoc):
-        self.caoc = caoc
+    def __init__(self, numTargets):
         running = 'false'
+        self.numTargets = numTargets
+        self.count = 0
         # intialization of parameters that control target generation
+        
+    def setCAOC(self, caoc):
+        self.caoc = caoc
+        
+    def generateNextTarget(self):
+            target = Target(None, None)
+            self.caoc.addTarget(target)
+            self.count = self.count + 1
     
     # Starts target generation
     def start(self):
-        self.running = true
-        while self.running:
+        self.running = 'true'
+        while self.count < self.numTargets:
             # generate targets and add to CAOC priority queue
-            generateNextTarget()
+            self.generateNextTarget()
+        self.stop()
             
     def stop(self):
-        self.running = false
-        
-    def generateNextTarget(self):
-        target = Target(param1, param2)
-        caoc.addTarget(target)
+        self.running = 'false'
         
         

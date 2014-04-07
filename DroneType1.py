@@ -1,4 +1,6 @@
 import sys
 
 class DroneType1 ():
-    pass
+    
+    def __init__(self):
+        pass
