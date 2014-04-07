@@ -3,7 +3,7 @@
 
 import os
 import math
-import random
+import random, time
 
 
 
@@ -11,17 +11,19 @@ class GenMap:
     def __init__(self,XgridSize,YgridSize):
         self.streetNodes=[] #array containing all of the street nodes
         self.intersectionNodes=[] #array containing all of the intersection nodes
+        #self.endNodes=[]
         self.NSpos=[] # physical mapping to the grid. will say North/south street 1,2,3... is at position x
         self.EWpos=[] #physical mapping to grid. Will say E/W street 1,2,3.... is at position y
         self.xleng=XgridSize #limit on grid size
         self.yleng=YgridSize
         self.MapEntryPt=[]
-        visGrid=[[]]
+        visGrid=[[]] #probably wont be used. For Growth.
         
         random.seed(3) #PUT IN FOR DEBUGGING ONLY!!!
 
     def map(self, numStreets):
         
+        start_time = time.time()
         EW=math.floor(numStreets/2.0)
         NS=math.ceil(numStreets/2.0)
         
@@ -39,7 +41,7 @@ class GenMap:
         #   print 'EW Street ', j,' is at position ', point
         # print '\n'
         b=EntryNode(0)
-        b.setProb(random.random()) #NEED TO MAKE THIS A BOUNDED PROBABILITY. CURRENTLY (0,1)
+        # b.setProb(random.random()) #NEED TO MAKE THIS A BOUNDED PROBABILITY. CURRENTLY (0,1)
         self.MapEntryPt=b
         
         self.NSpos.sort() # get the lists sorted into the correct order
@@ -52,6 +54,26 @@ class GenMap:
                 self.intersectionNodes.append(a)
         self.connectNSNodes(NS,EW)
         self.connectEWNodes(NS,EW)
+        
+        xmin=1000
+        ymin=1000
+        mindist=math.sqrt(xmin**2+ymin**2)
+        #self.MapEntryPt.nextNode=self.endNodes[1] #Attach entry point to an end node
+        for node in self.intersectionNodes:
+            xpo=node.xpos
+            ypo=node.ypos
+            if(math.sqrt(xpo**2+ypo**2)<mindist):
+                xmin=xpo
+                ymin=ypo
+                mindist=math.sqrt(xmin**2+ymin**2)
+                minNode=node
+        
+        self.MapEntryPt.nextNode=minNode
+        self.MapEntryPt.xpos=xmin
+        self.MapEntryPt.ypos=ymin
+        print "Map Entry point at:",xmin,",",ymin
+        print "Time elapsed to generate map: ", time.time() - start_time, "s"
+        
 
     def connectNSNodes(self,NS,EW):
         icount=0
@@ -93,7 +115,7 @@ class GenMap:
                         break
                     else:
                         modnum+=1
-                print 'number of street nodes:',modnum, ' Length:', length,
+            #print 'number of street nodes:',modnum, ' Length:', length,
                 if(icount==int(NS)):
                     modnum=4.0 #min number of nodes in a street length
                     modmax=20.0 #max number of nodes
@@ -117,7 +139,7 @@ class GenMap:
                             break
                         else:
                             modnum+=1
-                    print 'number of street nodes:',modnum, ' Length2:', length2,
+        #print 'number of street nodes:',modnum, ' Length2:', length2,
                         #print 'number of street nodes:',modnum, ' Length:', length,
                 if(icount<=int(NS) and modnum>1): #not the edge case
                     for k in range(int(modnum),1,-1): #create each node for each street length
@@ -143,8 +165,8 @@ class GenMap:
                             self.streetNodes[nextNum+1].nextNode=self.intersectionNodes[index]#intersection
                             self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
                             b=self.intersectionNodes[index].getRoadnode
-                            print b
-                        
+                # print b
+                
                         elif(k==1 and icount !=0): # connect the road to the other intersection
                             for a in self.intersectionNodes:
                                 if(a.xpos==self.NSpos[icount-1] and a.ypos==j):
@@ -152,7 +174,7 @@ class GenMap:
                             self.streetNodes[nextNum+1].nextNode=self.intersectionNodes[index]#intersection
                             self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
                             b=self.intersectionNodes[index].getRoadnode
-                            print b
+                            #           print b
                         
                         else:
                             self.streetNodes[nextNum+1].nextNode=self.streetNodes[nextNum]
@@ -172,6 +194,8 @@ class GenMap:
                                 nextNd=EndNode(a) #point next node to end nodes outside of the sim
                                 if(k==int(modnum)): #node is at the edge of the sim
                                     nextNd=EndNode(a) #point next node to end nodes outside of the sim
+                                    nextNd.mapNode=self.streetNodes[nextNum+1]
+                                    # self.endNodes.append(nextNd)
                                     self.streetNodes[nextNum+1].nextNode=nextNd
                                     self.streetNodes[nextNum+1].prevNode=self.streetNodes[nextNum]
                                     self.streetNodes[nextNum].nextNode=self.streetNodes[nextNum+1]
@@ -185,8 +209,8 @@ class GenMap:
                                     self.streetNodes[nextNum+1].prevNode=self.intersectionNodes[index]#intersection
                                     self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
                                     b=self.intersectionNodes[index].getRoadnode
-                                    print b
-                                
+                    # print b
+                    
                                 else:
                                     self.streetNodes[nextNum].nextNode=self.streetNodes[nextNum+1]
                                     self.streetNodes[nextNum+1].prevNode=self.streetNodes[nextNum]
@@ -254,7 +278,7 @@ class GenMap:
                         break
                     else:
                         modnum+=1
-                print 'number of street nodes:',modnum, ' Length:',length
+            #print 'number of street nodes:',modnum, ' Length:',length
                 if(icount==int(EW)):
                     modnum=4.0 #min number of nodes in a street length
                     modmax=20.0 #max number of nodes
@@ -279,7 +303,7 @@ class GenMap:
                         else:
                                 modnum+=1
                 
-                    print 'number of street nodes:',modnum, ' Length2:',length2
+                # print 'number of street nodes:',modnum, ' Length2:',length2
                 if(icount<=int(EW) and modnum>1): #not the edge case
                     for k in range(int(modnum),1,-1): #create each node for each street length
                         
@@ -304,8 +328,8 @@ class GenMap:
                             self.streetNodes[nextNum+1].nextNode=self.intersectionNodes[index]#intersection
                             self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
                             b=self.intersectionNodes[index].getRoadnode
-                            print b
-                        
+                # print b
+                
                         elif(k==1 and icount !=0): # connect the road to the other intersection
                             for a in self.intersectionNodes:
                                 if(a.xpos==i and a.ypos==self.EWpos[jcount-1]):
@@ -313,7 +337,7 @@ class GenMap:
                             self.streetNodes[nextNum+1].nextNode=self.intersectionNodes[index]#intersection
                             self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
                             b=self.intersectionNodes[index].getRoadnode
-                            print b
+                            #  print b
                         
                         else:
                             self.streetNodes[nextNum+1].nextNode=self.streetNodes[nextNum]
@@ -333,6 +357,7 @@ class GenMap:
                                 nextNd=EndNode(a) #point next node to end nodes outside of the sim
                                 if(k==int(modnum)): #node is at the edge of the sim
                                     nextNd=EndNode(a) #point next node to end nodes outside of the sim
+                                    #self.endNodes.append(nextNd)
                                     self.streetNodes[nextNum+1].nextNode=nextNd
                                     self.streetNodes[nextNum+1].prevNode=self.streetNodes[nextNum]
                                     self.streetNodes[nextNum].nextNode=self.streetNodes[nextNum+1]
@@ -346,7 +371,7 @@ class GenMap:
                                     self.streetNodes[nextNum+1].prevNode=self.intersectionNodes[index]#intersection
                                     self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
                                     b=self.intersectionNodes[index].getRoadnode
-                                    print b
+                                        #print b
                                 
                                 else:
                                     self.streetNodes[nextNum].nextNode=self.streetNodes[nextNum+1]
@@ -437,17 +462,11 @@ class intersecNode:
 class EntryNode:
     def __init__(self,obj):
         self.nextNode=obj
-        self.prob=1.0
-        self.length=10.0
+        self.xpos=0
+        self.ypos=0
 
     def setNextNode(self,obj):
         self.nextNode=obj
-
-    def setProb(self,probNum):
-        self.prob=probNum
-
-    def setLeng(self,obj):
-        self.length=obj
 
 
 class EndNode: #this node is a terminator node for the outskirts of the map. it allows targets to move out of the map
