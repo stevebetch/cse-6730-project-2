@@ -3,11 +3,13 @@ from Message import *
 
 class LogicalProcess:
     
-    inputqueue
-    statequeue
-    outputqueue
-    currTime
-    gvt
+    # instance variable list
+    #inputqueue
+    #statequeue
+    #outputqueue
+    #currTime
+    #gvt
+    
     # also need list of previously processed messages??
     
     def __init__(self):

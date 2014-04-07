@@ -3,10 +3,12 @@ from LogicalProcess import *
 
 class Drone (LogicalProcess):
     
-    controller
+    # instance argument list
+    #controller
+    #droneType
     
-    def __init__(self):
-        pass
+    def __init__(self, droneType):
+        self.droneType = droneType
     
     def setController(self, controller):
         self.controller = controller
@@ -17,3 +19,4 @@ class Drone (LogicalProcess):
     
     def start(self):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
+        pass

@@ -1,25 +1,30 @@
 import sys
+from Drone import *
+from LadderQueue import *
 
 class DroneSimController:
     
-    drones = []
-    fel = LadderQueue()
-    gvt
+    # instance variable list
+    #drones = []
+    #fel
+    #gvt
+    #drones
+    
+    def __initFEL__(self):
+        self.fel = LadderQueue   
     
     def __init__(self, caoc, imint):
-        initFEL()
+        self.__initFEL__()
         self.caoc = caoc
-        self.drones = drones
         self.imint = imint
-        caoc.setController(self)
-        imint.setController(self)
+        self.drones = []
+        
+    def __call__(self):
+        self.run()
         
     def addDrone(self, drone):
         drone.setController(self)
-        drones.append(drone)
-        
-    def initFEL():
-        pass
+        self.drones.append(drone)
     
     # Schedule new event
     def scheduleEvent(event):
@@ -35,6 +40,9 @@ class DroneSimController:
         for drone in drones:
             minTimesList.append(drone.requestGVT())
         gvt = min(minTimesList)
+        
+    def run(self):
+        print('Drone Sim Controller running')
         
     
     

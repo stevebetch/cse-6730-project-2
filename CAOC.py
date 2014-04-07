@@ -1,17 +1,18 @@
 import sys
 from HMINT import *
-from queue import *
+from multiprocessing import Queue
 from LogicalProcess import *
 
 class CAOC (LogicalProcess):
     "Central Air Operations Center"
     
-    hmint
-    priorityQueue
-    controller
+    # instance variable list
+    #hmint
+    #priorityQueue
+    #controller
     
     def __init__(self):
-        self.priorityQueue = TargetPriorityQueue()
+        self.priorityQueue = Queue()
         
     def setController(self, controller):
         self.controller = controller

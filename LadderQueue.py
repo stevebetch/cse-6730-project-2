@@ -31,6 +31,7 @@ class LadderQueue:
 	def dequeue():
 		if 1==1: # replace with Bottom not empty
 			# return next event from Bottom
+		    pass
 		if NRung>0:
 			bucket_k=recurse_rung()
 			# if last bucket then NRung- #not sure what the - means?

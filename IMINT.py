@@ -3,7 +3,8 @@ from LogicalProcess import *
 
 class IMINT (LogicalProcess):
     
-    controller
+    # instance variable list
+    #controller
         
     def __init__(self):
         pass

@@ -2,15 +2,8 @@ import sys
 
 class Message:
     
-    isAntiMessage
-    msgType
-    data
-    sender
-    recipient
-    time
-    
     def __init__(self, msgType, data, sender, recipient, time):
-        isAntiMessage = false
+        isAntiMessage = 'false'
         self.msgType = msgType
         self.data = data
         self.sender = sender

@@ -1,3 +1,4 @@
 import sys
 
-class DroneType1 (Drone):
+class DroneType1 ():
+    pass
