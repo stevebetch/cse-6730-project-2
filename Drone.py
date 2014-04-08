@@ -29,7 +29,8 @@ class Drone (LogicalProcess):
         self.ypos=0 #current y location
         self.EntNode=[]
         self.currentNode=[]
-        
+        self.target=[]
+    
     def __call__(self):
         self.run()        
     
@@ -77,7 +78,7 @@ class Drone (LogicalProcess):
         #print "Map entry at:" , self.EntryNode.xpos,",",self.EntryNode.ypos
 
     def updateCurNode(self,obj):
-        self.currentNode=obj
+        self.currentNode=obj #may not be needed, but may be expanded later if needed.
         
     def getNewTargetFromCAOC(self):
         lock = Lock()
@@ -86,6 +87,19 @@ class Drone (LogicalProcess):
     def run(self):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         print('Drone process running')    
+
+    def detection(self)
+        #This function will be called to determine if we get a positive detection on the
+        detectProb=self.currentNode.detectProb
+        testprob=random.uniform(0,1)
+
+        if(detectProb<=testprob):
+        # Weve got a positive hit!
+            return 1
+
+        else:
+            return 0
+
 
 
 

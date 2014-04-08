@@ -49,8 +49,6 @@ class GenMap:
             for l in self.EWpos:
                 a=intersecNode(0)
                 a.setXY(k,l)
-                a.Detectprob=random.uniform(0,1) ############# NEED TO CHANGE THIS TO THE CORRECT TYPE OF DISTRIBUTION!!!
-                a.Trackprob=random.uniform(0.4,1)############# NEED TO CHANGE THIS TO THE CORRECT TYPE OF DISTRIBUTION!!!
                 self.intersectionNodes.append(a)
         self.connectNSNodes(NS,EW)
         self.connectEWNodes(NS,EW)
@@ -147,9 +145,6 @@ class GenMap:
                         a=streetNode(0)
                         a.xpos=i-(length/modnum)*k
                         a.ypos=j
-                        a.Detectprob=random.uniform(0,1) ############# NEED TO CHANGE THIS TO THE CORRECT TYPE OF DISTRIBUTION!!!
-                        a.Trackprob=random.uniform(0.4,1)############# NEED TO CHANGE THIS TO THE CORRECT TYPE OF DISTRIBUTION!!!
-
                         nextNum=len(self.streetNodes)-1 # fencepost error
                         self.streetNodes.append(a)
                         nNum=len(self.streetNodes)
@@ -189,8 +184,6 @@ class GenMap:
                         a=streetNode(0)
                         a.xpos=i+(length2/modnum)*k
                         a.ypos=j
-                        a.Detectprob=random.uniform(0,1) ############# NEED TO CHANGE THIS TO THE CORRECT TYPE OF DISTRIBUTION!!!
-                        a.Trackprob=random.uniform(0.4,1)############# NEED TO CHANGE THIS TO THE CORRECT TYPE OF DISTRIBUTION!!!
 
                         nextNum=len(self.streetNodes)-1 # fencepost error
                         self.streetNodes.append(a)
@@ -316,8 +309,6 @@ class GenMap:
                         a=streetNode(0)
                         a.ypos=j-(length/modnum)*k
                         a.xpos=i
-                        a.Detectprob=random.uniform(0,1) ############# NEED TO CHANGE THIS TO THE CORRECT TYPE OF DISTRIBUTION!!!
-                        a.Trackprob=random.uniform(0.4,1)############# NEED TO CHANGE THIS TO THE CORRECT TYPE OF DISTRIBUTION!!!
 
                         nextNum=len(self.streetNodes)-1 # fencepost error
                         self.streetNodes.append(a)
@@ -358,9 +349,6 @@ class GenMap:
                         a=streetNode(0)
                         a.ypos=j+(length2/modnum)*k
                         a.xpos=i
-                        a.Detectprob=random.uniform(0,1) ############# NEED TO CHANGE THIS TO THE CORRECT TYPE OF DISTRIBUTION!!!
-                        a.Trackprob=random.uniform(0.4,1)############# NEED TO CHANGE THIS TO THE CORRECT TYPE OF DISTRIBUTION!!!
-
                         nextNum=len(self.streetNodes)-1 # fencepost error
                         self.streetNodes.append(a)
                         nNum=len(self.streetNodes)
