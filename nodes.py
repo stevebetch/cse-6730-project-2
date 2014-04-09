@@ -5,8 +5,8 @@ class streetNode:
     def __init__(self,obj):
         self.nextNode=obj
         self.prevNode=obj
-        self.Detectprob=random.uniform(0,.8)
-        self.Trackprob=random.uniform(0,.6)############# NEED TO CHANGE THIS TO THE CORRECT TYPE OF DISTRIBUTION!!!
+        self.Detectprob=random.uniform(0,.8)#justification for limiting to 80%? - Jane
+        self.Trackprob=random.uniform(0,.6)############# NEED TO CHANGE THIS TO THE CORRECT TYPE OF DISTRIBUTION!!! should vary with the type of drone/sensor - Jane
         self.targets=[] #Probabily will not use this. Or needs to be changed to a queue of some sort
         self.length=25.0
         self.xpos=0.0
