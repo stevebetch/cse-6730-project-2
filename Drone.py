@@ -88,7 +88,7 @@ class Drone (LogicalProcess):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         print('Drone process running')    
 
-    def detection(self)
+    def detection(self):
         #This function will be called to determine if we get a positive detection on the
         detectProb=self.currentNode.detectProb
         testprob=random.uniform(0,1)
