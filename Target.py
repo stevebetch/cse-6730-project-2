@@ -32,7 +32,8 @@ class Target:
                     print "Going Right!"
                 else:
                     self.node=self.node.prevNode
-                        print "Going Left!"
+                    print "Going Left!"
         else: #its an intersection
             dir=random.uniform(0,1)
+            print "At an intersection"
 

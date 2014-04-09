@@ -91,6 +91,7 @@ class Drone (LogicalProcess):
 
 
     def probTest(self,probVal):
+        A=1
 
     def detection(self):
 
