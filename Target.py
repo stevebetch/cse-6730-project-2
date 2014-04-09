@@ -16,7 +16,7 @@ class Target:
         self.intel=1 #set at one for now, but will likely be a discrete distribution
     
     def movement(self):
-
+        random.seed()
 # step1: check what kind of node. 0= street, 1= intersection, 2=entry node, 3=End node
 # Can only move on street and road nodes. If in entry or end, remove self from sim. Send message to caoc
         if(self.node.nodeType==2 or self.node.nodeType==3):
@@ -29,11 +29,18 @@ class Target:
                 nextPrev=random.uniform(0,.5) # equal chance of going right or left.Probably will want to change this
                 if(nextPrev<random.uniform(0,1)):
                     self.node=self.node.nextNode
-                    print "Going Right!"
+                    #print "Going Right!"
                 else:
                     self.node=self.node.prevNode
-                    print "Going Left!"
-        else: #its an intersection
+                #   print "Going Left!"
+        else: #its an intersection. Randomly choose a new direction.
             dir=random.uniform(0,1)
-            print "At an intersection"
+            #print "At an intersection"
+            num=len(self.node.Nodes)
+            #print "Num",num
+            for a in range(num):
+                #   print "a:",a,"dir:",dir, "if val:",((1./num)*(a+1))
+                if(dir<((1.0/num)*(a+1))):
+                    self.node=self.node.Nodes[a]
+                    break
 
