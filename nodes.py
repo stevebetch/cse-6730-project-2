@@ -11,6 +11,7 @@ class streetNode:
         self.length=25.0
         self.xpos=0.0
         self.ypos=0.0
+        self.nodeType=0
     
     def setNextNode(self,obj):
         self.nextNode=obj
@@ -33,6 +34,7 @@ class intersecNode:
         self.targets=[] #Probabily will not use this. Or needs to be changed to a queue of some sort
         self.xpos=0.0
         self.ypos=0.0
+        self.nodeType=1
     
     def setXY(self,x,y):
         self.xpos=x
@@ -59,6 +61,7 @@ class EntryNode:
         self.nextNode=obj
         self.xpos=0
         self.ypos=0
+        self.nodeType=2
     
     def setNextNode(self,obj):
         self.nextNode=obj
@@ -67,6 +70,7 @@ class EntryNode:
 class EndNode: #this node is a terminator node for the outskirts of the map. it allows targets to move out of the map
     def __init__(self,obj):
         self.mapNode=obj
+        self.nodeType=3
     def setNode(self,obj):
         self.mapNode=obj
 

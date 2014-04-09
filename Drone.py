@@ -82,21 +82,23 @@ class Drone (LogicalProcess):
         
     def getNewTargetFromCAOC(self):
         lock = Lock()
-        self.caoc.getNextTarget(lock, None, None)
-
+        self.target=self.caoc.getNextTarget(lock, None, None)
+        del lock
+    
     def run(self):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         print('Drone process running')    
 
+<<<<<<< .mine
+    def probTest(self,probVal)
+=======
     def detection(self):
+>>>>>>> .r23
         #This function will be called to determine if we get a positive detection on the
-        detectProb=self.currentNode.detectProb
         testprob=random.uniform(0,1)
-
-        if(detectProb<=testprob):
+        if(probVal<=testprob):
         # Weve got a positive hit!
             return 1
-
         else:
             return 0
 
