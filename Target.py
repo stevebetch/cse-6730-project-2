@@ -3,8 +3,9 @@ import sys
 class Target:
     "Target"
     
-    #param1
-    #param2
+    #param1 = predicted location (random variate)
+    #param2 = strength of intelligence (random variate)
+    #param3 = idle time (random variate)
 
     def __init__(self, param1, param2):
         # initialize parameters for target
