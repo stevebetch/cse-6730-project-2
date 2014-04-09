@@ -90,7 +90,7 @@ class Drone (LogicalProcess):
         print('Drone process running')    
 
 
-    def probTest(self,probVal)
+    def probTest(self,probVal):
 
     def detection(self):
 
