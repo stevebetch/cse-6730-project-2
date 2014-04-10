@@ -9,14 +9,12 @@ class Drone (LogicalProcess):
 
     # instance argument list
     #id - unique id of drone
-    #controller - the simulation executive
     #droneType - descriptive
 
-    def __init__(self, id, droneType, caoc):
+    def __init__(self, id, droneType):
+        self.id = id
         LogicalProcess.__init__(self)
         self.droneType = droneType
-        self.caoc = caoc
-        self.id = id
      
         self.LocalSimTime=0 #current simulation time for the drone
         self.MatenanceActionTime=144000 #how much time until we need to land for maintainance (40 hr engine overhaul (yes andrew it should be 100hr), ect)
@@ -33,19 +31,10 @@ class Drone (LogicalProcess):
     
     def __call__(self):
         self.run()        
-    
-    def setController(self, controller):
-        self.controller = controller
             
     def handleMessage(self, msg):
         # determine message type and process accordingly
         pass
-    
-    def start(self,mapObj):
-        # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
-        pass
-    
-    
     
     def updateTime(self,DroneSimTime):
         #Update the timers with each timestep
@@ -81,25 +70,33 @@ class Drone (LogicalProcess):
         self.currentNode=obj #may not be needed, but may be expanded later if needed.
         
     def getNewTargetFromCAOC(self):
-        lock = Lock()
-        self.target=self.caoc.getNextTarget(lock, None, None)
-        del lock
-    
+        #Get synchronized access to target priority queue created by CAOC (but residing in Controller)
+        pass
+
     def run(self):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         print('Drone process running')    
-
-
-    def probTest(self,probVal):
-        A=1
+        
+        # connect with Queue manager        
+        qclient = self.QueueServerClient(self.REMOTE_HOST, self.PORT, self.AUTHKEY)
+        
+        # Get the message queue objects from the client
+        inputQueues = qclient.get_queues()
+        controllerInQ = inputQueues.get("controller")
+        imintInQ = inputQueues.get("imint")
+        caocInQ = inputQueues.get("caoc")
+        droneInQs = inputQueues.get('drones')
+        inputQueue = droneInQs.get(self.id)
 
     def detection(self):
-
         #This function will be called to determine if we get a positive detection on the
+        detectProb=self.currentNode.detectProb
         testprob=random.uniform(0,1)
-        if(probVal<=testprob):
+
+        if(detectProb<=testprob):
         # Weve got a positive hit!
             return 1
+
         else:
             return 0
 

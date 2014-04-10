@@ -1,23 +1,19 @@
 import sys
 from Drone import *
-from LadderQueue import *
+from GlobalControlProcess import *
 from multiprocessing import Process
 
-class DroneSimController:
+
+class DroneSimController(GlobalControlProcess):
     
     # instance variable list
-    #drones = []
-    #fel
-    #gvt
-    #drones
-    #caoc
-    #imint
-    
-    def __initFEL__(self):
-        self.fel = LadderQueue()
+    #caoc - CAOC object, will be run in a new Process
+    #imint - IMINT object, will be run in a new Process
+    #drones - Drone objects, each will be run in a new Process
+    #gvt - Global Virtual Time
+
     
     def __init__(self, caoc, imint):
-        self.__initFEL__()
         self.caoc = caoc
         self.imint = imint
         self.drones = []
@@ -27,12 +23,7 @@ class DroneSimController:
         self.run()
         
     def addDrone(self, drone):
-        drone.setController(self)
         self.drones.append(drone)
-    
-    # Schedule new event
-    def scheduleEvent(event):
-        fel.addEvent(event)
             
     def advanceTime(time):
         pass
@@ -50,6 +41,20 @@ class DroneSimController:
         # Self
         print('Drone Sim Controller running')
         
+        # connect with Queue manager        
+        manager = self.QueueServerClient(self.REMOTE_HOST, self.PORT, self.AUTHKEY)
+        
+        # Get the message queue objects from the client
+        inputQueues = manager.get_queues()
+        print len(inputQueues.keys())
+        inputQueue = inputQueues.get('controller')
+        #imintInQ = inputQueues.get('imint')
+        caocInQ = inputQueues.get('caoc')
+        droneInQs = inputQueues.get('drones')
+        
+        imintInQ = manager.get_imint_input_queue()
+        imintInQ.put('Controller Message')              
+        
         # IMINT
         pIMINT = Process(group=None, target=self.imint, name='IMINT Process')
         pIMINT.start()
@@ -57,8 +62,7 @@ class DroneSimController:
         # Drones
         pDrones = []
         for i in range(0, len(self.drones)):
-            dronename = 'Drone %d process' % (i)
-            pDrone = Process(group=None, target=self.drones[i], name=dronename) 
+            pDrone = Process(group=None, target=self.drones[i], name=self.drones[i].id) 
             pDrones.append(pDrone)
             pDrone.start()
         
@@ -79,5 +83,4 @@ class DroneSimController:
             while (not pDrone.is_alive()):
                 time.sleep(100)
             print('Detected drone alive')
-    
-    
+            

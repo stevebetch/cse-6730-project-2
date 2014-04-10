@@ -2,6 +2,7 @@ import sys, time
 from HMINT import *
 from multiprocessing import Queue, Lock
 from LogicalProcess import *
+from MessageManager import *
 
 class CAOC (LogicalProcess):
     "Central Air Operations Center"
@@ -13,8 +14,8 @@ class CAOC (LogicalProcess):
     #controller - the simulation executive
     
     def __init__(self):
-        LogicalProcess.__init__(self)
         self.id = 'CAOC'
+        LogicalProcess.__init__(self)
         self.priorityQueue = Queue()
         
     def __call__(self):
@@ -52,5 +53,15 @@ class CAOC (LogicalProcess):
     def run(self):
         print('CAOC/HMINT Running')
         self.hmint.start()
+        
+        # connect with Queue manager        
+        qclient = self.QueueServerClient(self.REMOTE_HOST, self.PORT, self.AUTHKEY)
+        
+        # Get the message queue objects from the client
+        inputQueues = qclient.get_queues()
+        controllerInQ = inputQueues.get("controller")
+        imintInQ = inputQueues.get("imint")
+        inputQueue = inputQueues.get("caoc")
+        droneInQs = inputQueues.get('drones')        
         
         
