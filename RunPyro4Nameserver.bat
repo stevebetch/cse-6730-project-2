@@ -1,0 +1,1 @@
+cmd /K python -Wignore -m Pyro4.naming -n lapdog
