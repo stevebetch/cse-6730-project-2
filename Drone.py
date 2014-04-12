@@ -4,6 +4,7 @@ from Map import GenMap
 from nodes import EntryNode
 from multiprocessing import Lock
 import random
+import Pyro4
 
 class Drone (LogicalProcess):
 
@@ -77,16 +78,21 @@ class Drone (LogicalProcess):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         print('Drone process running')    
         
-        # connect with Queue manager        
-        qclient = self.QueueServerClient(self.REMOTE_HOST, self.PORT, self.AUTHKEY)
+        # Get the message queue objects from Pyro    
+        nameserver = Pyro4.locateNS()
+        controllerInQ_uri = nameserver.lookup('inputqueue.controller')
+        self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
+        caocInQ_uri = nameserver.lookup('inputqueue.caoc')
+        self.caocInQ = Pyro4.Proxy(caocInQ_uri)        
+        imintInQ_uri = nameserver.lookup('inputqueue.imint')
+        self.imintInQ = Pyro4.Proxy(imintInQ_uri)
+        droneInQs_uri = nameserver.lookup('inputqueue.drones')
+        self.droneInQs = Pyro4.Proxy(droneInQs_uri)
+        tgtPriQ_uri = nameserver.lookup('priorityqueue.targets')
+        self.tgtPriQ = Pyro4.Proxy(tgtPriQ_uri)         
         
-        # Get the message queue objects from the client
-        inputQueues = qclient.get_queues()
-        controllerInQ = inputQueues.get("controller")
-        imintInQ = inputQueues.get("imint")
-        caocInQ = inputQueues.get("caoc")
-        droneInQs = inputQueues.get('drones')
-        inputQueue = droneInQs.get(self.id)
+        print 'Drone ' + str(self.uid) + ': ' + self.droneInQs.getNextMessage(self.uid)
+        print 'Drone ' + str(self.uid) + ': ' + self.tgtPriQ.get()
 
     def detection(self):
         #This function will be called to determine if we get a positive detection on the

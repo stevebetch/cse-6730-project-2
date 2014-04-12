@@ -7,9 +7,6 @@ from multiprocessing import Process
 import Queue
 import math, time, sys
 import Pyro4
-from Pyro4 import *
-from Pyro4.core import *
-from Pyro4.naming import *
 from LPInputQueue import *
 from DroneInputQueueContainer import *
 
@@ -91,9 +88,11 @@ def main():
     
     # Create drone entities, each will be separate process started by Controller
     droneInQs = DroneInputQueueContainer()
+    drones = []
     for i in range(numDrones):
         dronename = i
         drone = createNewDrone(dronename, typeOfDrone)
+        drones.append(drone)
         controller.addDrone(drone)
         droneInQs.addDroneInputQueue(dronename)
     droneInQs_uri = daemon.register(droneInQs)
@@ -109,10 +108,24 @@ def main():
     print 'starting controller'
     pController.start()
     
+    # IMINT
+    pIMINT = Process(group=None, target=imint, name='IMINT Process')
+    pIMINT.start()
+    
+    # Drones
+    pDrones = []
+    for i in range(0, len(drones)):
+        pDrone = Process(group=None, target=drones[i], name='drone'+str(drones[i].uid)) 
+        pDrones.append(pDrone)
+        pDrone.start()
+    
+    # HMINT/CAOC
+    pCAOC = Process(group=None, target=caoc, name='HMINT/CAOC Process')
+    pCAOC.start()        
+    
     # Run shared object requests loop
     print 'starting shared objects request loop'
     daemon.requestLoop()
-
         
 #
 # Start of Execution

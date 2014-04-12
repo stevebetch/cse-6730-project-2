@@ -2,7 +2,7 @@ import sys, time
 from HMINT import *
 from multiprocessing import Queue, Lock
 from LogicalProcess import *
-from MessageManager import *
+import Pyro4
 
 class CAOC (LogicalProcess):
     "Central Air Operations Center"
@@ -54,14 +54,21 @@ class CAOC (LogicalProcess):
         print('CAOC/HMINT Running')
         self.hmint.start()
         
-        # connect with Queue manager        
-        qclient = self.QueueServerClient(self.REMOTE_HOST, self.PORT, self.AUTHKEY)
+        # Get the message queue objects from Pyro    
+        nameserver = Pyro4.locateNS()
+        controllerInQ_uri = nameserver.lookup('inputqueue.controller')
+        self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
+        caocInQ_uri = nameserver.lookup('inputqueue.caoc')
+        self.caocInQ = Pyro4.Proxy(caocInQ_uri)        
+        imintInQ_uri = nameserver.lookup('inputqueue.imint')
+        self.imintInQ = Pyro4.Proxy(imintInQ_uri)
+        droneInQs_uri = nameserver.lookup('inputqueue.drones')
+        self.droneInQs = Pyro4.Proxy(droneInQs_uri)
+        tgtPriQ_uri = nameserver.lookup('priorityqueue.targets')
+        self.tgtPriQ = Pyro4.Proxy(tgtPriQ_uri) 
         
-        # Get the message queue objects from the client
-        inputQueues = qclient.get_queues()
-        controllerInQ = inputQueues.get("controller")
-        imintInQ = inputQueues.get("imint")
-        inputQueue = inputQueues.get("caoc")
-        droneInQs = inputQueues.get('drones')        
+        self.tgtPriQ.put('target 1')
+        self.tgtPriQ.put('target 2')
+        self.tgtPriQ.put('target 3')
         
-        
+        print 'CAOC: ' + self.caocInQ.get()

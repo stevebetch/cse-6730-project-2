@@ -3,9 +3,6 @@ from Drone import *
 from GlobalControlProcess import *
 from multiprocessing import Process
 import Pyro4
-from Pyro4 import *
-from Pyro4.naming import *
-from Pyro4.core import *
 from DroneSim1 import *
 from DroneInputQueueContainer import *
 
@@ -20,6 +17,7 @@ class DroneSimController(GlobalControlProcess):
 
     
     def __init__(self, caoc, imint):
+        GlobalControlProcess.__init__(self)
         self.caoc = caoc
         self.imint = imint
         self.drones = []
@@ -53,63 +51,28 @@ class DroneSimController(GlobalControlProcess):
         # Get the message queue objects from Pyro    
         nameserver = Pyro4.locateNS()
         controllerInQ_uri = nameserver.lookup('inputqueue.controller')
-        controllerInQ = Pyro4.Proxy(controllerInQ_uri)
+        self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
-        caocInQ = Pyro4.Proxy(caocInQ_uri)        
+        self.caocInQ = Pyro4.Proxy(caocInQ_uri)        
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
-        imintInQ = Pyro4.Proxy(imintInQ_uri)
+        self.imintInQ = Pyro4.Proxy(imintInQ_uri)
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
-        droneInQs = Pyro4.Proxy(droneInQs_uri)
+        self.droneInQs = Pyro4.Proxy(droneInQs_uri)
             
-        imintInQ.put('Controller Message to IMINT')        
-        print 'In Controller:', imintInQ.get()
-        caocInQ.put('Controller Message to CAOC')        
-        print 'In Controller:', caocInQ.get() 
-        controllerInQ.put('Controller Message to itself')        
-        print 'In Controller:', controllerInQ.get()  
+        self.imintInQ.put('Controller Message to IMINT')        
+        self.caocInQ.put('Controller Message to CAOC')        
+        self.controllerInQ.put('Controller Message to itself')        
+        print 'In Controller:', self.controllerInQ.get()            
         
-        print droneInQs.size()
-        print list(droneInQs.keys())
+        msg = 'Message to drone' + str(2)
+        self.droneInQs.addMessage(2, msg)
         
-        for drone in self.drones:
-            dronename = drone.uid
-            print dronename
-            msg = 'Message to drone'
-            droneInQs.addMessage(dronename, msg)    
-        for drone in self.drones:
-            dronename = drone.uid
-            msg = droneInQs.getNextMessage(dronename)
-            print msg      
+        msg = 'Message to drone' + str(1)
+        self.droneInQs.addMessage(1, msg)
         
-        
-        ## IMINT
-        #pIMINT = Process(group=None, target=self.imint, name='IMINT Process')
-        #pIMINT.start()
-        
-        ## Drones
-        #pDrones = []
-        #for i in range(0, len(self.drones)):
-            #pDrone = Process(group=None, target=self.drones[i], name=self.drones[i].id) 
-            #pDrones.append(pDrone)
-            #pDrone.start()
-        
-        ## HMINT/CAOC
-        #pCAOC = Process(group=None, target=self.caoc, name='HMINT/CAOC Process')
-        #pCAOC.start()        
-        
-        ## Verify all processes running
-        #while (not pIMINT.is_alive()):
-            #time.sleep(100)
-        #print('Detected IMINT alive')
-        #while (not pCAOC.is_alive()):
-            #time.sleep(100) 
-        #print('Detected CAOC/HMINT alive')
-        #for i in range(0, len(self.drones)):
-            #dronename = 'Drone %d process' % (i)
-            #pDrone = pDrones[i]
-            #while (not pDrone.is_alive()):
-                #time.sleep(100)
-            #print('Detected drone alive')
+        msg = 'Message to drone' + str(0)
+        self.droneInQs.addMessage(0, msg)         
+
             
         print "Time elapsed: ", time.time() - start_time, "s"
             
