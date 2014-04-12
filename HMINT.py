@@ -19,7 +19,7 @@ class HMINT:
         self.caoc = caoc
         
     def generateNextTarget(self):
-            target = Target(None, None)
+            target = Target(None)
             self.caoc.addTarget(target)
             self.count = self.count + 1
     

@@ -1,7 +1,9 @@
 import sys
 from Message import *
+from SharedMemoryClient import *
 
-class LogicalProcess:
+
+class LogicalProcess(SharedMemoryClient):
     # Implements Time Warp Local Control Mechanism
     
     # instance variable list
@@ -11,8 +13,8 @@ class LogicalProcess:
     #localTime - current time logical process is at
     #gvt - last gvt value received from controller
     
-    def __init__(self):
-        self.inputQueue = []
+    
+    def __init__(self):      
         self.stateQueue = {}
         self.outputQueue = {}
         self.localTime = 0
