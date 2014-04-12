@@ -139,8 +139,8 @@ class CAOC (LogicalProcess):
         tgtPriQ_uri = nameserver.lookup('priorityqueue.targets')
         self.tgtPriQ = Pyro4.Proxy(tgtPriQ_uri) 
 
-            # Mark: Test code can be removed
-            self.tgtPriQ.put('target 1')
+        # Mark: Test code can be removed
+        self.tgtPriQ.put('target 1')
         self.tgtPriQ.put('target 2')
         self.tgtPriQ.put('target 3')       
         print 'CAOC: ' + self.caocInQ.get()
