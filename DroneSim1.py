@@ -43,7 +43,7 @@ def initIMINT():
     return imintref
 
 def initCAOC():
-    caocref = CAOC()
+    caocref = CAOC(3,1)
     hmint = HMINT(numTargets)
     caocref.setHMINT(hmint)
     hmint.setCAOC(caocref)
