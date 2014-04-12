@@ -3,47 +3,44 @@ from DroneSimController import *
 from HMINT import *
 from IMINT import *
 from CAOC import *
-from multiprocessing import Process, Queue
-from multiprocessing.managers import SyncManager
+from multiprocessing import Process
+import Queue
 import math, time, sys
+import Pyro4
+from Pyro4 import *
+from Pyro4.core import *
+from Pyro4.naming import *
+from LPInputQueue import *
+from DroneInputQueueContainer import *
 
-class QueueManager(SyncManager): pass
 
-LOCAL_HOST = 'localhost'
-REMOTE_HOST = '192.168.0.3'
-IMINT_PORT = 50012
-PORT = 50011
-AUTHKEY = 'max'
+PYRO_HOST = '192.168.0.3'
+PYRO_PORT = 50987
+
+# parameters (later get from file)
+numDrones = 3
+typeOfDrone = "DroneType1"
+startTime = 1
+endTime = 7*24*60
+numTargets = 10
 
 #
 # Function definitions
 #
 
-def getIMINTInputQueue():
-    return IMINTInputQueue
-
-def getInputQueues():
-    return inputQueues
-
-def CreateQueueServer(p_host, p_port, p_authkey, p_name, p_description):
-    QueueManager.register('get_imint_input_queue', callable = getIMINTInputQueue)
-    QueueManager.register('get_queues', callable = getInputQueues)
-    manager = QueueManager(address = (p_host, p_port), authkey = p_authkey)
-    manager.start()
-    return manager
-
-def createNewDrone(id, droneType):
+def createNewDrone(uid, droneType):
     print('Creating new drone of type ' + droneType)
-    droneref = Drone(id, droneType)
-    droneref.setConnectionParams(REMOTE_HOST, PORT, AUTHKEY)
+    droneref = Drone(uid, droneType)
+    droneref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     return droneref
 
 def initEnv():
+    # initialization of map network
     print('Environment initialized')
     
 def initIMINT():
     imintref = IMINT()
-    imintref.setConnectionParams(REMOTE_HOST, PORT, AUTHKEY)
+    imintref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     print('IMINT initialized')
     return imintref
 
@@ -52,26 +49,15 @@ def initCAOC():
     hmint = HMINT(numTargets)
     caocref.setHMINT(hmint)
     hmint.setCAOC(caocref)
-    caocref.setConnectionParams(REMOTE_HOST, PORT, AUTHKEY)
+    caocref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     print('HMINT/CAOC initialized')
     return caocref
     
 #
-# Execution
+# Main method
 #
 
-# Prevent error on Windows
-if __name__ == '__main__':
-    
-    #Start the timer
-    start_time = time.time()
-    
-    # parameters (later get from file)
-    numDrones = 3
-    typeOfDrone = "DroneType1"
-    startTime = 1
-    endTime = 7*24*60
-    numTargets = 10
+def main():
     
     #
     # initialization
@@ -80,45 +66,56 @@ if __name__ == '__main__':
     # Urban network/map
     initEnv()
     
-    # Start queue server
-    global inputQueues
-    global IMINTInputQueue
-    manager = CreateQueueServer(LOCAL_HOST, PORT, AUTHKEY, \
-                                        'DroneSimMsgServer', 'Drone Simulation Message Server')  
-    inputQueues = manager.dict()
-    IMINTInputQueue = manager.list()
+    # Create PYRO remote object daemon
+    daemon = Pyro4.Daemon(host=PYRO_HOST, port=PYRO_PORT)
+    ns = Pyro4.locateNS()    
     
-    # CAOC/HMINT
+    # Create CAOC/HMINT, will be separate process started by Controller
     caoc = initCAOC()
-    caocInQ = manager.Queue()   
-    inputQueues['caoc'] = caocInQ
+    caocInQ = LPInputQueue()
+    caocInQ_uri = daemon.register(caocInQ)
+    ns.register("inputqueue.caoc", caocInQ_uri)    
     
-    # IMINT
+    # Create IMINT, will be separate process started by Controller
     imint = initIMINT()
-    imintInQ = manager.Queue()
-    inputQueues['imint'] = imintInQ    
+    imintInQ = LPInputQueue()
+    imintInQ_uri = daemon.register(imintInQ)
+    ns.register("inputqueue.imint", imintInQ_uri)    
     
-    # Simulation Controller
+    # Create Simulation Controller
     controller = DroneSimController(caoc, imint)
-    controller.setConnectionParams(REMOTE_HOST, PORT, AUTHKEY)
-    controllerInQ = manager.Queue()
-    inputQueues['controller'] = controllerInQ
+    controller.setConnectionParams(PYRO_HOST, PYRO_PORT)
+    controllerInQ = LPInputQueue()
+    controllerInQ_uri = daemon.register(controllerInQ)
+    ns.register("inputqueue.controller", controllerInQ_uri)
     
-    # create drone entities
-    droneInQs = {}
+    # Create drone entities, each will be separate process started by Controller
+    droneInQs = DroneInputQueueContainer()
     for i in range(numDrones):
-        dronename = 'drone', i
+        dronename = i
         drone = createNewDrone(dronename, typeOfDrone)
         controller.addDrone(drone)
-        droneInQ = manager.Queue()
-        droneInQs[dronename] = droneInQ
-    inputQueues['drones'] = droneInQs              
+        droneInQs.addDroneInputQueue(dronename)
+    droneInQs_uri = daemon.register(droneInQs)
+    ns.register("inputqueue.drones", droneInQs_uri)    
         
-    # Run simulation
-    pController = Process(group=None, target=controller, name='Drone Sim Controller Process')
-    pController.start()
-    pController.join()
+    # create target priority queue shared object
+    targetPriQ = Queue.Queue()
+    targetPriQ_uri = daemon.register(targetPriQ)
+    ns.register("priorityqueue.targets", targetPriQ_uri)
     
-    print "Time elapsed: ", time.time() - start_time, "s"
-    #job_server.print_stats()
+    # Start Controller process, which starts everything else
+    pController = Process(group=None, target=controller, name='Drone Sim Controller Process')
+    print 'starting controller'
+    pController.start()
+    
+    # Run shared object requests loop
+    print 'starting shared objects request loop'
+    daemon.requestLoop()
+
         
+#
+# Start of Execution
+#
+if __name__ == '__main__':
+    main()

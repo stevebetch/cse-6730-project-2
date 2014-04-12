@@ -11,8 +11,8 @@ class Drone (LogicalProcess):
     #id - unique id of drone
     #droneType - descriptive
 
-    def __init__(self, id, droneType):
-        self.id = id
+    def __init__(self, uid, droneType):
+        self.uid = uid
         LogicalProcess.__init__(self)
         self.droneType = droneType
      
@@ -31,7 +31,7 @@ class Drone (LogicalProcess):
     
     def __call__(self):
         self.run()        
-            
+    
     def handleMessage(self, msg):
         # determine message type and process accordingly
         pass
