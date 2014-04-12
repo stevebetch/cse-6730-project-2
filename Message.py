@@ -2,26 +2,26 @@ import sys
 
 class Message:
     
-    # This construct for nextMsgID seems like a global variable....
-    nextMsgID = 0
+    # For MsgID (NOT USED) (saving code in case we change our minds)
+    # nextMsgID = 0
     
-    # Update Message ID Function (IN PROGRESS)
+    # Update Message ID Function (NOT USED)
+    # No message IDs necessary (saving code in case we change our minds)
     # Description: Iterate message ID to provide unique ids for new messages
     # Input: None
     # Output: Message ID integer
-    def getNextMessageID():
-        msgID = Message.nextMsgID
-        nextMsgID += 1
-        return msgID
+    #def getNextMessageID():
+    #    msgID = Message.nextMsgID
+    #    nextMsgID += 1
+    #    return msgID
     
     # Initialize Message Function
     # Description: Creates message of any type to be passed to another LP
-    # Input: 6 arguments
-    #   ident: Unique integer id for messages retrieved from getNextMessageID function (?)
-    #   msgType: 1, 2, or 3. 1 for Sim Control, 2 for Target Assignment, 3 for Status Report
+    # Input: 5 arguments
+    #   msgType: 1, 2, or 3 - 1 for Sim Control, 2 for Target Assignment, 3 for Status Report
     #   data: Depends on msgType, may be 1x?, 1x9, or 1x2 vector
     #       Msg Type 1: 1x? with ?
-    #       Msg Type 2: 1x9 list of 
+    #       Msg Type 2: 1x10 list of 
     #           Tgt ID: unique integer id for targets
     #           Tgt Intel Value: Real number from 0 to 100. 0 is low, 100 is high value
     #           Tgt Intel Priority: Real number from -100 to 100. Default is to match Tgt Intel Value but can be adjusted by LPs
@@ -31,32 +31,29 @@ class Message:
     #           Tgt Predicted Location: Integer corresponding to node (?)
     #           Tgt Goal Track Time: Integer from 0 to 360 minutes of goal visual contact between drone and target
     #           Tgt Actual Track Time: Integer from 0 to 360 minutes of actual visual contact achieved
+    #           Tgt Track Attempts: Integer >= 0 recording number of attempts at tracking target
     #       Msg Type 3: 1x3 list of
     #           Drone ID: unique integer id for drones
     #           Drone Busy Status: "Busy" or "Idle"
-    #           Drone Location: Integer corresponding to node (?)
+    #           Drone Location: X,Y coord of node (possibly the node itself?)
     #   sender: Unique integer id of sender LP
     #   recipient: Unique integer id of recipient LP
     #   timestamp: Sim time corresponding to message
     # Output: None.  
-    def __init__(self, ident, msgType, data, sender, recipient, timestamp):
+    def __init__(self, msgType, data, sender, recipient, timestamp):
         isAntiMessage = 'false'
-        # Note: I think "id" is a built-in function we should avoid
-        self.ident = ident
         self.msgType = msgType
         self.data = data
         self.sender = sender
         self.recipient = recipient
         self.timestamp = timestamp
-        #self.timeSent = timeSent          # considering adding these two
-        #self.timeReceived = timeReceived  # not sure if necessary
     
     # Anti Message Function (IN PROGRESS)
     # Description: Creates an anti-message from an existing message
     # Input: None/Message
     # Output: Anti Message    
     def getAntiMessage(self):
-        antimsg = Message(self.msgType, self.id, self.data, self.sender, self.recipient, self.time)
+        antimsg = Message(self.msgType, self.data, self.sender, self.recipient, self.timestamp)
         antimsg.isAntiMessage = true
         return antimsg
 
@@ -67,7 +64,6 @@ class Message:
     def printData(self,x):
         # Primary Message Information
         print "-------Primary Message Information-------"
-        print "Message ID: " + str(self.ident)
         print "Message Type: " + str(self.msgType)
         print "Message Sender: " + str(self.sender)
         print "Message Recipient: " + str(self.recipient)
@@ -89,6 +85,7 @@ class Message:
                 print "Tgt Predicted Location: " + str(self.data[6])
                 print "Tgt Goal Track Time: " + str(self.data[7])
                 print "Tgt Actual Track Time: " + str(self.data[8])
+                print "Tgt Track Attempts: " + str(self.data[9])
             elif self.msgType==3:
                 print "---Status Data---"
                 print "Drone ID: " + str(self.data[0])
@@ -101,20 +98,14 @@ class Message:
 # Example message 2
 # This is a "Target Assignment" Message
 # We can tell being sent from LP1 HUMINT/CAOC to a Drone LP because of the sender/recipient fields (and the "Tgt Actual Track Time" is set to 0)
-tgt_data=[1,85,85,"Vehicle",0.8,1.2,13,30,0]
-tgt_assign=Message(1,2,tgt_data,1,5,6)
+tgt_data=[1,85,85,"Vehicle",0.8,1.2,13,30,0,0]
+tgt_assign=Message(2,tgt_data,1,5,6)
 tgt_assign.printData(1)
 
 # Example message 3
 # This is a "Status" Message
 # Right now this is drone specific, but we could modify easily if necessary
 status_data=[3,"Idle",13]
-status_msg=Message(1,3,status_data,5,1,11)
+status_msg=Message(3,status_data,5,1,11)
 status_msg.printData(1)
-
-# IN PROGRESS
-# Trying to work on the ID assignment without global variable
-# Maybe the controller process should hold a list?
-print tgt_assign.nextMsgID
-print status_msg.nextMsgID
 '''
