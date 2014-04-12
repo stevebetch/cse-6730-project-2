@@ -34,15 +34,36 @@ class CAOC (LogicalProcess):
         
     def addTarget(self, targetData):
         if self.priorityQueue.empty():
-            for i in range(0,len(self.drones)):
-                if self.drones[i][0]=="Idle":
-                    # If the queue is empty and there is an idle drone, send it a target assignment
-                    newTgt=Message(2,targetData,self.id,i,t_Now)
-                    # SEND MESSAGE - how to do this?
-                    break
-            else:
+            # Check which target assignment heruristic is in use
+            if self.heuristic==1:
+                # If the queue is empty and there is an idle drone, send it the incoming target assignment
+                for i in range(len(self.drones)):
+                    if self.drones[i][0]=="Idle":
+                        newTgt=Message(2,targetData,self.id,i,tNow)
+                        # SEND MESSAGE - how to do this?
+                        break
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
-                self.priority.put(targetData)
+                else:
+                    self.priorityQueue.put(targetData)
+            # Check which target assignment heruristic is in use
+            elif self.heuristic==2 or self.heuristic==3:
+                    # Determine distance of target from idle drones
+                    tgtLocation=targetData[6] #x,y coords
+                    indexCloseDrone=0
+                    minDist=999999
+                    for i in range(len(self.drones)):
+                       droneLocation=self.drones[i][2]
+                       dist=sqrt((tgtLocation[0]-droneLocation[0])^2+(tgtLocation[1]-droneLocation[1])^2)
+                       if dist<minDist and self.drones[i][0]=="Idle":
+                            minDist=dist
+                            indexCloseDrone=i   
+                    # If the queue is empty and all drones are busy, put the target assignment in the queue
+                    if minDist==999999:
+                        self.priorityQueue.put(targetData)
+                    # If the queue is empty and there are idle drones, send the nearest drone the incoming target assignment   
+                    else:
+                        newTgt=Message(2,targetData,self.id,indexCloseDrone,tNow)
+                        # SEND MESSAGE - how to do this?
         else:
             # If the queue is not empty (implying all drones are busy), put the target assignment in the queue
             priority = self.getPriority(targetData)
@@ -76,10 +97,28 @@ class CAOC (LogicalProcess):
             elif msg.msgType==3:
                 # Update drone status list
                 self.drones[msg.data[0]]=[msg.data[1],msg.data[2]]
-                # If the drone is idle and there are target assignments in the queue, assign that drone a target
-                if (self.drones[msg.data[0]][1]=="Idle") and not(self.priorityQueue.empty()):
-                    newTgtData=self.priorityQueue.get()[1]
-                    newTgt=Message(getNextMessageID(),2,newTgtData,self.id,msg.data[0],t_Now)
+                # Check which target assignment heruristic is in use
+                if self.heuristic==1:
+                    # If the drone is idle and there are target assignments in the queue, assign that drone a target
+                    if (self.drones[msg.data[0]][1]=="Idle") and not(self.priorityQueue.empty()):
+                        newTgtData=self.priorityQueue.get()
+                        newTgt=Message(getNextMessageID(),2,newTgtData,self.id,msg.data[0],tNow)
+                # Check which target assignment heruristic is in use
+                elif self.heuristic==2 or self.heuristic==3:
+                    # If the drone is idle and there are target assignments in the queue, assign that drone a nearby target
+                    if (self.drones[msg.data[0]][1]=="Idle") and not(self.priorityQueue.empty()):
+                        droneLocation=self.drones[msg.data[0]][2] #x,y coords
+                        indexCloseTgt=0
+                        minDist=999999
+                        # Psuedo code until we figure out a queue implementation
+                        # for i in range(length of priority queue):
+                        #    tgtLocation=self.prioirityQueue[i][2]
+                        #    dist=sqrt((tgtLocation[0]-droneLocation[0])^2+(tgtLocation[1]-droneLocation[1])^2)
+                        #    if dist<minDist:
+                        #         minDist=dist
+                        #         indexCloseTgt=i   
+                        # newTgtData=self.priorityQueue.get(indexCloseTgt)
+                        newTgt=Message(getNextMessageID(),2,newTgtData,self.id,msg.data[0],tNow)
             pass    
 
     def run(self):
@@ -96,4 +135,3 @@ print status_msg.data[0]
 c=CAOC(2,1)
 c.handleMessage(status_msg)
 print c.drones
-print c.priorityQueue.get()
