@@ -28,17 +28,19 @@ class GenMap:
         EW=math.floor(numStreets/2.0)
         NS=math.ceil(numStreets/2.0)
         
-        print '\nNumber of East\West streets',EW
-        print '\nNumber of North\South streets:',NS
+        #print '\nNumber of East\West streets',EW
+        #print '\nNumber of North\South streets:',NS
         
         self.NSpos=random.sample(xrange(self.xleng),int(NS))
         #print 'NS Street ',i,' is at position ', point
         # print '\n'
+       
         
         self.EWpos=random.sample(xrange(self.yleng),int(EW))
+
         #   print 'EW Street ', j,' is at position ', point
         # print '\n'
-        b=EntryNode(0)
+        b=EntryNode(23)
         # b.setProb(random.random()) #NEED TO MAKE THIS A BOUNDED PROBABILITY. CURRENTLY (0,1)
         self.MapEntryPt=b
         
@@ -47,9 +49,13 @@ class GenMap:
         
         for k in self.NSpos: #create all of the intersection nodes
             for l in self.EWpos:
-                a=intersecNode(0)
-                a.setXY(k,l)
+                a=intersecNode(42)
+                a.setXY(l,k)
                 self.intersectionNodes.append(a)
+#        for a in self.NSpos:
+#            print "NS Street at:", a
+#        for a in self.EWpos:
+#            print "EW Street at:", a
         self.connectNSNodes(NS,EW)
         self.connectEWNodes(NS,EW)
         
@@ -74,20 +80,20 @@ class GenMap:
         
 
     def connectNSNodes(self,NS,EW):
-        icount=0
-        jcount=0
+        EWfcount=0
+        NSfcount=0
         # print 'NS pos',self.NSpos
         #print '\n'
-        for i in self.NSpos:
-            jcount=0
-            for j in self.EWpos:
-                if(icount==0):
-                    length=i
-                elif(icount==int(NS)):
-                    length=i-self.NSpos[icount-1]
-                    length2=self.xleng-i #2nd length that should be used to calc length from last intersection to sim wall
+        for NSf in self.NSpos:
+            NSfcount=0
+            for EWf in self.EWpos:
+                if(EWfcount==0):
+                    length=EWf
+                elif(EWfcount==int(EW)):
+                    length=EWf-self.EWpos[EWfcount-1]
+                    length2=self.xleng-EWf#2nd length that should be used to calc length from last intersection to sim wall
                 else:
-                    length=i-self.NSpos[icount-1]
+                    length=EWf-self.EWpos[EWfcount-1]
                 
                 
                 modnum=4.0 #min number of nodes in a street length
@@ -114,7 +120,7 @@ class GenMap:
                     else:
                         modnum+=1
             #print 'number of street nodes:',modnum, ' Length:', length,
-                if(icount==int(NS)):
+                if(EWfcount==int(NS)):
                     modnum=4.0 #min number of nodes in a street length
                     modmax=20.0 #max number of nodes
                     while(modnum<=modmax): #figure out an ideal, round number of nodes that makes the nodes equidistant
@@ -139,28 +145,30 @@ class GenMap:
                             modnum+=1
         #print 'number of street nodes:',modnum, ' Length2:', length2,
                         #print 'number of street nodes:',modnum, ' Length:', length,
-                if(icount<=int(NS) and modnum>1): #not the edge case
+                if(EWfcount<=int(NS) and modnum>1): #not the edge case
                     for k in range(int(modnum),1,-1): #create each node for each street length
                         
-                        a=streetNode(0)
-                        a.xpos=i-(length/modnum)*k
-                        a.ypos=j
+                        a=streetNode(44)
+                        a.xpos=EWf-(length/modnum)*k
+                        a.ypos=NSf
                         a.setLeng(length)
-                        
+                     
                         nextNum=len(self.streetNodes)-1 # fencepost error
                         self.streetNodes.append(a)
                         nNum=len(self.streetNodes)
                         #  print 'Next number', nextNum, 'total number:', nNum
                         
-                        if(k==1 and icount==0): #node is at the edge of the sim
+                        if(k==1 and EWfcount==0): #node is at the edge of the sim
                             prevNd=EndNode(a) #point next node to end nodes outside of the sim
                             self.streetNodes[nextNum+1].prevNode=prevNd
                             self.streetNodes[nextNum+1].nextNode=self.streetNodes[nextNum]
                             self.streetNodes[nextNum].prevNode=self.streetNodes[nextNum+1]
                         elif(k==int(modnum)): #connect up to the correct intersection
-                            for a in self.intersectionNodes:
-                                if(a.xpos==i and a.ypos==j):
-                                    index=self.intersectionNodes.index(a)
+                            for newNode in self.intersectionNodes:
+                                if(newNode.xpos==EWf and newNode.ypos==NSf):
+                                    index=self.intersectionNodes.index(newNode)
+                            if(not('index' in locals())):
+                                pass
                             
                             self.streetNodes[nextNum+1].nextNode=self.intersectionNodes[index]#intersection
                             self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
@@ -168,9 +176,9 @@ class GenMap:
                                 #b=self.intersectionNodes[index].getRoadnode
                                 # print b
                 
-                        elif(k==1 and icount !=0): # connect the road to the other intersection
+                        elif(k==1 and EWfcount !=0): # connect the road to the other intersection
                             for a in self.intersectionNodes:
-                                if(a.xpos==self.NSpos[icount-1] and a.ypos==j):
+                                if(a.xpos==self.NSpos[EWfcount-1] and a.ypos==NSf):
                                     index=self.intersectionNodes.index(a)
                             self.streetNodes[nextNum+1].nextNode=self.intersectionNodes[index]#intersection
                             self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
@@ -182,14 +190,15 @@ class GenMap:
                             self.streetNodes[nextNum+1].nextNode=self.streetNodes[nextNum]
                             self.streetNodes[nextNum].prevNode=self.streetNodes[nextNum+1]
                 
-                if(icount==int(NS) and modnum>1): # need to go rigth and left of the intersection at the furthest right intersection
+                if(EWfcount==int(NS) and modnum>1): # need to go rigth and left of the intersection at the furthest right intersection
                     for k in range(1,int(modnum)): #create each node for each street length
                         
-                        a=streetNode(0)
-                        a.xpos=i+(length2/modnum)*k
-                        a.ypos=j
+                        a=streetNode(67)
+                        a.xpos=EWf+(length2/modnum)*k
+                        a.ypos=NSf
                         a.setLeng(length2)
-
+                        if(a.xpos<0):
+                                print "x,y pos of node", a.xpos,",",a.ypos, "NSf pos",NSf,"leng",(length/modnum)*k
                         nextNum=len(self.streetNodes)-1 # fencepost error
                         self.streetNodes.append(a)
                         nNum=len(self.streetNodes)
@@ -205,7 +214,7 @@ class GenMap:
                                     self.streetNodes[nextNum].nextNode=self.streetNodes[nextNum+1]
                                 elif(k==1): #connect up to the correct intersection
                                     for a in self.intersectionNodes:
-                                        if(a.xpos==i and a.ypos==j):
+                                        if(a.xpos==EWf and a.ypos==NSf):
                                             index=self.intersectionNodes.index(a)
                                     
                                     ######## STOPPING POINT #####
@@ -219,17 +228,17 @@ class GenMap:
                                 else:
                                     self.streetNodes[nextNum].nextNode=self.streetNodes[nextNum+1]
                                     self.streetNodes[nextNum+1].prevNode=self.streetNodes[nextNum]
-                if(modnum==1 and icount==0):
+                if(modnum==1 and EWfcount==0):
                 #Need to connect the intersection to an end pont? or do we just act like its a T-section? Im thinking we act like its a T intersection
                     a=1
-                elif(modnum==1 and icount!=int(NS)): #and icount==int(NS)):
+                elif(modnum==1 and EWfcount!=int(NS)): #and EWfcount==int(NS)):
                 # Need to connect to another intersection
                     for a in self.intersectionNodes: #current intersection node
-                        if(a.xpos==i and a.ypos==j):
+                        if(a.xpos==EWf and a.ypos==NSf):
                             index=self.intersectionNodes.index(a)
                     
                     for b in self.intersectionNodes:
-                        if(b.xpos==self.NSpos[icount-1] and b.ypos==j):
+                        if(b.xpos==self.EWpos[EWfcount-1] and b.ypos==NSf):
                             indexb=self.intersectionNodes.index(b)
                                 
                     self.intersectionNodes[index].prevNode=self.intersectionNodes[indexb]
@@ -240,24 +249,24 @@ class GenMap:
                 
                 
                 
-                jcount+=1
-            icount+=1
+                NSfcount+=1
+            EWfcount+=1
 
     def connectEWNodes(self,NS,EW):
-        icount=0
-        jcount=0
+        EWfcount=0
+        NSfcount=0
         # print 'NS pos',self.NSpos
         #print '\n'
-        for i in self.EWpos:
-            jcount=0
-            for j in self.NSpos:
-                if(icount==0):
-                    length=i
-                elif(icount==int(EW)):
-                    length=i-self.EWpos[icount-1]
-                    length2=self.xleng-i #2nd length that should be used to calc length from last intersection to sim wall
+        for EWf in self.EWpos:
+            NSfcount=0
+            for NSf in self.NSpos:
+                if(NSfcount==0):
+                    length=NSf
+                elif(NSfcount==int(NS)):
+                    length=NSf-self.NSpos[NSfcount-1]
+                    length2=self.yleng-NSf#2nd length that should be used to calc length from last intersection to sim wall
                 else:
-                    length=i-self.EWpos[icount-1]
+                    length=NSf-self.NSpos[NSfcount-1]
                 
                 
                 modnum=4.0 #min number of nodes in a street length
@@ -284,7 +293,7 @@ class GenMap:
                     else:
                         modnum+=1
             #print 'number of street nodes:',modnum, ' Length:',length
-                if(icount==int(EW)):
+                if(EWfcount==int(EW)):
                     modnum=4.0 #min number of nodes in a street length
                     modmax=20.0 #max number of nodes
                     while(modnum<=modmax): #figure out an ideal, round number of nodes that makes the nodes equidistant
@@ -309,12 +318,12 @@ class GenMap:
                                 modnum+=1
                 
                 # print 'number of street nodes:',modnum, ' Length2:',length2
-                if(icount<=int(EW) and modnum>1): #not the edge case
+                if(EWfcount<=int(EW) and modnum>1): #not the edge case
                     for k in range(int(modnum),1,-1): #create each node for each street length
                         
-                        a=streetNode(0)
-                        a.ypos=j-(length/modnum)*k
-                        a.xpos=i
+                        a=streetNode(89)
+                        a.ypos=NSf-(length/modnum)*k
+                        a.xpos=EWf
                         a.setLeng(length)
 
                         nextNum=len(self.streetNodes)-1 # fencepost error
@@ -322,14 +331,14 @@ class GenMap:
                         nNum=len(self.streetNodes)
                         #  print 'Next number', nextNum, 'total number:', nNum
                         
-                        if(k==1 and icount==0): #node is at the edge of the sim
+                        if(k==1 and EWfcount==0): #node is at the edge of the sim
                             prevNd=EndNode(a) #point next node to end nodes outside of the sim
                             self.streetNodes[nextNum+1].prevNode=prevNd
                             self.streetNodes[nextNum+1].nextNode=self.streetNodes[nextNum]
                             self.streetNodes[nextNum].prevNode=self.streetNodes[nextNum+1]
                         elif(k==int(modnum)): #connect up to the correct intersection
                             for a in self.intersectionNodes:
-                                if(a.xpos==j and a.ypos==i):
+                                if(a.xpos==EWf and a.ypos==NSf):
                                     index=self.intersectionNodes.index(a)
                             
                             self.streetNodes[nextNum+1].nextNode=self.intersectionNodes[index]#intersection
@@ -338,9 +347,9 @@ class GenMap:
                 #b=self.intersectionNodes[index].getRoadnode
                 # print b
                 
-                        elif(k==1 and icount !=0): # connect the road to the other intersection
+                        elif(k==1 and EWfcount !=0): # connect the road to the other intersection
                             for a in self.intersectionNodes:
-                                if(a.xpos==i and a.ypos==self.EWpos[jcount-1]):
+                                if(a.xpos==EWf and a.ypos==self.EWpos[NSfcount-1]):
                                     index=self.intersectionNodes.index(a)
                             self.streetNodes[nextNum+1].nextNode=self.intersectionNodes[index]#intersection
                             self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
@@ -352,12 +361,12 @@ class GenMap:
                             self.streetNodes[nextNum+1].nextNode=self.streetNodes[nextNum]
                             self.streetNodes[nextNum].prevNode=self.streetNodes[nextNum+1]
                 
-                if(icount==int(EW) and modnum>1): # need to go rigth and left of the intersection at the furthest right intersection
+                if(EWfcount==int(EW) and modnum>1): # need to go rigth and left of the intersection at the furthest right intersection
                     for k in range(1,int(modnum)): #create each node for each street length
                         
-                        a=streetNode(0)
-                        a.ypos=j+(length2/modnum)*k
-                        a.xpos=i
+                        a=streetNode(5280)
+                        a.ypos=NSf+(length2/modnum)*k
+                        a.xpos=EWf
                         a.setLeng(length2)
                         
                         nextNum=len(self.streetNodes)-1 # fencepost error
@@ -374,7 +383,7 @@ class GenMap:
                                     self.streetNodes[nextNum].nextNode=self.streetNodes[nextNum+1]
                                 elif(k==1): #connect up to the correct intersection
                                     for a in self.intersectionNodes:
-                                        if(a.xpos==j and a.ypos==i):
+                                        if(a.xpos==EWf and a.ypos==NSf):
                                             index=self.intersectionNodes.index(a)
                                     
                                     ######## STOPPING POINT #####
@@ -390,18 +399,18 @@ class GenMap:
                                     self.streetNodes[nextNum+1].prevNode=self.streetNodes[nextNum]
                 
                 
-                if(modnum==1 and icount==0):
+                if(modnum==1 and EWfcount==0):
                 #Need to connect the intersection to an end pont? or do we just act like its a T-section? Im thinking we act like its a T intersection
-                    a=1
+                    pass
                 
-                elif(modnum==1 and icount!=0): #and icount==int(NS)):
+                elif(modnum==1 and EWfcount!=0): #and EWfcount==int(NS)):
                     # Need to connect to another intersection
                     for a in self.intersectionNodes: #current intersection node
-                        if(a.xpos==j and a.ypos==i):
+                        if(a.xpos==EWf and a.ypos==NSf):
                             index=self.intersectionNodes.index(a)
                     
                     for b in self.intersectionNodes:
-                        if(b.ypos==self.EWpos[icount-1] and b.xpos==j):
+                        if(b.ypos==self.NSpos[NSfcount-1] and b.xpos==EWf):
                             indexb=self.intersectionNodes.index(b)
                     
                     self.intersectionNodes[index].prevNode=self.intersectionNodes[indexb]
@@ -410,8 +419,8 @@ class GenMap:
 
                 
                 
-                jcount+=1
-            icount+=1
+                NSfcount+=1
+            EWfcount+=1
 
 
 

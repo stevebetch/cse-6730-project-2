@@ -43,6 +43,7 @@ class Drone (LogicalProcess):
         self.sNeedBool=1 #boolian to determine if we need to activate the search logic.
         self.timeOnNode=0 #how long have we been on the current node?
         self.nodeTime=0 #how long should it take the target to traverse the node?
+        self.searchTime=20 #It takes 20 seconds to search the area.
     
     def __call__(self,obj):
         self.run(obj)
@@ -65,7 +66,11 @@ class Drone (LogicalProcess):
         while(1):
     # Check fuel before anything else!!
             if(not(self.jokerflag)): #joker not set yet. can search for targets
-                pass
+                if(not(detectBool)): #dont have a detection
+                    self.search()
+                    self.detection()
+                else: #we have a detection! woooo
+                    self.detection()
 
             else: # joker flag set.
                 if(not(detectBool)):
@@ -77,6 +82,7 @@ class Drone (LogicalProcess):
                         self.detection()
                         if(self.sNeedBool):# need to search for the target.
                             self.search()
+                            self.detection()
                     else:
                         self.ReturnToBase()
                     
@@ -95,6 +101,18 @@ class Drone (LogicalProcess):
         self.Bingo-=timeDif
         self.MatenanceActionTime-=timeDif
         self.LocalSimTime+=timeDif
+        self.timeOnNode+=timeDif
+        if(self.timeOnNode>=self.target.transitTime): #The target has had enough time to move.
+            if(self.target.loiterbit):
+                self.target.loitertime-=self.timeOnNode
+                self.timeOnNode=0
+                if(self.target.loitertime<0):
+                    self.timeOnNode=self.target.loitertime*-1
+                    self.target.loiterbit=0
+            else:
+                self.target.movement()
+                self.timeOnNode=self.timeOnNode-self.target.transitTime
+                    
         #print "\nNew Joker:", self.Joker, "New Bingo:",self.Bingo
         if(self.Bingo<=0): # Reached bingo. need to RTB.
             self.ReturnToBase()
@@ -172,6 +190,7 @@ class Drone (LogicalProcess):
             if(self.probTest(self.node.Trackprob)): #if we maintain track
                     self.detectBool=1 #reaffirming the value
                     self.sNeedBool=0
+                    
             else:
                     self.detectBool=0
                     self.sNeedBool=1
@@ -186,7 +205,9 @@ class Drone (LogicalProcess):
             else: #looking at the right node, but no detection
                 self.detectBool=0
                 self.sNeedBool=0
-
+        self.updateTime(self.searchTime) # the cost of doing one search operation
+            
+            
     def search(self): # this function needs a lot of work. How are we actually doing the search method?!?
         if(self.xpos!=self.target.xpos or self.ypos!=self.target.ypos): # we know we arnt looking at the right node.
             #Assume our intel came with a direction of movement and speed

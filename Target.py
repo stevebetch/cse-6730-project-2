@@ -17,6 +17,7 @@ class Target:
         self.ObsTime=90 # set the default time for sucessful tracking at 90sec,
         self.speed=random.randint(10,20) #ft/s
         self.transitTime=0
+        self.loiterbit=1
         
     def movement(self):
         random.seed() # this is for debugging only. Should be removed in the final code.
@@ -28,6 +29,7 @@ class Target:
             self.transitTime=int(length/self.speed)
         
         elif(self.node.nodeType==3):
+            print"At an END NODE!!"
             return 999 #need to figure out what to do in this case.
                        #Probs will delete the target.
                        
@@ -36,16 +38,18 @@ class Target:
             stayHere=random.uniform(0,1) #if stayHere<=self.stay, loiter at the current node.
             if(self.stay>=stayHere):
                 self.transitTime=int(self.node.length/self.speed)#keeping constant time blocks.
-                return
+            
             else:
                 nextPrev=random.uniform(0,.5) # equal chance of going right or left.Probably will want to change this
                 if(nextPrev<random.uniform(0,1)):
-                    self.node=self.node.nextNode
                     self.transitTime=int(self.node.length/self.speed)
+                    self.node=self.node.nextNode
+                
                     #print "Going Right!"
                 else:
-                    self.node=self.node.prevNode
                     self.transitTime=int(self.node.length/self.speed)
+                    self.node=self.node.prevNode
+                    
                 #   print "Going Left!"
         else: #its an intersection. Randomly choose a new direction. We will not loiter in an intersection node.
             dir=random.uniform(0,1)
@@ -55,9 +59,17 @@ class Target:
             for a in range(num):
                 #   print "a:",a,"dir:",dir, "if val:",((1./num)*(a+1))
                 if(dir<((1.0/num)*(a+1))):
-                      self.node=self.node.Nodes[a]
-                      self.transitTime=int(self.node.length/self.speed) #use the new node length to calc dist and time.
+                    
+                      if(self.node.Nodes[a].nodeType==1): #Going to another intersection.
+                          length=math.sqrt((self.node.xpos-self.node.Nodes[a].xpos)**2 +(self.node.ypos-self.node.Nodes[a].ypos))
+                          self.node=self.node.Nodes[a]
+                          self.transitTime=int(self.node.length/self.speed) #use the new node length to calc dist and time.
+                      else:
+                          self.node=self.node.Nodes[a]
+                          self.transitTime=int(self.node.length/self.speed) #use the new node length to calc dist and time.
                       break
-
+        print "Moved to:",self.node.xpos,",",self.node.ypos," Node type:",self.node.nodeType
+            
+            
     def setObsTime(self,time):
         self.ObsTime=time

@@ -44,14 +44,14 @@ class intersecNode:
     def getRoadnode(self):
         nodeout=[]
         for i in self.Nodes:
-            nodeout.append([i])
+            nodeout.append(i)
         return nodeout
     
     def setRoadnode(self,obj): #Most likely need to change this
         nodeout=[]
         count=0
         for i in self.Nodes:
-            nodeout.append([i])
+            nodeout.append(i)
             count+=1
         nodeout.append(obj)
         self.Nodes=nodeout
@@ -61,13 +61,13 @@ class intersecNode:
         lengths=[]
         for i in self.NodeLeng:
             lengths.append([i])
-        length.append(obj)
+        lengths.append(obj)
         self.NodeLeng=lengths
 
     def setProb(self,obj):
         self.prob=obj
 
-def setnumRoads(self,num):
+    def setnumRoads(self,num):
         self.numRoads=num
 
 class EntryNode:
