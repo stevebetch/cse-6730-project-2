@@ -40,7 +40,7 @@ class CAOC (LogicalProcess):
                 # If the queue is empty and there is an idle drone, send it the incoming target assignment
                 for i in range(len(self.drones)):
                     if self.drones[i][0]=="Idle":
-                        newTgt=Message(2,targetData,self.id,i,tNow)
+                        #newTgt=Message(2,targetData,self.id,i,tNow)
                         # SEND MESSAGE - how to do this?
                         break
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
