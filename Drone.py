@@ -75,6 +75,12 @@ class Drone (LogicalProcess):
                     if(self.Bingo>0): #we still have fuel!
                     # We have fuel and can still start tracking.
                         self.detection()
+                        if(self.sNeedBool):# need to search for the target.
+                            self.search()
+                    else:
+                        self.ReturnToBase()
+                    
+                    
     
     def setTarget(self,obj):
         # This function will take in the target object and assign it to the drone. Looks like it will not be used. Propose we drop it.
@@ -168,7 +174,7 @@ class Drone (LogicalProcess):
                     self.sNeedBool=0
             else:
                     self.detectBool=0
-                    self.sNeedBool=0
+                    self.sNeedBool=1
         else: # we dont have a track yet.
             if(self.xpos!=self.target.xpos or self.ypos!=self.target.ypos):
                     self.detectBool=0 #we arnt even looking at the right node!
@@ -181,16 +187,61 @@ class Drone (LogicalProcess):
                 self.detectBool=0
                 self.sNeedBool=0
 
-    def search(self):
+    def search(self): # this function needs a lot of work. How are we actually doing the search method?!?
         if(self.xpos!=self.target.xpos or self.ypos!=self.target.ypos): # we know we arnt looking at the right node.
             #Assume our intel came with a direction of movement and speed
             choice=random.random()
-            if(choice>=.2): #80% chance we choose the correct direction
+            if(choice>=.2): #80% chance we choose the correct direction. Why 80? I have no clue.
                 if(self.currentNode.nodeType==0): #curent node is a street
                     if(self.target.xpos>self.xpos):
                         self.updateCurNode(self.currentNode.nextNode)
-#need to correctly update the time here.
-    
+                        # Only need flight time here. We will have to be more elegant when actually tracking.
+                    else:
+                        self.updateCurNode(self.currentNode.prevNode)
+                elif(self.currentNode.nodeType==1): # an intersection.
+                    for i in self.currentNode.nodes:
+                        if(self.currentNode.ypos==i.ypos):
+                            if(self.target.xpos>self.currentNode.xpos and i.xpos>self.currentNode.xpos):
+                            #Mouth full.... but correct dir.
+                                self.updateCurNode(i)
+                                break
+                            elif(self.target.xpos<self.currentNode.xpos and i.xpos<self.currentNode.xpos):
+                                self.updateCurNode(i)
+                                break
+                        elif(self.currentNode.xpos==i.xpos):
+                            if(self.target.ypos>self.currentNode.ypos and i.ypos>self.currentNode.ypos):
+                                #Mouth full.... but correct dir.
+                                self.updateCurNode(i)
+                                break
+                            elif(self.target.ypos<self.currentNode.ypos and i.ypos<self.currentNode.ypos):
+                                self.updateCurNode(i)
+                                break
+            else:
+                if(self.currentNode.nodeType==0): #curent node is a street
+                    if(self.target.xpos>self.xpos):
+                        self.updateCurNode(self.currentNode.prevNode)
+                    # Only need flight time here. We will have to be more elegant when actually tracking.
+                    else:
+                        self.updateCurNode(self.currentNode.NextNode)
+                elif(self.currentNode.nodeType==1): # an intersection.
+                    for i in self.currentNode.nodes:
+                        if(self.currentNode.ypos==i.ypos):
+                            if(self.target.xpos>self.currentNode.xpos and i.xpos<self.currentNode.xpos):
+                                #Mouth full.... but correct dir.
+                                self.updateCurNode(i)
+                                break
+                            elif(self.target.xpos<self.currentNode.xpos and i.xpos>self.currentNode.xpos):
+                                self.updateCurNode(i)
+                                break
+                        elif(self.currentNode.xpos==i.xpos):
+                            if(self.target.ypos>self.currentNode.ypos and i.ypos<self.currentNode.ypos):
+                                #Mouth full.... but correct dir.
+                                self.updateCurNode(i)
+                                break
+                            elif(self.target.ypos<self.currentNode.ypos and i.ypos>self.currentNode.ypos):
+                                self.updateCurNode(i)
+                                break
+
 
     def ReturnToBase(self):
     #cant have any new assignments durning this time. May need to look at the messages to reject taskers.
