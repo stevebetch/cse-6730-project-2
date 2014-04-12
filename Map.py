@@ -145,6 +145,8 @@ class GenMap:
                         a=streetNode(0)
                         a.xpos=i-(length/modnum)*k
                         a.ypos=j
+                        a.setLeng(length)
+                        
                         nextNum=len(self.streetNodes)-1 # fencepost error
                         self.streetNodes.append(a)
                         nNum=len(self.streetNodes)
@@ -162,8 +164,9 @@ class GenMap:
                             
                             self.streetNodes[nextNum+1].nextNode=self.intersectionNodes[index]#intersection
                             self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
-                            b=self.intersectionNodes[index].getRoadnode
-                # print b
+                            self.intersectionNodes[index].setLeng(length)
+                                #b=self.intersectionNodes[index].getRoadnode
+                                # print b
                 
                         elif(k==1 and icount !=0): # connect the road to the other intersection
                             for a in self.intersectionNodes:
@@ -171,7 +174,8 @@ class GenMap:
                                     index=self.intersectionNodes.index(a)
                             self.streetNodes[nextNum+1].nextNode=self.intersectionNodes[index]#intersection
                             self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
-                            b=self.intersectionNodes[index].getRoadnode
+                            self.intersectionNodes[index].setLeng(length)
+                            #  b=self.intersectionNodes[index].getRoadnode
                             #           print b
                         
                         else:
@@ -184,6 +188,7 @@ class GenMap:
                         a=streetNode(0)
                         a.xpos=i+(length2/modnum)*k
                         a.ypos=j
+                        a.setLeng(length2)
 
                         nextNum=len(self.streetNodes)-1 # fencepost error
                         self.streetNodes.append(a)
@@ -207,7 +212,8 @@ class GenMap:
                                     # Then copy/paste code and run thru the N/S streets.
                                     self.streetNodes[nextNum+1].prevNode=self.intersectionNodes[index]#intersection
                                     self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
-                                    b=self.intersectionNodes[index].getRoadnode
+                                    self.intersectionNodes[index].setLeng(length2)
+                    #b=self.intersectionNodes[index].getRoadnode
                     # print b
                     
                                 else:
@@ -309,6 +315,7 @@ class GenMap:
                         a=streetNode(0)
                         a.ypos=j-(length/modnum)*k
                         a.xpos=i
+                        a.setLeng(length)
 
                         nextNum=len(self.streetNodes)-1 # fencepost error
                         self.streetNodes.append(a)
@@ -327,7 +334,8 @@ class GenMap:
                             
                             self.streetNodes[nextNum+1].nextNode=self.intersectionNodes[index]#intersection
                             self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
-                            b=self.intersectionNodes[index].getRoadnode
+                            self.intersectionNodes[index].setLeng(length)
+                #b=self.intersectionNodes[index].getRoadnode
                 # print b
                 
                         elif(k==1 and icount !=0): # connect the road to the other intersection
@@ -336,7 +344,8 @@ class GenMap:
                                     index=self.intersectionNodes.index(a)
                             self.streetNodes[nextNum+1].nextNode=self.intersectionNodes[index]#intersection
                             self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
-                            b=self.intersectionNodes[index].getRoadnode
+                            self.intersectionNodes[index].setLeng(length)
+                            #b=self.intersectionNodes[index].getRoadnode
                             #  print b
                         
                         else:
@@ -349,6 +358,8 @@ class GenMap:
                         a=streetNode(0)
                         a.ypos=j+(length2/modnum)*k
                         a.xpos=i
+                        a.setLeng(length2)
+                        
                         nextNum=len(self.streetNodes)-1 # fencepost error
                         self.streetNodes.append(a)
                         nNum=len(self.streetNodes)
@@ -370,7 +381,8 @@ class GenMap:
                                     # Then copy/paste code and run thru the N/S streets.
                                     self.streetNodes[nextNum+1].prevNode=self.intersectionNodes[index]#intersection
                                     self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
-                                    b=self.intersectionNodes[index].getRoadnode
+                                    self.intersectionNodes[index].setLeng(length2)
+                    #b=self.intersectionNodes[index].getRoadnode
                                         #print b
                                 
                                 else:

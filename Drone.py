@@ -4,6 +4,7 @@ from Map import GenMap
 from nodes import EntryNode
 from multiprocessing import Lock
 import random
+from Message import *
 
 class Drone (LogicalProcess):
 
@@ -19,20 +20,32 @@ class Drone (LogicalProcess):
         self.id = id
      
         self.LocalSimTime=0 #current simulation time for the drone
-        self.MatenanceActionTime=144000 #how much time until we need to land for maintainance (40 hr engine overhaul (yes andrew it should be 100hr), ect)
+        
+        self.MaintenanceActionTime=144000 #how much time until we need to land for maintainance (40 hr engine overhaul (yes andrew it should be 100hr), ect)
         self.Joker=0 #how much time we have to search
+        self.jokerflag=0
+        
         self.Bingo=0 #time until we have to leave the map
+        
         self.DistEntry=0.0 #distance from the entry node
-        self.FlightSpeed=random.randint(50,200)#Random flight speed of the drone
+
+        self.FlightSpeed=random.randint(50,200)#Random flight speed of the drone, ft/s? something/s
         self.DroneLegs=28800 # Assuming the drone has 8hr legs (8*3600=28800 sec) We can change this later if we want
+
         self.xpos=0 #current x location
         self.ypos=0 #current y location
+
         self.EntNode=[]
         self.currentNode=[]
+
         self.target=[]
+        self.detectBool=0 # Boolian used for detection logic
+        self.sNeedBool=1 #boolian to determine if we need to activate the search logic.
+        self.timeOnNode=0 #how long have we been on the current node?
+        self.nodeTime=0 #how long should it take the target to traverse the node?
     
-    def __call__(self):
-        self.run()        
+    def __call__(self,obj):
+        self.run(obj)
     
     def setController(self, controller):
         self.controller = controller
@@ -43,18 +56,42 @@ class Drone (LogicalProcess):
     
     def start(self,mapObj):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
-        pass
+        # Begin at entry node. aka, only pass drone the entry node!!!
+        self.setEntry(mapObj)
+        self.currentNode=mapObj #the only time we directly set the current node.
+        self.getNewTargetFromCAOC()
+        self.LocalSimTime=0 ############## HOW ARE WE SETTING THIS??? ############
     
+        while(1):
+    # Check fuel before anything else!!
+            if(not(self.jokerflag)): #joker not set yet. can search for targets
+                pass
+
+            else: # joker flag set.
+                if(not(detectBool)):
+                    #dont have an active detection. RTB.
+                    self.ReturnToBase()
+                else: # detection flag set. We have a target in active track.
+                    if(self.Bingo>0): #we still have fuel!
+                    # We have fuel and can still start tracking.
+                        self.detection()
     
+    def setTarget(self,obj):
+        # This function will take in the target object and assign it to the drone. Looks like it will not be used. Propose we drop it.
+        self.target=obj
     
-    def updateTime(self,DroneSimTime):
+    def updateTime(self,timeDif): # timeDif= time delta. How much you want to update the clock by,
         #Update the timers with each timestep
-        timeDif=DroneSimTime-self.LocalSimTime
+        #timeDif=newDroneSimTime-self.LocalSimTime
         self.Joker-=timeDif
+        if(self.Joker<=0):
+            self.jokerflag=1
         self.Bingo-=timeDif
         self.MatenanceActionTime-=timeDif
-        print "\nNew Joker:", self.Joker, "New Bingo:",self.Bingo
-
+        self.LocalSimTime+=timeDif
+        #print "\nNew Joker:", self.Joker, "New Bingo:",self.Bingo
+        if(self.Bingo<=0): # Reached bingo. need to RTB.
+            self.ReturnToBase()
 
     def setJokerBingo(self):
     # Call this funtion after the drone returns from a maintainance action, refuleing or at the start of the sim
@@ -70,16 +107,35 @@ class Drone (LogicalProcess):
             print "\nJoker set to:", self.Joker, "Bingo set to:",self.Bingo
 
 
-    def resetMatenanceTimer(self):
-        self.MatenanceActionTime=144000
+    def resetMaintenanceTimer(self):
+        self.MaintenanceActionTime=144000
 
     def setEntry(self,obj):
         self.EntryNode=obj
         #print "Map entry at:" , self.EntryNode.xpos,",",self.EntryNode.ypos
 
     def updateCurNode(self,obj):
+        oldnode=self.currentNode
         self.currentNode=obj #may not be needed, but may be expanded later if needed.
-        
+        self.xpos=self.currentNode.xpos
+        self.ypos=self.currentNode.ypos
+        if(self.currentNode.nodeType==0):
+            flightTime=int(self.currentNode.length/self.FlightSpeed)
+        elif(self.current.nodeType==1):
+            #intersection. Use old node length
+            if(oldnode.nodeType==1 or oldnode.nodeType==2): #either an intersection or entry node
+                length=math.sqrt((self.xpos-oldnode.xpos)**2 +(self.ypos-oldnode.ypos)**2)
+            elif(oldnode.nodeType==0):
+                #the old node was a street. use that distance.
+                length=oldnode.length
+            flightTime=int(length/self.FlightSpeed)
+            
+        elif(self.currentNode==3): #end node. Only attached to streets.
+            length=oldnode.length
+            flightTime=int(length/self.FlightSpeed)
+        updateTime(flightTime)
+    
+
     def getNewTargetFromCAOC(self):
         lock = Lock()
         self.target=self.caoc.getNextTarget(lock, None, None)
@@ -91,18 +147,71 @@ class Drone (LogicalProcess):
 
 
     def probTest(self,probVal):
-        A=1
-
-    def detection(self):
-
-        #This function will be called to determine if we get a positive detection on the
+        #This function will be called to determine if we get a positive detection on the target
         testprob=random.uniform(0,1)
         if(probVal<=testprob):
-        # Weve got a positive hit!
+            # Weve got a positive hit!
             return 1
         else:
             return 0
 
+
+    def detection(self):
+        # Begin by seeing if we already have a track
+        if(self.detectBool==1): #we have a track!
+            # Check to see if we are on the same node as the target.
+            if(self.xpos!=self.target.xpos or self.ypos!=self.target.ypos): # tracking, but not looking at the right node
+                self.updateCurNode(self.target.currentNode)
+                #We are on a new node. Need to roll the dice to see if we keep a track.
+            if(self.probTest(self.node.Trackprob)): #if we maintain track
+                    self.detectBool=1 #reaffirming the value
+                    self.sNeedBool=0
+            else:
+                    self.detectBool=0
+                    self.sNeedBool=0
+        else: # we dont have a track yet.
+            if(self.xpos!=self.target.xpos or self.ypos!=self.target.ypos):
+                    self.detectBool=0 #we arnt even looking at the right node!
+                    self.sNeedBool=1
+            elif(self.probTest(self.node.Trackprob)): #looking at the right node, have a detection!
+                    self.detectBool=1 #reaffirming the value
+                    self.sNeedBool=0
+
+            else: #looking at the right node, but no detection
+                self.detectBool=0
+                self.sNeedBool=0
+
+    def search(self):
+        if(self.xpos!=self.target.xpos or self.ypos!=self.target.ypos): # we know we arnt looking at the right node.
+            #Assume our intel came with a direction of movement and speed
+            choice=random.random()
+            if(choice>=.2): #80% chance we choose the correct direction
+                if(self.currentNode.nodeType==0): #curent node is a street
+                    if(self.target.xpos>self.xpos):
+                        self.updateCurNode(self.currentNode.nextNode)
+#need to correctly update the time here.
+    
+
+    def ReturnToBase(self):
+    #cant have any new assignments durning this time. May need to look at the messages to reject taskers.
+    # need to delete target, return it to the queue.
+        retTgt=Message(getNextMessageID(),2,self.target,self.id,self.caoc.id,self.LocalSimTime) #THIS IS AN INCORRECT CALL!!! HELP!!!!
+        
+        self.DistEntry=math.sqrt((self.xpos-self.EntNode.xpos)**2 +(self.ypos-self.EntNode.ypos)**2)
+        timeToentry=int(self.DistEntry/self.FlightSpeed)
+        self.updateTime(timeToentry) #update sim time
+        
+        if(self.MaintenanceActionTime<=14400): #the drone is within 4 hours of needing prevenative ma
+            self.resetMaintenanceTimer()
+            self.updateTime(18000) #5 hours for maintenance. IS THIS REASONABLE?
+        self.setJokerBingo()
+        self.updateCurNode(self.EntNode)
+
+    def flyTotgt(self,tgtx,tgty):
+    # code to move the drone from the current location to the target's intel location. assuming the intel location is within 1 node of actual.
+        distTgt=math.sqrt((self.xpos-tgtx)**2 +(self.ypos-tgty)**2) #distance to the intel location x,y
+        TOT=int(distTgt/self.FlightSpeed)
+        self.updateTime(TOT)
 
 
 

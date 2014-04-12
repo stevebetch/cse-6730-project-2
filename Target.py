@@ -15,12 +15,17 @@ class Target:
         self.stay=.3 #probability a person will loiter on a node
         self.intel=1 #set at one for now, but will likely be a discrete distribution
         self.ObsTime=90 # set the default time for sucessful tracking at 90sec,
+        self.speed=random.randint(10,20) #ft/s
+        
     def movement(self):
         random.seed() # this is for debugging only. Should be removed in the final code.
 # step1: check what kind of node. 0= street, 1= intersection, 2=entry node, 3=End node
 # Can only move on street and road nodes. If in entry or end, remove self from sim. Send message to caoc
-        if(self.node.nodeType==2 or self.node.nodeType==3):
-            return 999
+        if(self.node.nodeType==2):
+            self.node=self.node.nextNode # move onto the map
+        elif(self.node.nodeType==3):
+            return 999 #need to figure out what to do in this case.
+                       #Probs will delete the target.
         elif(self.node.nodeType==0): # can only move forward, back, or stay in current node.
             stayHere=random.uniform(0,1) #if stayHere<=self.stay, loiter at the current node.
             if(self.stay>=stayHere):
@@ -43,5 +48,6 @@ class Target:
                 if(dir<((1.0/num)*(a+1))):
                       self.node=self.node.Nodes[a]
                       break
+
     def setObsTime(self,time):
         self.ObsTime=time
