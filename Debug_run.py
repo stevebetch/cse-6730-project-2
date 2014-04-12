@@ -16,3 +16,11 @@ b=a.MapEntryPt
 b=b.nextNode
 pp=Target(b)
 pp.movement()
+count=0
+try:
+    while(count<5):
+        count+=1
+        pp.movement()
+
+except:
+    print pp.node
