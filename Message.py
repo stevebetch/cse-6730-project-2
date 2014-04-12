@@ -95,17 +95,17 @@ class Message:
 
 # Debugging
 
-# Example message 2
-# This is a "Target Assignment" Message
-# We can tell being sent from LP1 HUMINT/CAOC to a Drone LP because of the sender/recipient fields (and the "Tgt Actual Track Time" is set to 0)
-tgt_data=[1,85,85,"Vehicle",0.8,1.2,[3,10],30,0,0]
-tgt_assign=Message(2,tgt_data,1,5,6)
-tgt_assign.printData(1)
+# # Example message 2
+# # This is a "Target Assignment" Message
+# # We can tell being sent from LP1 HUMINT/CAOC to a Drone LP because of the sender/recipient fields (and the "Tgt Actual Track Time" is set to 0)
+# tgt_data=[1,85,85,"Vehicle",0.8,1.2,[3,10],30,0,0]
+# tgt_assign=Message(2,tgt_data,1,5,6)
+# tgt_assign.printData(1)
 
-# Example message 3
-# This is a "Status" Message
-# Right now this is drone specific, but we could modify easily if necessary
-status_data=[3,"Idle",[3,10]]
-status_msg=Message(3,status_data,5,1,11)
-status_msg.printData(1)
+# # Example message 3
+# # This is a "Status" Message
+# # Right now this is drone specific, but we could modify easily if necessary
+# status_data=[3,"Idle",[3,10]]
+# status_msg=Message(3,status_data,5,1,11)
+# status_msg.printData(1)
 
