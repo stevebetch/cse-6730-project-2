@@ -146,10 +146,13 @@ class CAOC (LogicalProcess):
         print 'CAOC: ' + self.caocInQ.get()
 
 # DEBUGGING
+def main():
+    status_data=[1,"Busy",13]
+    status_msg=Message(3,status_data,5,1,11)
+    print status_msg.data[0]
+    c=CAOC(2,1)
+    c.handleMessage(status_msg)
+    print c.drones
 
-status_data=[1,"Busy",13]
-status_msg=Message(3,status_data,5,1,11)
-print status_msg.data[0]
-c=CAOC(2,1)
-c.handleMessage(status_msg)
-print c.drones
+if __name__ == '__main__':
+    main()
