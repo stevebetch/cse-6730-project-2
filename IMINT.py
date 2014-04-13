@@ -13,6 +13,9 @@ class IMINT (LogicalProcess):
 
     def __call__(self):
         self.run()
+        
+    def getCurrentState(self):
+        return None
 
     def handleMessage(self, msg):
         # determine message type and process accordingly
@@ -29,9 +32,13 @@ class IMINT (LogicalProcess):
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
         self.caocInQ = Pyro4.Proxy(caocInQ_uri)        
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
-        self.imintInQ = Pyro4.Proxy(imintInQ_uri)
+        self.inputQueue = Pyro4.Proxy(imintInQ_uri)
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
 
-                # Mark: Test code can be removed
-        print 'IMINT: ' + self.imintInQ.get()
+        # Mark: Test code can be commented out
+        while True:
+            msg = self.inputQueue.getNextMessage()
+            if msg:
+                self.handleMessage(msg)
+                break

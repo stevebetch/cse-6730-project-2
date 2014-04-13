@@ -45,13 +45,12 @@ class Drone (LogicalProcess):
         self.searchTime=20 #It takes 20 seconds to search the area.
 
     def __call__(self):
-        self.run()        
+        self.run()
+        
+    def getCurrentState(self):
+        return None        
 
-    def handleMessage(self, msg):
-        # determine message type and process accordingly
-        pass
-
-        # Mark: SHOULD MOVE THIS TO run() METHOD OR CALL IT FROM run() METHOD
+    # Mark: SHOULD MOVE THIS TO run() METHOD OR CALL IT FROM run() METHOD
     def start(self,mapObj):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         # Begin at entry node. aka, only pass drone the entry node!!!
@@ -181,13 +180,14 @@ class Drone (LogicalProcess):
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
         self.imintInQ = Pyro4.Proxy(imintInQ_uri)
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
-        self.droneInQs = Pyro4.Proxy(droneInQs_uri)
-        tgtPriQ_uri = nameserver.lookup('priorityqueue.targets')
-        self.tgtPriQ = Pyro4.Proxy(tgtPriQ_uri)         
+        self.droneInQs = Pyro4.Proxy(droneInQs_uri)  
 
-                # Mark: Test calls to be removed
-        print 'Drone ' + str(self.uid) + ': ' + self.droneInQs.getNextMessage(self.uid)
-        print 'Drone ' + str(self.uid) + ': ' + self.tgtPriQ.get()
+                # Mark: Test calls to be commented out
+        while True:
+            msg = self.droneInQs.getNextMessage(self.uid)
+            if msg:
+                self.handleMessage(msg)
+                break
 
     def probTest(self,probVal):
         #This function will be called to determine if we get a positive detection on the target

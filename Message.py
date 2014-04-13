@@ -41,7 +41,7 @@ class Message:
     #   timestamp: Sim time corresponding to message
     # Output: None.  
     def __init__(self, msgType, data, sender, recipient, timestamp):
-        isAntiMessage = 'false'
+        isAntiMessage = False
         self.msgType = msgType
         self.data = data
         self.sender = sender
@@ -56,6 +56,9 @@ class Message:
         antimsg = Message(self.msgType, self.data, self.sender, self.recipient, self.timestamp)
         antimsg.isAntiMessage = true
         return antimsg
+    
+    def isAntiMessage(self):
+        return self.isAntiMessage
 
     # Print Data Function
     # Description: Display attributes of Message instance

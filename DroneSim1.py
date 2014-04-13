@@ -5,15 +5,13 @@ from HMINT import *
 from IMINT import *
 from CAOC import *
 from multiprocessing import Process
-import Queue
 import math, time, sys
 import Pyro4
 from LPInputQueue import *
 from DroneInputQueueContainer import *
 
-
 PYRO_HOST = '192.168.0.3'
-PYRO_PORT = 50987
+PYRO_PORT = 12778
 
 # parameters (later get from file)
 numDrones = 3
@@ -56,7 +54,7 @@ def initCAOC():
 #
 
 def main():
-    
+        
     #
     # initialization
     #

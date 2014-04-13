@@ -27,8 +27,11 @@ class CAOC (LogicalProcess):
     def __call__(self):
         self.run()
 
-    def setController(self, controller):
-        self.controller = controller
+    def getCurrentState(self):
+        return None 
+
+    def setInputQueueCurrentTime(self, time):
+        self.inputQueue.setCurrentTime(time)
 
     def setHMINT(self, hmint):
         self.hmint = hmint
@@ -91,6 +94,7 @@ class CAOC (LogicalProcess):
         # determine message type and process accordingly
         if msg.msgType==1:
             1==1 #placeholder
+            print msg
         elif msg.msgType==2:
             # Start the add target process with the target data of the message
             self.addTarget(msg[1])
@@ -117,8 +121,7 @@ class CAOC (LogicalProcess):
                             minDist=dist
                             indexCloseTgt=i   
                     newTgtData=self.priorityQueue.pop(indexCloseTgt)
-                    newTgt=Message(getNextMessageID(),2,newTgtData,self.id,msg.data[0],self.localTime)
-        pass    
+                    newTgt=Message(getNextMessageID(),2,newTgtData,self.id,msg.data[0],self.localTime)   
 
     def run(self):
         print('CAOC/HMINT Running')
@@ -129,7 +132,7 @@ class CAOC (LogicalProcess):
         controllerInQ_uri = nameserver.lookup('inputqueue.controller')
         self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
-        self.caocInQ = Pyro4.Proxy(caocInQ_uri)        
+        self.inputQueue = Pyro4.Proxy(caocInQ_uri)        
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
         self.imintInQ = Pyro4.Proxy(imintInQ_uri)
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
@@ -145,9 +148,16 @@ class CAOC (LogicalProcess):
         u=[2,95,95,"Vehicle",0.8,1.2,[3,10],30,0,0]
         self.priorityQueue=[t,t,t,t,t,t,t,t,t]
         self.addTarget(u)
-        print 'CAOC: ' + self.caocInQ.get()
+        #print 'CAOC: ' + self.inputQueue.getNextMessage()
         print 'CAOC Priority Queue: '
         print self.priorityQueue
+
+        while True:
+            msg = self.inputQueue.getNextMessage()
+            print 'CAOC iteration'
+            if msg:
+                self.handleMessage(msg)
+                break
 
 # DEBUGGING
 def main():

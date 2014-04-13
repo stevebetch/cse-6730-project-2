@@ -37,65 +37,44 @@ class LogicalProcess(SharedMemoryClient):
         # process straggler
         self.handleMessage(msg)
     
-    def handleMessage(self, msg):
-        # handle LogicalProcess messages (GVT, etc) here, then call subclass method to handle class-specific behavior
-        pass
+    def baseClassHandleMessage(self, msg):
+        # handle LogicalProcess messages (GVT, etc) here
+        self.stateQueue[self.localTime] = self.getCurrentState() #define getCurrentState() in subclass
+        self.setLocalTime(msg.timestamp)
+        msg.printData(1)
     
-    def processNextMessage(self):
-        if len(inputQueue) > 0:
-            # Get next message, including check if it is an anti-message
-            foundMsg = 0
-            for i in len(inputQueue):
-                msg = inputQueue.pop()
-                if (msg.isAntiMessage()):
-                    # put it back and get another one
-                    inputQueue.insert(0, msg)
-                else:
-                    foundMsg = 1
-                    break
-                
-            # valid message: save state, set local time to time of message, and handle the message
-            if foundMsg:
-                stateQueue.put(localTime, getCurrentState()) #define getCurrentState() in subclass
-                localTime = msg.timestamp
-                handleMessage(msg)
+    def getNextMessage(self):
         
-    def sendMessage(self, msg, receiver):
+        msg = None       
+        if self.inputQueue.hasMessages():
+
+            # peek at first message
+            firstMsg = self.inputQueue.getNextMessage()
+            if not firstMsg.isAntiMessage:
+                return firstMsg
+            else:
+                self.inputQueue.justPut(firstMsg)
+            
+                # loop until non-antiMessage is found
+                while True:
+                    currMsg = self.inputQueue.getNextMessage()
+                    if currMsg == firstMsg:
+                        break
+                    if (currMsg.isAntiMessage()):
+                        # put it back and get another one
+                        self.inputQueue.justPut(currMsg)
+                    else:
+                        msg = currMsg
+                        break
+        return msg        
+                
+    def setLocalTime(self, time):
+        self.localTime = time
+        self.inputQueue.setCurrentTime(time)        
+        
+    def saveAntiMessage(self, msg):
         antimsg = msg.getAntiMessage()
         outputQueue.put(msg.id, antimsg)
-        send(msg) # need to implement using multiprocessing queues
-        
-    def receiveMessage(self, msg):
-        if msg.isAntiMessage:
-            # check if matching message is still in input queue, if so annihalate both
-            match = None
-            for m in inputQueue:
-                if (m.id == msg.id) and (not m.isAntiMessage):
-                    match = m
-            if match:
-                inputQueue.remove(match)
-                return            
-            # matching message already processed or not yet received
-            if msg.timestamp <= self.localTime:
-                # message already processed
-                rollback(msg)
-            else:
-                # message not yet received
-                inputQueue.insert(0, msg) #inserts at beginning of input queue
-        else:
-            # regular message, check if matching anti-message is already in input queue, if so annihalate both
-            match = None
-            for m in inputQueue:
-                if (m.id == msg.id) and (m.isAntiMessage):
-                    match = m
-            if match:
-                inputQueue.remove(match)
-                return        
-            # check if time is before currTime, if so then do rollback
-            if msg.time <= currTime:
-                rollback(msg)
-            else:
-                inputQueue.insert(0, msg) #inserts at beginning of input queue
                 
     def getLocalMinTimeForGVT(self):
         pass
