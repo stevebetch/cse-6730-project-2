@@ -1,5 +1,4 @@
 import sys
-from TestMessage import *
 from Drone import *
 from GlobalControlProcess import *
 from multiprocessing import Process
