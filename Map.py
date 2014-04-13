@@ -373,15 +373,15 @@ class GenMap:
                             
                             self.streetNodes[nextNum+1].nextNode=self.streetNodes[nextNum]
                         
-                        print "k",k,"nextNum",nextNum,self.streetNodes[nextNum],",",self.streetNodes[nextNum].prevNode,",",self.streetNodes[nextNum].nextNode
+                        #print "k",k,"nextNum",nextNum,self.streetNodes[nextNum],",",self.streetNodes[nextNum].prevNode,",",self.streetNodes[nextNum].nextNode
                         
                         
                         
-                        if(self.streetNodes[nextNum].prevNode==89 ):
- 
-                            print "k",k, "modnum", modnum, "nextnum",nextNum,"NSfcount",NSfcount, self.streetNodes[nextNum].prevNode
-                            print EWf,NSf,NS,EW, EWfcount
-                        
+#                        if(self.streetNodes[nextNum].prevNode==89 ):
+# 
+#                            print "k",k, "modnum", modnum, "nextnum",nextNum,"NSfcount",NSfcount, self.streetNodes[nextNum].prevNode
+#                            print EWf,NSf,NS,EW, EWfcount
+
                 if(NSfcount==int(NS) and modnum>1): # need to go rigth and left of the intersection at the furthest right intersection
                     for k in range(0,int(modnum)): #create each node for each street length
                         

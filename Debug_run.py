@@ -18,7 +18,7 @@ pp=Target(b)
 pp.movement()
 count=0
 try:
-    while(count<5):
+    while(count<500000):
         count+=1
         pp.movement()
 

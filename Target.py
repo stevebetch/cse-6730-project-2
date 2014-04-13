@@ -40,7 +40,7 @@ class Target:
                 self.transitTime=int(self.node.length/self.speed)#keeping constant time blocks.
             
             else:
-                nextPrev=random.uniform(0,.5) # equal chance of going right or left.Probably will want to change this
+                nextPrev=.25 # equal chance of going right or left.Probably will want to change this
                 if(nextPrev<random.uniform(0,1)):
                     self.transitTime=int(self.node.length/self.speed)
                     self.node=self.node.nextNode
