@@ -42,7 +42,8 @@ class Drone (LogicalProcess):
         self.sNeedBool=1 #boolian to determine if we need to activate the search logic.
         self.timeOnNode=0 #how long have we been on the current node?
         self.nodeTime=0 #how long should it take the target to traverse the node?
-        self.searchTime=20 #It takes 20 seconds to search the area.
+        self.searchTime=60 #It takes 20 seconds to search the area.
+        self.searchdwell=0
 
     def __call__(self):
         self.run()
@@ -306,6 +307,15 @@ class Drone (LogicalProcess):
         distTgt=math.sqrt((self.xpos-tgtx)**2 +(self.ypos-tgty)**2) #distance to the intel location x,y
         TOT=int(distTgt/self.FlightSpeed)
         self.updateTime(TOT)
+
+    def saveState(self):
+    
+    pass
+
+    def restoreState(self,timeStamp):
+    
+    pass
+
 
 
 
