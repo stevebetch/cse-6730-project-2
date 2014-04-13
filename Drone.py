@@ -166,6 +166,9 @@ class Drone (LogicalProcess):
         # return self.tgtPriQ.get()
         # but with parameters to specify location and radius
         pass
+    
+    def handleMessage(self, msg):
+        msg.printData(1)
 
     def run(self):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
@@ -182,12 +185,12 @@ class Drone (LogicalProcess):
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)  
 
-                # Mark: Test calls to be commented out
-        while True:
-            msg = self.droneInQs.getNextMessage(self.uid)
-            if msg:
-                self.handleMessage(msg)
-                break
+        # Event loop iteration
+        #while True:
+            #print 'Drone %d event loop iteration' % (self.uid)
+            #msg = self.droneInQs.getNextMessage(self.uid)
+            #if msg:
+                #self.handleMessage(msg)
 
     def probTest(self,probVal):
         #This function will be called to determine if we get a positive detection on the target

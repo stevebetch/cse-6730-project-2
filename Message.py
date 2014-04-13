@@ -41,12 +41,16 @@ class Message:
     #   timestamp: Sim time corresponding to message
     # Output: None.  
     def __init__(self, msgType, data, sender, recipient, timestamp):
-        isAntiMessage = False
+        self.id = 1
+        self.isAnti = 0
         self.msgType = msgType
         self.data = data
         self.sender = sender
         self.recipient = recipient
         self.timestamp = timestamp
+        
+    def __eq__(self, other): 
+        return self.__dict__ == other.__dict__    
     
     # Anti Message Function (IN PROGRESS)
     # Description: Creates an anti-message from an existing message
@@ -54,11 +58,11 @@ class Message:
     # Output: Anti Message    
     def getAntiMessage(self):
         antimsg = Message(self.msgType, self.data, self.sender, self.recipient, self.timestamp)
-        antimsg.isAntiMessage = true
+        antimsg.isAnti = 1
         return antimsg
     
     def isAntiMessage(self):
-        return self.isAntiMessage
+        return self.isAnti
 
     # Print Data Function
     # Description: Display attributes of Message instance

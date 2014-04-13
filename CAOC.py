@@ -150,16 +150,15 @@ class CAOC (LogicalProcess):
         u=[2,95,95,"Vehicle",0.8,1.2,[3,10],30,0,0]
         self.priorityQueue=[t,t,t,t,t,t,t,t,t]
         self.addTarget(u)
-        #print 'CAOC: ' + self.inputQueue.getNextMessage()
         print 'CAOC Priority Queue: '
         print self.priorityQueue
 
-        while True:
-            msg = self.inputQueue.getNextMessage()
-            print 'CAOC iteration'
-            if msg:
-                self.handleMessage(msg)
-                break
+        # Event loop
+        #while True:
+            #msg = self.inputQueue.getNextMessage()
+            #print 'CAOC iteration'
+            #if msg:
+                #self.handleMessage(msg)
 
 # DEBUGGING
 def main():

@@ -5,6 +5,9 @@ class LPInputQueue():
     def __init__(self):
         self.q = list()
         
+    def getLength(self):
+        return len(self.q)
+        
     def hasMessages(self):
         hasMsgs = 0
         if len(self.q) > 0:

@@ -44,26 +44,29 @@ class LogicalProcess(SharedMemoryClient):
         msg.printData(1)
     
     def getNextMessage(self):
-        
         msg = None       
         if self.inputQueue.hasMessages():
-
             # peek at first message
             firstMsg = self.inputQueue.getNextMessage()
-            if not firstMsg.isAntiMessage:
+            if (not firstMsg.isAntiMessage()):
+                #print 'Found First Message (not an AntiMessage)'
                 return firstMsg
             else:
+                #print 'Found First Message is an AntiMessage, returning to queue'
                 self.inputQueue.justPut(firstMsg)
-            
                 # loop until non-antiMessage is found
                 while True:
                     currMsg = self.inputQueue.getNextMessage()
                     if currMsg == firstMsg:
+                        self.inputQueue.justPut(currMsg)
+                        #print 'All messages in queue are AntiMessages'
                         break
                     if (currMsg.isAntiMessage()):
                         # put it back and get another one
+                        #print 'Found AntiMessage, returning to queue'
                         self.inputQueue.justPut(currMsg)
                     else:
+                        #print 'Found Message'
                         msg = currMsg
                         break
         return msg        

@@ -23,7 +23,7 @@ class DroneInputQueueContainer:
 
             # peek at first message
             firstMsg = q.getNextMessage()
-            if not firstMsg.isAntiMessage:
+            if (not firstMsg.isAntiMessage()):
                 return firstMsg
             else:
                 q.justPut(firstMsg)
@@ -32,6 +32,7 @@ class DroneInputQueueContainer:
                 while True:
                     currMsg = q.getNextMessage()
                     if currMsg == firstMsg:
+                        q.justPut(currMsg)
                         break
                     if (currMsg.isAntiMessage()):
                         # put it back and get another one
