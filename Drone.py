@@ -290,7 +290,8 @@ class Drone (LogicalProcess):
     def ReturnToBase(self):
     #cant have any new assignments durning this time. May need to look at the messages to reject taskers.
     # need to delete target, return it to the queue.
-        retTgt=Message(getNextMessageID(),2,self.target,self.uid,'CAOC',self.LocalSimTime) #THIS IS AN INCORRECT CALL!!! HELP!!!!
+        retTgt=Message(2,self.target,self.uid,'CAOC',self.localTime) #create message
+        self.caocInQ.addMessage(retTgt)   # sends message
 
         self.DistEntry=math.sqrt((self.xpos-self.EntNode.xpos)**2 +(self.ypos-self.EntNode.ypos)**2)
         timeToentry=int(self.DistEntry/self.FlightSpeed)
