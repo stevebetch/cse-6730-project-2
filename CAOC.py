@@ -18,9 +18,9 @@ class CAOC (LogicalProcess):
     def __init__(self, numDrones, heuristicNum):
         LogicalProcess.__init__(self)
         self.id = 'CAOC'
-        self.priorityQueue = Queue()
+        self.priorityQueue = []
         self.drones=[]
-        for i in range(0,numDrones):
+        for i in range(numDrones):
             self.drones.insert(i,["Idle",0])
         self.heuristic=heuristicNum
 
@@ -34,18 +34,18 @@ class CAOC (LogicalProcess):
         self.hmint = hmint
 
     def addTarget(self, targetData):
-        if self.priorityQueue.empty():
+        if len(self.priorityQueue):
             # Check which target assignment heruristic is in use
             if self.heuristic==1:
                 # If the queue is empty and there is an idle drone, send it the incoming target assignment
                 for i in range(len(self.drones)):
                     if self.drones[i][0]=="Idle":
-                        #newTgt=Message(2,targetData,self.id,i,tNow)
+                        newTgt=Message(2,targetData,self.id,i,self.localTime)
                         # SEND MESSAGE - how to do this?
                         break
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
                 else:
-                    self.priorityQueue.put(targetData)
+                    self.priorityQueue.insert(0,targetData)
             # Check which target assignment heruristic is in use
             elif self.heuristic==2 or self.heuristic==3:
                 # Determine distance of target from idle drones
@@ -60,16 +60,17 @@ class CAOC (LogicalProcess):
                         indexCloseDrone=i   
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
                 if minDist==999999:
-                    self.priorityQueue.put(targetData)
+                    self.priorityQueue.insert(0,targetData)
                 # If the queue is empty and there are idle drones, send the nearest drone the incoming target assignment   
                 else:
-                    newTgt=Message(2,targetData,self.id,indexCloseDrone,tNow)
+                    newTgt=Message(2,targetData,self.id,indexCloseDrone,self.localTime)
                     # SEND MESSAGE - how to do this?
         else:
             # If the queue is not empty (implying all drones are busy), put the target assignment in the queue
-            priority = self.getPriority(targetData)
-            #self.priorityQueue.put(priority, target)
-            self.priorityQueue.put(targetData)
+            for i in range(len(self.priorityQueue)):
+                if targetData[2]<self.priorityQueue[i][2]:
+                    self.priorityQueue.insert(i,targetData)
+                    break
             print('CAOC Added target to priority queue')
 
 
@@ -87,8 +88,6 @@ class CAOC (LogicalProcess):
         return target
 
     def handleMessage(self, msg):
-        # do we need another function here to determine when to process the message?
-
         # determine message type and process accordingly
         if msg.msgType==1:
             1==1 #placeholder
@@ -101,25 +100,24 @@ class CAOC (LogicalProcess):
             # Check which target assignment heruristic is in use
             if self.heuristic==1:
                 # If the drone is idle and there are target assignments in the queue, assign that drone a target
-                if (self.drones[msg.data[0]][1]=="Idle") and not(self.priorityQueue.empty()):
-                    newTgtData=self.priorityQueue.get()
-                    newTgt=Message(getNextMessageID(),2,newTgtData,self.id,msg.data[0],tNow)
+                if (self.drones[msg.data[0]][1]=="Idle") and (len(self.priorityQueue)!=0):
+                    newTgtData=self.priorityQueue.pop()
+                    newTgt=Message(getNextMessageID(),2,newTgtData,self.id,msg.data[0],self.localTime)
             # Check which target assignment heruristic is in use
             elif self.heuristic==2 or self.heuristic==3:
                 # If the drone is idle and there are target assignments in the queue, assign that drone a nearby target
-                if (self.drones[msg.data[0]][1]=="Idle") and not(self.priorityQueue.empty()):
+                if (self.drones[msg.data[0]][1]=="Idle") and (len(self.priorityQueue)!=0):
                     droneLocation=self.drones[msg.data[0]][2] #x,y coords
                     indexCloseTgt=0
                     minDist=999999
-                    # Psuedo code until we figure out a queue implementation
-                    # for i in range(length of priority queue):
-                    #    tgtLocation=self.prioirityQueue[i][2]
-                    #    dist=sqrt((tgtLocation[0]-droneLocation[0])^2+(tgtLocation[1]-droneLocation[1])^2)
-                    #    if dist<minDist:
-                    #         minDist=dist
-                    #         indexCloseTgt=i   
-                    # newTgtData=self.priorityQueue.get(indexCloseTgt)
-                    newTgt=Message(getNextMessageID(),2,newTgtData,self.id,msg.data[0],tNow)
+                    for i in range(len(self.priorityQueue)):
+                        tgtLocation=self.prioirityQueue[i][2]
+                        dist=sqrt((tgtLocation[0]-droneLocation[0])^2+(tgtLocation[1]-droneLocation[1])^2)
+                        if dist<minDist:
+                            minDist=dist
+                            indexCloseTgt=i   
+                    newTgtData=self.priorityQueue.pop(indexCloseTgt)
+                    newTgt=Message(getNextMessageID(),2,newTgtData,self.id,msg.data[0],self.localTime)
         pass    
 
     def run(self):
@@ -142,8 +140,14 @@ class CAOC (LogicalProcess):
         # Mark: Test code can be removed
         self.tgtPriQ.put('target 1')
         self.tgtPriQ.put('target 2')
-        self.tgtPriQ.put('target 3')       
+        self.tgtPriQ.put('target 3')
+        t=[1,85,85,"Vehicle",0.8,1.2,[3,10],30,0,0]
+        u=[2,95,95,"Vehicle",0.8,1.2,[3,10],30,0,0]
+        self.priorityQueue=[t,t,t,t,t,t,t,t,t]
+        self.addTarget(u)
         print 'CAOC: ' + self.caocInQ.get()
+        print 'CAOC Priority Queue: '
+        print self.priorityQueue
 
 # DEBUGGING
 def main():
