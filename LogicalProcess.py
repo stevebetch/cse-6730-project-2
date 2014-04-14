@@ -58,6 +58,9 @@ class LogicalProcess(SharedMemoryClient):
             elif (not firstMsg.isAntiMessage()):
                 #print 'Found First Message (not an AntiMessage)'
                 return firstMsg
+            elif (firstMsg.timestamp <= self.localTime):
+                print 'Found First Message (AntiMessage w/ ts <= localTime)'
+                return firstMsg
             else:
                 #print 'Found First Message is an AntiMessage, returning to queue'
                 self.inputQueue.justPut(firstMsg)
@@ -69,9 +72,13 @@ class LogicalProcess(SharedMemoryClient):
                         #print 'All messages in queue are AntiMessages'
                         break
                     if (currMsg.isAntiMessage()):
-                        # put it back and get another one
-                        #print 'Found AntiMessage, returning to queue'
-                        self.inputQueue.justPut(currMsg)
+                        if (firstMsg.timestamp <= self.localTime):
+                            print 'Found Message (AntiMessage w/ ts <= localTime)'
+                            return currMsg
+                        else:
+                            # put it back and get another one
+                            #print 'Found AntiMessage, returning to queue'
+                            self.inputQueue.justPut(currMsg)                        
                     else:
                         #print 'Found Message'
                         msg = currMsg

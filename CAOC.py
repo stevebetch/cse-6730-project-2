@@ -135,7 +135,6 @@ class CAOC (LogicalProcess):
         self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
         self.inputQueue = Pyro4.Proxy(caocInQ_uri)
-        self.inputQueue.setLocalTime(0)
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
         self.imintInQ = Pyro4.Proxy(imintInQ_uri)
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
