@@ -30,9 +30,10 @@ class Target:
         
         elif(self.node.nodeType==3):
             #print"At an END NODE!!"
-            return 999 #need to figure out what to do in this case.
-                       #Probs will delete the target.
-                       
+            #Treating as a culd-a-sac
+            self.transitTime=int(self.node.nextNode.length/self.speed)
+            self.node=self.node.nextNode
+        
                        
         elif(self.node.nodeType==0): # can only move forward, back, or stay in current node.
             stayHere=random.uniform(0,1) #if stayHere<=self.stay, loiter at the current node.
