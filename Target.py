@@ -18,6 +18,7 @@ class Target:
         self.speed=random.randint(10,20) #ft/s
         self.transitTime=0
         self.loiterbit=1
+    
         
     def movement(self):
         random.seed() # this is for debugging only. Should be removed in the final code.
