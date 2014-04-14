@@ -8,13 +8,18 @@ import Pyro4
 class CAOC (LogicalProcess):
     "Central Air Operations Center"
 
-    # instance variable list
-    #id - Unique ID for this object
-    #hmint - HMINT component supplying target info
-    #priorityQueue - queue of available targets
-    #controller - the simulation executive
+    # Instance Variable List
+    # id: Unique ID for this object
+    # hmint: HMINT component supplying target info
+    # priorityQueue: priority queue of available targets
+    # controller: the simulation executive
+    # drones: list of existing drones, with their status data
+    # heuristic: identifies which heuristic for target-drone assignments is being used
 
-
+    # Initialize CAOC
+    # Input: numDrones=total number of drones for this sim run, heuristicNum=1,2, or 3 (naive, local, or timer heuristic)
+    # Output: Initializes CAOC logical process
+    # Description: Intialization of parameters that control target prioritization and drone-target assignments   
     def __init__(self, numDrones, heuristicNum):
         LogicalProcess.__init__(self)
         self.id = 'CAOC'
@@ -24,20 +29,40 @@ class CAOC (LogicalProcess):
             self.drones.insert(i,["Idle",0])
         self.heuristic=heuristicNum
 
+    # Call function
     def __call__(self):
         self.run()
 
+    # Save State
+    # Input: None
+    # Output: Saves current state of CAOC logical process
+    # Description: Saves all parameters needed to describe state of LP, including HMINT state variables
     def saveState(self):
         pass 
 
+    # Set Current Time
+    # Input: time
+    # Output: input queue time updated
+    # Description: Changes current time in input queue to determine which messages to take out of the queue  
     def setInputQueueCurrentTime(self, time):
         self.inputQueue.setCurrentTime(time)
 
+    # Set HMINT
+    # Input: HMINT object
+    # Output: Links HMINT object to CAOC
+    # Description: Allows CAOC to access required info from HMINT   
     def setHMINT(self, hmint):
         self.hmint = hmint
 
+    # Add Target
+    # Input: Target Data data structure from Message data structure (see Message.py for documentation)
+    # Output: Adds target to priority queue or assigns target to drone
+    # Description: Regardless of heuristic, if all the drones are busy, the target is added to the queue in prioirity order
+    #    Naive heuristic: if the queue is empty and there are idle drones, the target is assigned to the lowest-id drone
+    #    Local and Timer heuristics: if the queue is empty and there are idles drones, the target is assigned to the closest drone
     def addTarget(self, targetData):
-        if len(self.priorityQueue):
+        # Check if the queue is empty
+        if len(self.priorityQueue)==0:
             # Check which target assignment heruristic is in use
             if self.heuristic==1:
                 # If the queue is empty and there is an idle drone, send it the incoming target assignment
@@ -49,6 +74,7 @@ class CAOC (LogicalProcess):
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
                 else:
                     self.priorityQueue.insert(0,targetData)
+                    print('CAOC Added target to priority queue')
             # Check which target assignment heruristic is in use
             elif self.heuristic==2 or self.heuristic==3:
                 # Determine distance of target from idle drones
@@ -64,32 +90,35 @@ class CAOC (LogicalProcess):
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
                 if minDist==999999:
                     self.priorityQueue.insert(0,targetData)
+                    print('CAOC Added target to priority queue')
                 # If the queue is empty and there are idle drones, send the nearest drone the incoming target assignment   
                 else:
                     newTgt=Message(2,targetData,self.id,indexCloseDrone,self.localTime)
                     self.droneInQs.addMessage(indexCloseDrone, newTgt) 
+        # If the queue is not empty (implying all drones are busy), put the target assignment in the queue in order
         else:
-            # If the queue is not empty (implying all drones are busy), put the target assignment in the queue
             for i in range(len(self.priorityQueue)):
                 if targetData[2]<self.priorityQueue[i][2]:
                     self.priorityQueue.insert(i,targetData)
                     break
             print('CAOC Added target to priority queue')
 
-
-    def getPriority(self, target):
-        # generate priority
-        pass
-
+    # Get Priority Queue
+    # Input: None
+    # Output: Priority Queue (list)
+    # Description: Access priority queue     
     def getPriorityQueue(self):
         return self.priorityQueue
 
-    def getNextTarget(self, lock, location, radius):
-        lock.aquire
-        target =  self.priorityQueue.get()
-        lock.release
-        return target
-
+    # Handle Message [IN PROGRESS]
+    # Input: Message data structure (see Message.py for documentation)
+    # Output: Updates drone status, adds target to priority queue, or assigns target to drone [or TBD for msg type 1]
+    # Description: Handles message based on message type
+    #    Msg Type 1: [TBD]
+    #    Msg Type 2: Calls addTarget function for Target Data attribute of input Message
+    #    Msg Type 3: Updates drone status list, if the message indicates the drone is idle and there are target assignments in the queue
+    #        Naive heuristic: Top priority target is assigned to drone
+    #        Local or timer heuristic: Nearest target is assigned to drone (out of priority order)
     def subclassHandleMessage(self, msg):
         # determine message type and process accordingly
         if msg.msgType==1:
@@ -110,7 +139,7 @@ class CAOC (LogicalProcess):
                     self.droneInQs.addMessage(msg.data[0], newTgt) 
             # Check which target assignment heruristic is in use
             elif self.heuristic==2 or self.heuristic==3:
-                # If the drone is idle and there are target assignments in the queue, assign that drone a nearby target
+                # If the drone is idle and there are target assignments in the queue, assign that drone the nearest target
                 if (self.drones[msg.data[0]][1]=="Idle") and (len(self.priorityQueue)!=0):
                     droneLocation=self.drones[msg.data[0]][2] #x,y coords
                     indexCloseTgt=0
@@ -125,12 +154,15 @@ class CAOC (LogicalProcess):
                     newTgt=Message(getNextMessageID(),2,newTgtData,self.id,msg.data[0],self.localTime)
                     self.droneInQs.addMessage(msg.data[0], newTgt) 
 
+    # Run
+    # Input: None
+    # Output: Starts associated objects and queues
+    # Description: Save state, start queues, start linked HMINT      
     def run(self):
         print('CAOC/HMINT Running')
 
         self.saveState()
-        
-        self.hmint.start()
+              
 
         # Get the message queue objects from Pyro    
         nameserver = Pyro4.locateNS()
@@ -143,7 +175,9 @@ class CAOC (LogicalProcess):
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
         tgtPriQ_uri = nameserver.lookup('priorityqueue.targets')
-        self.tgtPriQ = Pyro4.Proxy(tgtPriQ_uri) 
+        self.tgtPriQ = Pyro4.Proxy(tgtPriQ_uri)
+        
+        self.hmint.start()
 
         # Mark: Test code can be removed
         self.tgtPriQ.put('target 1')
@@ -162,15 +196,13 @@ class CAOC (LogicalProcess):
             #print 'CAOC iteration'
             #if msg:
                 #self.handleMessage(msg)
-
-# DEBUGGING
-def main():
-    status_data=[1,"Busy",13]
-    status_msg=Message(3,status_data,5,1,11)
-    print status_msg.data[0]
-    c=CAOC(2,1)
-    c.handleMessage(status_msg)
-    print c.drones
-
-if __name__ == '__main__':
-    main()
+  
+    # [OBSOLETE] Get Next Target
+    # Input: lock, location, radius
+    # Output: target
+    # Description: OBE     
+    #def getNextTarget(self, lock, location, radius):
+        #lock.aquire
+        #target =  self.priorityQueue.get()
+        #lock.release
+        #return target    
