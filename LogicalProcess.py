@@ -17,8 +17,26 @@ class LogicalProcess(SharedMemoryClient):
     def __init__(self):      
         self.stateQueue = {}
         self.outputQueue = {}
+        self.inputMsgHistory = []
         self.localTime = 0
         self.gvt = 0
+        
+    def sendMessage(self, msg):
+        if (msg.isAntiMessage()):
+            print 'sending anti-message with timestamp %s' % (msg.timestamp)
+        else:
+            print 'sending message with timestamp %s' % (msg.timestamp)
+        if (msg.recipient == 'CAOC'):
+            self.caocInQ.addMessage(msg)
+        elif (msg.recipient == 'IMINT'):
+            self.imintInQ.addMessage(msg)
+        elif (msg.recipient == 'Controller'):
+            self.controllerInQ.addMessage(msg)
+        else:
+            # Drone
+            self.droneInQs.addMessage(msg.recipient, msg) # assumes recipient set to drone's ID in msg
+            
+        self.saveAntiMessage(msg)
     
     def rollback(self, msg):
         
@@ -28,24 +46,32 @@ class LogicalProcess(SharedMemoryClient):
         
         # send anti-messages for all messages sent after straggler message
         for uid in self.outputQueue:
-            if self.outputQueue[uid].timestamp >= msg.timestamp:
-                self.sendMessage(outputQueue[uid])
+            if self.outputQueue[uid].timestamp > msg.timestamp:
+                self.sendMessage(self.outputQueue[uid])
                 
-        # set local time to time of straggler, 
-        # TODO: also need to ensure messages processed after this time will be re-processed
+        # set local time to time of straggler, prevents recursive calling of rollback message
         self.localTime = msg.timestamp
         
-        # process straggler
-        self.handleMessage(msg)
+        # append messages processed after this time to input queue for reprocessing
+        reprocessList = []
+        for histMsg in self.inputMsgHistory:
+            if histMsg.timestamp > msg.timestamp:
+                reprocessList.append(histMsg)
+        reprocessList.sort(key=lambda x: x.timestamp, reverse=True)
+        self.inputQueue.extend(reprocessList)
+        
+        # process straggler if not an anti-message
+        if (not msg.isAntiMessage()):
+            self.handleMessage(msg)
     
     def handleMessage(self, msg):
         # handle LogicalProcess messages (GVT, etc) here
         if msg.timestamp < self.localTime:
             self.rollback(msg)
         else:
-            self.stateQueue[self.localTime] = self.getCurrentState() #define getCurrentState() in subclass
+            self.saveState() #define getCurrentState() in subclass
             self.setLocalTime(msg.timestamp)
-            msg.printData(1)            
+            self.inputMsgHistory.append(msg.clone())
             self.subclassHandleMessage(msg)
     
     def getNextMessage(self):
@@ -91,7 +117,7 @@ class LogicalProcess(SharedMemoryClient):
         
     def saveAntiMessage(self, msg):
         antimsg = msg.getAntiMessage()
-        outputQueue.put(msg.id, antimsg)
+        self.outputQueue[msg.id] = antimsg
                 
     def getLocalMinTimeForGVT(self):
         pass

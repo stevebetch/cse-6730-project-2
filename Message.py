@@ -53,14 +53,17 @@ class Message:
         self.timestamp = timestamp
         
     def __eq__(self, other): 
-        return self.__dict__ == other.__dict__    
+        return self.__dict__ == other.__dict__   
+    
+    def clone(self):
+        return Message(self.msgType, self.data, self.sender, self.recipient, self.timestamp, self.id)
     
     # Anti Message Function (IN PROGRESS)
     # Description: Creates an anti-message from an existing message
     # Input: None/Message
     # Output: Anti Message    
     def getAntiMessage(self):
-        antimsg = Message(self.msgType, self.data, self.sender, self.recipient, self.timestamp, self.id)
+        antimsg = self.clone()
         antimsg.isAnti = 1
         return antimsg
     

@@ -58,6 +58,10 @@ class Drone (LogicalProcess):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         print('Drone process running')
         
+        self.saveState()
+        
+        self.stateQueue[0] = self.getCurrentState()
+        
         # Get the message queue objects from Pyro
         nameserver = Pyro4.locateNS()
         controllerInQ_uri = nameserver.lookup('inputqueue.controller')

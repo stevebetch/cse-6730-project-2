@@ -27,8 +27,8 @@ class CAOC (LogicalProcess):
     def __call__(self):
         self.run()
 
-    def getCurrentState(self):
-        return None 
+    def saveState(self):
+        pass 
 
     def setInputQueueCurrentTime(self, time):
         self.inputQueue.setCurrentTime(time)
@@ -127,6 +127,9 @@ class CAOC (LogicalProcess):
 
     def run(self):
         print('CAOC/HMINT Running')
+
+        self.saveState()
+        
         self.hmint.start()
 
         # Get the message queue objects from Pyro    

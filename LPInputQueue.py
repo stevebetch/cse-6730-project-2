@@ -7,6 +7,9 @@ class LPInputQueue():
         
     def getLength(self):
         return len(self.q)
+    
+    def extend(self, list):
+        self.q.extend(list)
         
     def hasMessages(self):
         hasMsgs = 0
