@@ -90,7 +90,7 @@ class CAOC (LogicalProcess):
         lock.release
         return target
 
-    def handleMessage(self, msg):
+    def subclassHandleMessage(self, msg):
         # determine message type and process accordingly
         if msg.msgType==1:
             1==1 #placeholder
@@ -134,7 +134,8 @@ class CAOC (LogicalProcess):
         controllerInQ_uri = nameserver.lookup('inputqueue.controller')
         self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
-        self.inputQueue = Pyro4.Proxy(caocInQ_uri)        
+        self.inputQueue = Pyro4.Proxy(caocInQ_uri)
+        self.inputQueue.setLocalTime(0)
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
         self.imintInQ = Pyro4.Proxy(imintInQ_uri)
         droneInQs_uri = nameserver.lookup('inputqueue.drones')

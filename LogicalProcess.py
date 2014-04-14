@@ -22,33 +22,40 @@ class LogicalProcess(SharedMemoryClient):
     
     def rollback(self, msg):
         
+        print 'ROLLBACK!!'
         # restore state to that at time of straggler message
         self.restoreState(msg.timestamp) # define restoreState(timestamp) in subclass
         
         # send anti-messages for all messages sent after straggler message
-        for id in outputQueue.keys:
-            if outputQueue[id].timestamp >= msg.timestamp:
-                self.sendMessage(outputQueue[id])
+        for uid in self.outputQueue:
+            if self.outputQueue[uid].timestamp >= msg.timestamp:
+                self.sendMessage(outputQueue[uid])
                 
         # set local time to time of straggler, 
-        # this also ensures messages processed after this time will be re-processed
+        # TODO: also need to ensure messages processed after this time will be re-processed
         self.localTime = msg.timestamp
         
         # process straggler
         self.handleMessage(msg)
     
-    def baseClassHandleMessage(self, msg):
+    def handleMessage(self, msg):
         # handle LogicalProcess messages (GVT, etc) here
-        self.stateQueue[self.localTime] = self.getCurrentState() #define getCurrentState() in subclass
-        self.setLocalTime(msg.timestamp)
-        msg.printData(1)
+        if msg.timestamp < self.localTime:
+            self.rollback(msg)
+        else:
+            self.stateQueue[self.localTime] = self.getCurrentState() #define getCurrentState() in subclass
+            self.setLocalTime(msg.timestamp)
+            msg.printData(1)            
+            self.subclassHandleMessage(msg)
     
     def getNextMessage(self):
         msg = None       
         if self.inputQueue.hasMessages():
             # peek at first message
             firstMsg = self.inputQueue.getNextMessage()
-            if (not firstMsg.isAntiMessage()):
+            if firstMsg is None:
+                self.inputQueue.remove(firstMsg)
+            elif (not firstMsg.isAntiMessage()):
                 #print 'Found First Message (not an AntiMessage)'
                 return firstMsg
             else:
@@ -73,7 +80,7 @@ class LogicalProcess(SharedMemoryClient):
                 
     def setLocalTime(self, time):
         self.localTime = time
-        self.inputQueue.setCurrentTime(time)        
+        self.inputQueue.setLocalTime(time)        
         
     def saveAntiMessage(self, msg):
         antimsg = msg.getAntiMessage()

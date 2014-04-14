@@ -190,7 +190,7 @@ class Drone (LogicalProcess):
         # but with parameters to specify location and radius
         pass
     
-    def handleMessage(self, msg):
+    def subclassHandleMessage(self, msg):
         msg.printData(1)
 
     def probTest(self,probVal):

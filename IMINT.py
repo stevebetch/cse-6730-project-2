@@ -16,8 +16,11 @@ class IMINT (LogicalProcess):
         
     def getCurrentState(self):
         return None
+    
+    def restoreState(self, timestamp):
+        pass
 
-    def handleMessage(self, msg):
+    def subclassHandleMessage(self, msg):
         # determine message type and process accordingly
         msg.printData(1)
 
@@ -37,10 +40,10 @@ class IMINT (LogicalProcess):
         #self.droneInQs = Pyro4.Proxy(droneInQs_uri)
 
         # Event loop iteration
-        #while True:
-            #print 'IMINT loop iteration'
-            #msg = self.getNextMessage()
-            #print msg
-            #if msg:
-                #self.handleMessage(msg)
+        while True:
+            print 'IMINT loop iteration'
+            msg = self.getNextMessage()
+            print msg
+            if msg:
+                self.handleMessage(msg)
                 

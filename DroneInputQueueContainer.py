@@ -7,6 +7,7 @@ class DroneInputQueueContainer:
     
     def addDroneInputQueue(self, droneId):
         self.queues[droneId] = LPInputQueue()
+        self.queues[droneId].setLocalTime(0)
         
     def hasMessages(self, uid):
         return self.queues[uid].hasMessages()

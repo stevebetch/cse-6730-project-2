@@ -3,17 +3,17 @@ import sys
 class Message:
     
     # For MsgID (NOT USED) (saving code in case we change our minds)
-    # nextMsgID = 0
+    nextMsgID = 0
     
     # Update Message ID Function (NOT USED)
     # No message IDs necessary (saving code in case we change our minds)
     # Description: Iterate message ID to provide unique ids for new messages
     # Input: None
     # Output: Message ID integer
-    #def getNextMessageID():
-    #    msgID = Message.nextMsgID
-    #    nextMsgID += 1
-    #    return msgID
+    def getNextMessageID(self):
+        msgID = Message.nextMsgID
+        Message.nextMsgID += 1
+        return msgID
     
     # Initialize Message Function
     # Description: Creates message of any type to be passed to another LP
@@ -40,8 +40,11 @@ class Message:
     #   recipient: Unique integer id of recipient LP
     #   timestamp: Sim time corresponding to message
     # Output: None.  
-    def __init__(self, msgType, data, sender, recipient, timestamp):
-        self.id = 1
+    def __init__(self, msgType, data, sender, recipient, timestamp, uid=None):
+        if uid is None:
+            self.id = self.getNextMessageID()            
+        else:
+            self.id = uid
         self.isAnti = 0
         self.msgType = msgType
         self.data = data
@@ -57,7 +60,7 @@ class Message:
     # Input: None/Message
     # Output: Anti Message    
     def getAntiMessage(self):
-        antimsg = Message(self.msgType, self.data, self.sender, self.recipient, self.timestamp)
+        antimsg = Message(self.msgType, self.data, self.sender, self.recipient, self.timestamp, self.id)
         antimsg.isAnti = 1
         return antimsg
     

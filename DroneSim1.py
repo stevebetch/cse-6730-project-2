@@ -72,12 +72,14 @@ def main():
     # Create CAOC/HMINT, will be separate process started by Controller
     caoc = initCAOC()
     caocInQ = LPInputQueue()
+    caocInQ.setLocalTime(0)   
     caocInQ_uri = daemon.register(caocInQ)
     ns.register("inputqueue.caoc", caocInQ_uri)    
     
     # Create IMINT, will be separate process started by Controller
     imint = initIMINT()
     imintInQ = LPInputQueue()
+    imintInQ.setLocalTime(0)
     imintInQ_uri = daemon.register(imintInQ)
     ns.register("inputqueue.imint", imintInQ_uri)    
     
@@ -85,6 +87,7 @@ def main():
     controller = DroneSimController(caoc, imint)
     controller.setConnectionParams(PYRO_HOST, PYRO_PORT)
     controllerInQ = LPInputQueue()
+    controllerInQ.setLocalTime(0)
     controllerInQ_uri = daemon.register(controllerInQ)
     ns.register("inputqueue.controller", controllerInQ_uri)
     
