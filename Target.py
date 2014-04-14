@@ -29,7 +29,7 @@ class Target:
             self.transitTime=int(length/self.speed)
         
         elif(self.node.nodeType==3):
-            print"At an END NODE!!"
+            #print"At an END NODE!!"
             return 999 #need to figure out what to do in this case.
                        #Probs will delete the target.
                        

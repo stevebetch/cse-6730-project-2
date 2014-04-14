@@ -444,6 +444,14 @@ class GenMap:
             EWfcount+=1
 
 
-
-
+    def RandNode(self):
+        RDvINT=random.random()
+        if(RDvINT>.5): # use a road
+            moo=len(self.streetNodes)
+            mpnode=random.randint(0,moo-1)
+            return self.streetNodes[mpnode]
+        else:
+            moo=len(self.intersectionNodes)
+            mpnode=random.randint(0,moo-1)
+            return self.intersectionNodes[mpnode]
 
