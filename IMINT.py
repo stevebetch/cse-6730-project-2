@@ -22,6 +22,11 @@ class IMINT (LogicalProcess):
 
     def subclassHandleMessage(self, msg):
         # determine message type and process accordingly
+        # should deal only with type 2 messages
+        #    receiving target complete messages and determining whether complete
+        #       Threshold for good enough completion?
+        #    sending target reaccomplish messages to CAOC as needed
+        #       This requires updating priority, probably as a percentage of the original priority, for example 10% increase: priority of 50 becomes 55
         msg.printData(1)
 
     def run(self):
