@@ -84,8 +84,8 @@ class EntryNode:
 class EndNode: #this node is a terminator node for the outskirts of the map. it allows targets to move out of the map
     def __init__(self,obj):
         self.mapNode=obj
-        self.nextNode=self
-        self.prevNode=self
+        self.nextNode=obj
+        self.prevNode=obj
         self.nodeType=3
         self.xpos=-999
         self.ypos=-999

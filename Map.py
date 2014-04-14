@@ -395,10 +395,11 @@ class GenMap:
                         nNum=len(self.streetNodes)
                         
                         if(k==int(modnum)): #node is at the edge of the sim
-                                nextNd=EndNode(a) #point next node to end nodes outside of the sim
+                                
                                 if(k==int(modnum)): #node is at the edge of the sim
                                     nextNd=EndNode(a) #point next node to end nodes outside of the sim
                                     #self.endNodes.append(nextNd)
+                                    nextNd.setNode(self.streetNodes[nextNum])
                                     self.streetNodes[nextNum+1].nextNode=nextNd
                                     self.streetNodes[nextNum+1].prevNode=self.streetNodes[nextNum]
                                     self.streetNodes[nextNum].nextNode=self.streetNodes[nextNum+1]
