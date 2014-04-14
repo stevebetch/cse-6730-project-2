@@ -52,7 +52,29 @@ class Drone (LogicalProcess):
         return None        
 
     # Mark: SHOULD MOVE THIS TO run() METHOD OR CALL IT FROM run() METHOD
-    def start(self,mapObj):
+    #Stephan: moved old run() up here and renamed start() to run()
+    
+    def run(self,mapObj):
+        # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
+        print('Drone process running')
+        
+        # Get the message queue objects from Pyro
+        nameserver = Pyro4.locateNS()
+        controllerInQ_uri = nameserver.lookup('inputqueue.controller')
+        self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
+        caocInQ_uri = nameserver.lookup('inputqueue.caoc')
+        self.caocInQ = Pyro4.Proxy(caocInQ_uri)
+        imintInQ_uri = nameserver.lookup('inputqueue.imint')
+        self.imintInQ = Pyro4.Proxy(imintInQ_uri)
+        droneInQs_uri = nameserver.lookup('inputqueue.drones')
+        self.droneInQs = Pyro4.Proxy(droneInQs_uri)
+        
+        # Event loop iteration
+        #while True:
+        #print 'Drone %d event loop iteration' % (self.uid)
+        #msg = self.droneInQs.getNextMessage(self.uid)
+        #if msg:
+        #self.handleMessage(msg)
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         # Begin at entry node. aka, only pass drone the entry node!!!
         self.setEntry(mapObj)
@@ -171,28 +193,6 @@ class Drone (LogicalProcess):
     def handleMessage(self, msg):
         msg.printData(1)
 
-    def run(self):
-        # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
-        print('Drone process running')    
-
-        # Get the message queue objects from Pyro    
-        nameserver = Pyro4.locateNS()
-        controllerInQ_uri = nameserver.lookup('inputqueue.controller')
-        self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
-        caocInQ_uri = nameserver.lookup('inputqueue.caoc')
-        self.caocInQ = Pyro4.Proxy(caocInQ_uri)        
-        imintInQ_uri = nameserver.lookup('inputqueue.imint')
-        self.imintInQ = Pyro4.Proxy(imintInQ_uri)
-        droneInQs_uri = nameserver.lookup('inputqueue.drones')
-        self.droneInQs = Pyro4.Proxy(droneInQs_uri)  
-
-        # Event loop iteration
-        #while True:
-            #print 'Drone %d event loop iteration' % (self.uid)
-            #msg = self.droneInQs.getNextMessage(self.uid)
-            #if msg:
-                #self.handleMessage(msg)
-
     def probTest(self,probVal):
         #This function will be called to determine if we get a positive detection on the target
         testprob=random.uniform(0,1)
@@ -310,12 +310,47 @@ class Drone (LogicalProcess):
         self.updateTime(TOT)
 
     def saveState(self):
+        saver=DroneState(self)
+        LogicalProcess.stateQueue.append(saver)
     
-    pass
 
     def restoreState(self,timeStamp):
-    
-    pass
+        #Get the old state:
+        temp=[]
+        for i in LogicalProcess.stateQueue:
+            if(i.LocalSimTime<=timeStamp):
+                #incase the time stamp is not exactly the correct one. Find the closest, previous state save
+                temp=i
+        self.Restore(i)
+
+    def Restore(obj):
+    #restore drone to old state.
+        self.uid = obj.uid
+        self.droneType = obj.droneType
+        self.LocalSimTime=obj.LocalSimTime
+        self.MaintenanceActionTime=obj.MaintenanceActionTime
+        self.Joker=obj.Joker
+        self.jokerflag=obj.jokerflag
+        self.Bingo=obj.Bingo
+        self.DistEntry=obj.DistEntry
+        self.FlightSpeed=obj.FlightSpeed
+        self.DroneLegs= obj.DroneLegs
+        self.xpos=obj.xpos
+        self.ypos=obj.ypos
+        self.EntNode=obj.EntNode
+        self.currentNode=obj.currentNode
+        
+        self.target=obj.target #Stephan: How are we handling this? On roll back, will we just restore to this time stamp and roll with it?
+        
+        self.detectBool=obj.detectBool
+        self.sNeedBool=obj.sNeedBool
+        self.timeOnNode=obj.timeOnNode
+        self.nodeTime=obj.nodeTime
+        self.searchTime=obj.searchTime
+        self.searchdwell=obj.searchdwell
+
+
+
 
 
 
