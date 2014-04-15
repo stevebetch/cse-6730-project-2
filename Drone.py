@@ -28,7 +28,7 @@ class Drone (LogicalProcess):
 
         self.DistEntry=0.0 #distance from the entry node
 
-        self.FlightSpeed=random.randint(50,200)#Random flight speed of the drone, ft/s? something/s
+        self.FlightSpeed=random.randint(50,200)#Random flight speed of the drone, ft/s? something/s Should be m/s, people speed will be in m/s - jane
         self.DroneLegs=28800 # Assuming the drone has 8hr legs (8*3600=28800 sec) We can change this later if we want
 
         self.xpos=0 #current x location
