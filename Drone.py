@@ -44,6 +44,7 @@ class Drone (LogicalProcess):
         self.nodeTime=0 #how long should it take the target to traverse the node?
         self.searchTime=60 #It takes 20 seconds to search the area.
         self.searchdwell=0
+        self.TarTime=0
 
     def __call__(self):
         self.run()
@@ -92,8 +93,12 @@ class Drone (LogicalProcess):
                 if(not(detectBool)): #dont have a detection
                     self.search()
                     self.detection()
+                    self.searchdwell+=self.searchTime
+                
                 else: #we have a detection! woooo
                     self.detection()
+                    self.searchdwell=0
+        
 
             else: # joker flag set.
                 if(not(detectBool)):
@@ -103,12 +108,14 @@ class Drone (LogicalProcess):
                     if(self.Bingo>0): #we still have fuel!
                     # We have fuel and can still start tracking.
                         self.detection()
-                        if(self.sNeedBool):# need to search for the target.
-                            self.search()
-                            self.detection()
                     else:
                         self.ReturnToBase()
-
+            if(self.searchdwell>=5*self.searchTime): # searched for the target 5 times Why 5? Why not!
+                retTgt=Message(2,self.target,self.uid,'CAOC',self.localTime) #create message
+                self.caocInQ.addMessage(retTgt)   # sends message
+                self.getNewTargetFromCAOC() # Gets a new target
+            else:
+    
 
 
     def setTarget(self,obj):
@@ -192,7 +199,7 @@ class Drone (LogicalProcess):
         # something like
         # return self.tgtPriQ.get()
         # but with parameters to specify location and radius
-        pass
+        self.TarTime=0 #amount of target tracking time.
     
     def subclassHandleMessage(self, msg):
         msg.printData(1)
@@ -217,6 +224,7 @@ class Drone (LogicalProcess):
             if(self.probTest(self.node.Trackprob)): #if we maintain track
                 self.detectBool=1 #reaffirming the value
                 self.sNeedBool=0
+                self.TarTime+=self.searchTime
 
             else:
                 self.detectBool=0
@@ -228,6 +236,7 @@ class Drone (LogicalProcess):
             elif(self.probTest(self.node.Trackprob)): #looking at the right node, have a detection!
                 self.detectBool=1 #reaffirming the value
                 self.sNeedBool=0
+                self.TarTime+=self.searchTime
 
             else: #looking at the right node, but no detection
                 self.detectBool=0
@@ -352,6 +361,7 @@ class Drone (LogicalProcess):
         self.nodeTime=obj.nodeTime
         self.searchTime=obj.searchTime
         self.searchdwell=obj.searchdwell
+        self.TarTime=obj.TarTime
 
 
 

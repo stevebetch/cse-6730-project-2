@@ -33,7 +33,7 @@ class DRONEState():
         self.nodeTime=obj.nodeTime #how long should it take the target to traverse the node?
         self.searchTime=obj.searchTime #It takes 20 seconds to search the area.
         self.searchdwell=obj.searchdwell
-
+        self.TarTime=obj.TarTime
 
 class IMINTstate():
         def __init__(self,obj):

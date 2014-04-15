@@ -70,7 +70,7 @@ class Target:
                           self.node=self.node.Nodes[a]
                           self.transitTime=int(self.node.length/self.speed) #use the new node length to calc dist and time.
                       break
-        print "Moved to:",self.node.xpos,",",self.node.ypos," Node type:",self.node.nodeType
+                          #print "Moved to:",self.node.xpos,",",self.node.ypos," Node type:",self.node.nodeType
             
             
     def setObsTime(self,time):
