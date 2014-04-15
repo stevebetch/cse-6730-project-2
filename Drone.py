@@ -114,7 +114,7 @@ class Drone (LogicalProcess):
                 retTgt=Message(2,self.target,self.uid,'CAOC',self.localTime) #create message
                 self.caocInQ.addMessage(retTgt)   # sends message
                 self.getNewTargetFromCAOC() # Gets a new target
-            else:
+            
     
 
 
