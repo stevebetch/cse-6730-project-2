@@ -24,10 +24,24 @@ class IMINT (LogicalProcess):
     def subclassHandleMessage(self, msg):
         # determine message type and process accordingly
         # should deal only with type 2 messages
-        #    receiving target complete messages and determining whether complete
-        #       Threshold for good enough completion?
         #    sending target reaccomplish messages to CAOC as needed
         #       This requires updating priority, probably as a percentage of the original priority, for example 10% increase: priority of 50 becomes 55
+        if msg.msgType==1:
+            # none should be received here
+        elif msg.msgType==2:
+            # this should be the main type that IMINT receives
+            # Check which target assignment heruristic is in use
+                    #    receiving target complete messages and determining whether complete
+        #       Threshold for good enough completion?
+            if self.heuristic==1:
+                     # the heuristic may affect how/if you change the priority, etc (would have to double check the project checkpoint to be sure)
+            elif self.heuristic==2:
+                     # the heuristic may affect how/if you change the priority, etc (would have to double check the project checkpoint to be sure)
+            elif self.heuristic==3:
+                     # the heuristic may affect how/if you change the priority, etc (would have to double check the project checkpoint to be sure)
+        elif msg.msgType==3:
+             # none should be received here
+
         msg.printData(1)
         # Mark: below line for test only
         #self.sendMessage(Message(1, ['Data1'], 'IMINT', 'CAOC', 9))
