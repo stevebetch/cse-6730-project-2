@@ -83,7 +83,8 @@ class Drone (LogicalProcess):
         #self.handleMessage(msg)
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         # Begin at entry node. aka, only pass drone the entry node!!!
-        self.setEntry(mapObj)
+        
+        self.setEntry(mapObj) #MUST PASS THE ENTRY NODE!!! (map.MapEntryPt)
         self.currentNode=mapObj #the only time we directly set the current node.
         self.getNewTargetFromCAOC()
         self.LocalSimTime=0 ############## HOW ARE WE SETTING THIS??? ############

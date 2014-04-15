@@ -73,9 +73,9 @@ class IMINT (LogicalProcess):
 
         # Event loop iteration
         while True:
-            print 'IMINT loop iteration'
+            # print 'IMINT loop iteration'
             msg = self.getNextMessage()
-            print msg
+            #print msg
             if msg:
                 self.handleMessage(msg)
             time.sleep(0.05)
