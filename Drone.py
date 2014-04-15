@@ -3,6 +3,7 @@ from LogicalProcess import *
 from Map import GenMap
 from nodes import EntryNode
 from multiprocessing import Lock
+from state import *
 import random
 from Message import *
 import Pyro4
@@ -63,17 +64,17 @@ class Drone (LogicalProcess):
         
         self.stateQueue[0] = self.getCurrentState()
         
-        # Get the message queue objects from Pyro
-        nameserver = Pyro4.locateNS()
-        controllerInQ_uri = nameserver.lookup('inputqueue.controller')
-        self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
-        caocInQ_uri = nameserver.lookup('inputqueue.caoc')
-        self.caocInQ = Pyro4.Proxy(caocInQ_uri)
-        imintInQ_uri = nameserver.lookup('inputqueue.imint')
-        self.imintInQ = Pyro4.Proxy(imintInQ_uri)
-        droneInQs_uri = nameserver.lookup('inputqueue.drones')
-        self.droneInQs = Pyro4.Proxy(droneInQs_uri)
-        
+#        # Get the message queue objects from Pyro
+#        nameserver = Pyro4.locateNS()
+#        controllerInQ_uri = nameserver.lookup('inputqueue.controller')
+#        self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
+#        caocInQ_uri = nameserver.lookup('inputqueue.caoc')
+#        self.caocInQ = Pyro4.Proxy(caocInQ_uri)
+#        imintInQ_uri = nameserver.lookup('inputqueue.imint')
+#        self.imintInQ = Pyro4.Proxy(imintInQ_uri)
+#        droneInQs_uri = nameserver.lookup('inputqueue.drones')
+#        self.droneInQs = Pyro4.Proxy(droneInQs_uri)
+
         # Event loop iteration
         #while True:
         #print 'Drone %d event loop iteration' % (self.uid)
@@ -90,7 +91,7 @@ class Drone (LogicalProcess):
         while(1):
     # Check fuel before anything else!!
             if(not(self.jokerflag)): #joker not set yet. can search for targets
-                if(not(detectBool)): #dont have a detection
+                if(not(self.detectBool)): #dont have a detection
                     self.search()
                     self.detection()
                     self.searchdwell+=self.searchTime
@@ -111,8 +112,7 @@ class Drone (LogicalProcess):
                     else:
                         self.ReturnToBase()
             if(self.searchdwell>=5*self.searchTime): # searched for the target 5 times Why 5? Why not!
-                retTgt=Message(2,self.target,self.uid,'CAOC',self.localTime) #create message
-                self.caocInQ.addMessage(retTgt)   # sends message
+                self.ReturnTgt()
                 self.getNewTargetFromCAOC() # Gets a new target
             
     
@@ -129,7 +129,7 @@ class Drone (LogicalProcess):
         if(self.Joker<=0):
             self.jokerflag=1
         self.Bingo-=timeDif
-        self.MatenanceActionTime-=timeDif
+        self.MaintenanceActionTime-=timeDif
         self.LocalSimTime+=timeDif
         self.timeOnNode+=timeDif
         if(self.timeOnNode>=self.target.transitTime): #The target has had enough time to move.
@@ -143,13 +143,13 @@ class Drone (LogicalProcess):
                 self.target.movement()
                 self.timeOnNode=self.timeOnNode-self.target.transitTime
 
-        #print "\nNew Joker:", self.Joker, "New Bingo:",self.Bingo
+        print "\nNew Joker:", self.Joker, "New Bingo:",self.Bingo
         if(self.Bingo<=0): # Reached bingo. need to RTB.
             self.ReturnToBase()
 
     def setJokerBingo(self):
     # Call this funtion after the drone returns from a maintainance action, refuleing or at the start of the sim
-        if(self.DroneLegs<self.MatenanceActionTime):#We have less fuel time than maintainance time
+        if(self.DroneLegs<self.MaintenanceActionTime):#We have less fuel time than maintainance time
             self.Joker=self.DroneLegs*0.8 # Joker is set at 6 hrs 24 min. Ensures we have enough time (48 min) to track another target before bingo
 
             self.Bingo=self.DroneLegs*0.9 # 45 minutes flight time to return to base
@@ -175,7 +175,7 @@ class Drone (LogicalProcess):
         self.ypos=self.currentNode.ypos
         if(self.currentNode.nodeType==0):
             flightTime=int(self.currentNode.length/self.FlightSpeed)
-        elif(self.current.nodeType==1):
+        elif(self.currentNode.nodeType==1):
             #intersection. Use old node length
             if(oldnode.nodeType==1 or oldnode.nodeType==2): #either an intersection or entry node
                 length=math.sqrt((self.xpos-oldnode.xpos)**2 +(self.ypos-oldnode.ypos)**2)
@@ -187,7 +187,7 @@ class Drone (LogicalProcess):
         elif(self.currentNode==3): #end node. Only attached to streets.
             length=oldnode.length
             flightTime=int(length/self.FlightSpeed)
-        updateTime(flightTime)
+        self.updateTime(flightTime)
 
         # Mark: Needs update as per below comments
     def getNewTargetFromCAOC(self):
@@ -218,10 +218,10 @@ class Drone (LogicalProcess):
         # Begin by seeing if we already have a track
         if(self.detectBool==1): #we have a track!
             # Check to see if we are on the same node as the target.
-            if(self.xpos!=self.target.xpos or self.ypos!=self.target.ypos): # tracking, but not looking at the right node
-                self.updateCurNode(self.target.currentNode)
+            if(self.xpos!=self.target.node.xpos or self.ypos!=self.target.node.ypos): # tracking, but not looking at the right node
+                self.updateCurNode(self.target.node)
                 #We are on a new node. Need to roll the dice to see if we keep a track.
-            if(self.probTest(self.node.Trackprob)): #if we maintain track
+            if(self.probTest(self.currentNode.Trackprob)): #if we maintain track
                 self.detectBool=1 #reaffirming the value
                 self.sNeedBool=0
                 self.TarTime+=self.searchTime
@@ -230,10 +230,10 @@ class Drone (LogicalProcess):
                 self.detectBool=0
                 self.sNeedBool=1
         else: # we dont have a track yet.
-            if(self.xpos!=self.target.xpos or self.ypos!=self.target.ypos):
+            if(self.xpos!=self.target.node.xpos or self.ypos!=self.target.node.ypos):
                 self.detectBool=0 #we arnt even looking at the right node!
                 self.sNeedBool=1
-            elif(self.probTest(self.node.Trackprob)): #looking at the right node, have a detection!
+            elif(self.probTest(self.currentNode.Trackprob)): #looking at the right node, have a detection!
                 self.detectBool=1 #reaffirming the value
                 self.sNeedBool=0
                 self.TarTime+=self.searchTime
@@ -245,57 +245,57 @@ class Drone (LogicalProcess):
 
 
     def search(self): # this function needs a lot of work. How are we actually doing the search method?!?
-        if(self.xpos!=self.target.xpos or self.ypos!=self.target.ypos): # we know we arnt looking at the right node.
+        if(self.xpos!=self.target.node.xpos or self.ypos!=self.target.node.ypos): # we know we arnt looking at the right node.
             #Assume our intel came with a direction of movement and speed
             choice=random.random()
             if(choice>=.2): #80% chance we choose the correct direction. Why 80? I have no clue.
                 if(self.currentNode.nodeType==0): #curent node is a street
-                    if(self.target.xpos>self.xpos):
+                    if(self.target.node.xpos>self.xpos):
                         self.updateCurNode(self.currentNode.nextNode)
                         # Only need flight time here. We will have to be more elegant when actually tracking.
                     else:
                         self.updateCurNode(self.currentNode.prevNode)
                 elif(self.currentNode.nodeType==1): # an intersection.
-                    for i in self.currentNode.nodes:
+                    for i in self.currentNode.Nodes:
                         if(self.currentNode.ypos==i.ypos):
-                            if(self.target.xpos>self.currentNode.xpos and i.xpos>self.currentNode.xpos):
+                            if(self.target.node.xpos>self.currentNode.xpos and i.xpos>self.currentNode.xpos):
                             #Mouth full.... but correct dir.
                                 self.updateCurNode(i)
                                 break
-                            elif(self.target.xpos<self.currentNode.xpos and i.xpos<self.currentNode.xpos):
+                            elif(self.target.node.xpos<self.currentNode.xpos and i.xpos<self.currentNode.xpos):
                                 self.updateCurNode(i)
                                 break
                         elif(self.currentNode.xpos==i.xpos):
-                            if(self.target.ypos>self.currentNode.ypos and i.ypos>self.currentNode.ypos):
+                            if(self.target.node.ypos>self.currentNode.ypos and i.ypos>self.currentNode.ypos):
                                 #Mouth full.... but correct dir.
                                 self.updateCurNode(i)
                                 break
-                            elif(self.target.ypos<self.currentNode.ypos and i.ypos<self.currentNode.ypos):
+                            elif(self.target.node.ypos<self.currentNode.ypos and i.ypos<self.currentNode.ypos):
                                 self.updateCurNode(i)
                                 break
             else:
                 if(self.currentNode.nodeType==0): #curent node is a street
-                    if(self.target.xpos>self.xpos):
+                    if(self.target.node.xpos>self.xpos):
                         self.updateCurNode(self.currentNode.prevNode)
                     # Only need flight time here. We will have to be more elegant when actually tracking.
                     else:
                         self.updateCurNode(self.currentNode.NextNode)
                 elif(self.currentNode.nodeType==1): # an intersection.
-                    for i in self.currentNode.nodes:
+                    for i in self.currentNode.Nodes:
                         if(self.currentNode.ypos==i.ypos):
-                            if(self.target.xpos>self.currentNode.xpos and i.xpos<self.currentNode.xpos):
+                            if(self.target.node.xpos>self.currentNode.xpos and i.xpos<self.currentNode.xpos):
                                 #Mouth full.... but correct dir.
                                 self.updateCurNode(i)
                                 break
-                            elif(self.target.xpos<self.currentNode.xpos and i.xpos>self.currentNode.xpos):
+                            elif(self.target.node.xpos<self.currentNode.xpos and i.xpos>self.currentNode.xpos):
                                 self.updateCurNode(i)
                                 break
                         elif(self.currentNode.xpos==i.xpos):
-                            if(self.target.ypos>self.currentNode.ypos and i.ypos<self.currentNode.ypos):
+                            if(self.target.node.ypos>self.currentNode.ypos and i.ypos<self.currentNode.ypos):
                                 #Mouth full.... but correct dir.
                                 self.updateCurNode(i)
                                 break
-                            elif(self.target.ypos<self.currentNode.ypos and i.ypos>self.currentNode.ypos):
+                            elif(self.target.node.ypos<self.currentNode.ypos and i.ypos>self.currentNode.ypos):
                                 self.updateCurNode(i)
                                 break
 
@@ -303,8 +303,7 @@ class Drone (LogicalProcess):
     def ReturnToBase(self):
     #cant have any new assignments durning this time. May need to look at the messages to reject taskers.
     # need to delete target, return it to the queue.
-        retTgt=Message(2,self.target,self.uid,'CAOC',self.localTime) #create message
-        self.caocInQ.addMessage(retTgt)   # sends message
+        self.ReturnTgt()
 
         self.DistEntry=math.sqrt((self.xpos-self.EntNode.xpos)**2 +(self.ypos-self.EntNode.ypos)**2)
         timeToentry=int(self.DistEntry/self.FlightSpeed)
@@ -323,8 +322,8 @@ class Drone (LogicalProcess):
         self.updateTime(TOT)
 
     def saveState(self):
-        saver=DroneState(self)
-        LogicalProcess.stateQueue.append(saver)
+        saver=DRONEState(self)
+        self.stateQueue.append(saver)
     
 
     def restoreState(self,timeStamp):
@@ -363,7 +362,9 @@ class Drone (LogicalProcess):
         self.searchdwell=obj.searchdwell
         self.TarTime=obj.TarTime
 
-
+    def ReturnTgt(self):
+        retTgt=Message(2,self.target,self.uid,'CAOC',self.localTime) #create message
+        self.caocInQ.addMessage(retTgt)   # sends message
 
 
 

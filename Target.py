@@ -16,7 +16,7 @@ class Target:
         self.intel=1 #set at one for now, but will likely be a discrete distribution
         self.ObsTime=90 # set the default time for sucessful tracking at 90sec,
         self.speed=random.randint(10,20) #ft/s
-        self.transitTime=0
+        self.transitTime=10
         self.loiterbit=1
     
         

@@ -10,7 +10,7 @@ import Pyro4
 from LPInputQueue import *
 from DroneInputQueueContainer import *
 
-PYRO_HOST = '192.168.0.6'
+PYRO_HOST = '192.168.1.3'
 PYRO_PORT = 12778
 
 # parameters (later get from file)

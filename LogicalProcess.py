@@ -15,7 +15,7 @@ class LogicalProcess(SharedMemoryClient):
     
     
     def __init__(self):      
-        self.stateQueue = {}
+        self.stateQueue = []
         self.outputQueue = {}
         self.inputMsgHistory = []
         self.localTime = 0
