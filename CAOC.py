@@ -135,7 +135,7 @@ class CAOC (LogicalProcess):
                 # If the drone is idle and there are target assignments in the queue, assign that drone a target
                 if (self.drones[msg.data[0]][1]=="Idle") and (len(self.priorityQueue)!=0):
                     newTgtData=self.priorityQueue.pop()
-                    newTgtMsg=Message(getNextMessageID(),2,newTgtData,self.id,msg.data[0],self.localTime)
+                    newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
                     self.sendMessage(newTgtMsg) 
             # Check which target assignment heruristic is in use
             elif self.heuristic==2 or self.heuristic==3:
@@ -151,7 +151,7 @@ class CAOC (LogicalProcess):
                             minDist=dist
                             indexCloseTgt=i   
                     newTgtData=self.priorityQueue.pop(indexCloseTgt)
-                    newTgtMsg=Message(getNextMessageID(),2,newTgtData,self.id,msg.data[0],self.localTime)
+                    newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
                     self.sendMessage(newTgtMsg) 
 
     # Run
