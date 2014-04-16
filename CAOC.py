@@ -82,7 +82,7 @@ class CAOC (LogicalProcess):
                     self.priorityQueue.insert(0,targetData)
                     print('CAOC Added target to priority queue')
             # Check which target assignment heruristic is in use
-            elif self.heuristic==2 or self.heuristic==3:
+            elif self.heuristic==2:
                 # Determine distance of target from idle drones
                 tgtLocation=targetData[6] #x,y coords
                 indexCloseDrone=0
@@ -100,7 +100,29 @@ class CAOC (LogicalProcess):
                 # If the queue is empty and there are idle drones, send the nearest drone the incoming target assignment   
                 else:
                     newTgtMsg=Message(2,targetData,self.id,indexCloseDrone,self.localTime)
-                    self.sendMessage(newTgtMsg) 
+                    self.sendMessage(newTgtMsg)
+            elif self.heuristic==3:
+                # Adjust tgt priority be intel value/goal track time if the tgt has no track attempts
+                if msg[1][9]==0:
+                    msg[1][2]=msg[1][1]/msg[1][7]   
+                # Determine distance of target from idle drones
+                tgtLocation=targetData[6] #x,y coords
+                indexCloseDrone=0
+                minDist=999999
+                for i in range(len(self.drones)):
+                    droneLocation=self.drones[i][2]
+                    dist=sqrt((tgtLocation[0]-droneLocation[0])^2+(tgtLocation[1]-droneLocation[1])^2)
+                    if dist<minDist and self.drones[i][0]=="Idle":
+                        minDist=dist
+                        indexCloseDrone=i   
+                # If the queue is empty and all drones are busy, put the target assignment in the queue
+                if minDist==999999:
+                    self.priorityQueue.insert(0,targetData)
+                    print('CAOC Added target to priority queue')
+                # If the queue is empty and there are idle drones, send the nearest drone the incoming target assignment   
+                else:
+                    newTgtMsg=Message(2,targetData,self.id,indexCloseDrone,self.localTime)
+                    self.sendMessage(newTgtMsg)                
         # If the queue is not empty (implying all drones are busy), put the target assignment in the queue in order
         else:
             for i in range(len(self.priorityQueue)):
