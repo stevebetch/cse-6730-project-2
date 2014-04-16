@@ -68,7 +68,7 @@ class HMINT:
         tgtTrackAttempts=0
         self.msgTimestamp=self.msgTimestamp+triangular(23,70,35)
         tgtData = [tgtID,tgtIntelValue,tgtIntelPriority,tgtType,tgtStealth,tgtSpeed,tgtPredLoc,tgtGoalTrackTime,tgtActualTrackTime,tgtTrackAttempts]
-        tgtMsg=[2,tgtData,'CAOC','CAOC',self.msgTimestamp]
+        tgtMsg=Message(2,tgtData,'CAOC','CAOC',self.msgTimestamp)
         self.sendMessage(tgtMsg)
         self.count = self.count + 1
     
