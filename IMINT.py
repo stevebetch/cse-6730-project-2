@@ -1,59 +1,102 @@
 import sys, time
 import Pyro4
 from LogicalProcess import *
+from random import *
 
 class IMINT (LogicalProcess):
 
-    # instance variable list
-    #id - unique id for component
+    # Instance Variable List
+    # id: unique id for component
+    # heuristic: identifies which heuristic for target-drone assignments is being used
+    # high, low, mode: inputs for triangular distribution of service time in minutes
+    # priorityAdjust: reduction in prioirity for rework in heuristic 3 (0.5 = 50% reduciton in prioirity)
+    # totalValue: total intel value of all targets that have been succesfully tracked
+    # targetsTracked: total number of targets that have been succesfully tracked
 
-    def __init__(self):
+    # Initialize IMINT
+    # Input: heuristicNum=1,2, or 3 (naive, local, or timer heuristic)
+    # Output: Initializes IMINT logical process
+    # Description: Intialization of parameters that control assignment data collection and re-work decisions 
+    def __init__(self,heuristicNum):
         LogicalProcess.__init__(self)
         self.id = 'IMINT'
+        self.heuristic=heuristicNum
+        self.high=30
+        self.low=10
+        self.mode=15
+        self.priorityAdjust=0.5
+        self.totalValue=0
+        self.targetsTracked=0
 
+    # Call function
     def __call__(self):
         self.run()
-        
+    
+    # Save State
+    # Input: None
+    # Output: Saves current state of IMINT logical process
+    # Description: Saves all parameters needed to describe state of LP
     def saveState(self):
         print 'Saving current state'
     
+    # Restore State
+    # Input: timestamp to restore to
+    # Output: Restores past state of IMINT logical process
+    # Description: Restores all parameters needed to describe state of LP    
     def restoreState(self, timestamp):
         print 'restoring to last state stored <= %d' % (timestamp)
         #
 
+    # Handle Message [IN PROGRESS]
+    # Input: Message data structure (see Message.py for documentation)
+    # Output: Updates target attributes, reporting attributes and may send target assignment to CAOC [or TBD for msg type 1]
+    # Description: Handles message based on message type
+    #    Msg Type 1: [TBD]
+    #    Msg Type 2: Calls addTarget function for Target Data attribute of input Message
+    #    Msg Type 3: Error if IMINT receives this message type
     def subclassHandleMessage(self, msg):
-        # determine message type and process accordingly
-        # should deal only with type 2 messages
-        #    sending target reaccomplish messages to CAOC as needed
-        #       This requires updating priority, probably as a percentage of the original priority, for example 10% increase: priority of 50 becomes 55
+        # check message type
         if msg.msgType==1:
-            # none should be received here
+            # TBD
             pass
         elif msg.msgType==2:
-            # this should be the main type that IMINT receives
-            # Check which target assignment heruristic is in use
-                    #    receiving target complete messages and determining whether complete
-                             #       Threshold for good enough completion?
-                                         #     sending target reaccomplish messages to CAOC as needed
-                                                #       This requires updating priority, probably as a percentage of the original priority, for example 10% increase: priority of 50 becomes 55
-            pass
-            if self.heuristic==1:
-                     # the heuristic may affect how/if you change the priority, etc (would have to double check the project checkpoint to be sure)
-                     pass
-            elif self.heuristic==2:
-                     # the heuristic may affect how/if you change the priority, etc (would have to double check the project checkpoint to be sure)
-                     pass
-            
+            # update target track attempts for target data
+            msg[1][9]+=1
+            # check hueristic number
+            if self.heuristic==1 or self.heuristic==2:
+                # if goal track time has not been achieved, send updated tgt assignment to CAOC after processing time
+                if msg[1][8]-msg[1][7]<0:
+                    # send message to CAOC process
+                    newTgtData=msg[1]
+                    newTgtMsg=Message(2,newTgtData,self.id,'CAOC',self.localTime+triangular(self.high,self.low,self.mode))
+                    self.sendMessage(newTgtMsg)
+                else:
+                    # if goal track time has been achieved, update the total value and number of tracked targets 
+                    #    In the current implementation we allow IMINT to clear out it's backlog of unprocessed images at the sim end time
+                    self.totalValue+=msg[1][1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
+                    self.targetsTracked+=1
             elif self.heuristic==3:
-                     # the heuristic may affect how/if you change the priority, etc (would have to double check the project checkpoint to be sure)
-                     pass
+                if msg[1][8]-msg[1][7]<0:
+                    # if goal track time has not been achieved, adjsut priority and send updated tgt assignment to CAOC after processing time
+                    newTgtData=[targetData[0],targetData[1],self.prioirityAdjust*targetData[2],targetData[3],targetData[4],targetData[5],targetData[6],targetData[7],targetData[8],targetData[9]]
+                    newTgtMsg=Message(2,newTgtData,self.id,'CAOC',self.localTime+triangular(self.high,self.low,self.mode))
+                    self.sendMessage(newTgtMsg)
+                else:
+                    # if goal track time has been achieved, update the total value and number of tracked targets 
+                    #    In the current implementation we allow IMINT to clear out it's backlog of unprocessed images at the sim end time                    
+                    self.totalValue+=msg[1][1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
+                    self.targetsTracked+=1
         elif msg.msgType==3:
-             # none should be received here
-             pass
+            # print error message
+            print 'IMINT Error: Received Message Type 3 from ' + str(msg[2]) + ' at ' + str(msg[4])
         msg.printData(1)
         # Mark: below line for test only
         #self.sendMessage(Message(1, ['Data1'], 'IMINT', 'CAOC', 9))
 
+    # Run
+    # Input: None
+    # Output: Starts associated objects and queues
+    # Description: Save state, start queues  
     def run(self):
 
         print('IMINT Running')
