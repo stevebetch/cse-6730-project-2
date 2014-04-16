@@ -28,6 +28,7 @@ class CAOC (LogicalProcess):
         for i in range(numDrones):
             self.drones.insert(i,["Idle",0])
         self.heuristic=heuristicNum
+        self.stateQueue=[0,0,0,0,0,0]
 
     # Call function
     def __call__(self):
@@ -38,7 +39,12 @@ class CAOC (LogicalProcess):
     # Output: Saves current state of CAOC logical process
     # Description: Saves all parameters needed to describe state of LP, including HMINT state variables
     def saveState(self):
-        pass 
+        self.stateQueue[0]=self.localTime
+        self.stateQueue[1]=self.id
+        self.stateQueue[2]=self.hmint
+        self.stateQueue[3]=self.priorityQueue
+        self.stateQueue[4]=self.drones
+        self.stateQueue[5]=self.heuristic
 
     # Set Current Time
     # Input: time
@@ -110,7 +116,7 @@ class CAOC (LogicalProcess):
     def getPriorityQueue(self):
         return self.priorityQueue
 
-    # Handle Message [IN PROGRESS]
+    # Handle Message 
     # Input: Message data structure (see Message.py for documentation)
     # Output: Updates drone status, adds target to priority queue, or assigns target to drone [or TBD for msg type 1]
     # Description: Handles message based on message type
@@ -122,8 +128,8 @@ class CAOC (LogicalProcess):
     def subclassHandleMessage(self, msg):
         # determine message type and process accordingly
         if msg.msgType==1:
-            1==1 #placeholder
-            print msg
+            # TBD
+            pass
         elif msg.msgType==2:
             # Start the add target process with the target data of the message
             self.addTarget(msg[1])
