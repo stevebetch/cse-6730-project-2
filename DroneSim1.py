@@ -10,7 +10,7 @@ import Pyro4
 from LPInputQueue import *
 from DroneInputQueueContainer import *
 
-PYRO_HOST = '192.168.1.3'
+PYRO_HOST = '192.168.0.6'
 PYRO_PORT = 12778
 
 # parameters (later get from file)
@@ -19,8 +19,9 @@ typeOfDrone = "DroneType1"
 startTime = 1
 endTime = 7*24*60
 numTargets = 10
-seedNum=1
-mapSize=100 # notional so that we can call HMINT initialization, eventually we can get this from initEnv()
+seedNum = 1
+mapSize = 100 # notional so that we can call HMINT initialization, eventually we can get this from initEnv()
+heuristic = 1
 
 #
 # Function definitions
@@ -37,13 +38,13 @@ def initEnv():
     print('Environment initialized')
     
 def initIMINT():
-    imintref = IMINT()
+    imintref = IMINT(heuristic)
     imintref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     print('IMINT initialized')
     return imintref
 
 def initCAOC():
-    caocref = CAOC(3,1)
+    caocref = CAOC(numDrones,heuristic)
     hmint = HMINT(numTargets, seedNum, mapSize)
     caocref.setHMINT(hmint)
     hmint.setCAOC(caocref)

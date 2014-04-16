@@ -162,7 +162,6 @@ class CAOC (LogicalProcess):
         print('CAOC/HMINT Running')
 
         self.saveState()
-              
 
         # Get the message queue objects from Pyro    
         nameserver = Pyro4.locateNS()
@@ -185,7 +184,7 @@ class CAOC (LogicalProcess):
         self.tgtPriQ.put('target 3')
         t=[1,85,85,"Vehicle",0.8,1.2,[3,10],30,0,0]
         u=[2,95,95,"Vehicle",0.8,1.2,[3,10],30,0,0]
-        self.priorityQueue=[t,t,t,t,t,t,t,t,t]
+        self.priorityQueue=[t]
         self.addTarget(u)
         print 'CAOC Priority Queue: '
         print self.priorityQueue
@@ -196,13 +195,3 @@ class CAOC (LogicalProcess):
             #print 'CAOC iteration'
             #if msg:
                 #self.handleMessage(msg)
-  
-    # [OBSOLETE] Get Next Target
-    # Input: lock, location, radius
-    # Output: target
-    # Description: OBE     
-    #def getNextTarget(self, lock, location, radius):
-        #lock.aquire
-        #target =  self.priorityQueue.get()
-        #lock.release
-        #return target    
