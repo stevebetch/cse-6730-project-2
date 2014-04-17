@@ -76,9 +76,9 @@ class IMINT (LogicalProcess):
                     self.totalValue+=msg[1][1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
                     self.targetsTracked+=1
             elif self.heuristic==3:
-                if msg[1][8]-msg[1][7]<0: #aren't these values 9 and 8 not 8 and 7???
+                if msg[1][8]-msg[1][7]<0:
                     # if goal track time has not been achieved, adjsut priority and send updated tgt assignment to CAOC after processing time
-                    newTgtData=[targetData[0],targetData[1],self.prioirityAdjust*targetData[2],targetData[3],targetData[4],targetData[5],targetData[6],targetData[7],targetData[8],targetData[9]]
+                    newTgtData=[targetData[0],targetData[1],self.priorityAdjust*targetData[2],targetData[3],targetData[4],targetData[5],targetData[6],targetData[7],targetData[8],targetData[9]]
                     newTgtMsg=Message(2,newTgtData,self.id,'CAOC',self.localTime+triangular(self.high,self.low,self.mode))
                     self.sendMessage(newTgtMsg)
                 else:
