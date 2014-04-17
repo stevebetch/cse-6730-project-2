@@ -24,6 +24,7 @@ class HMINT:
         self.count = 0
         self.msgTimestamp=0
         self.mapNodes=mapSize
+        self.randSeed=seedNum
         seed(seedNum)
     
     # Set CAOC
