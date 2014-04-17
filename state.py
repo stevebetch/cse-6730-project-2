@@ -35,11 +35,24 @@ class DRONEState():
             self.searchdwell=obj.searchdwell
             self.TarTime=obj.TarTime
 
-class IMINTstate():
+class IMINTState():
         def __init__(self,obj):
-                pass
+                self.id=obj.id
+                self.heuristic=obj.heuristic
+                self.totalValue=obj.totalValue
+                self.targetsTracked=obj.targetsTracked              
 
-class CAOCstate():
+class CAOCState():
         def __init__(self,obj):
-                pass
+                self.localTime=obj.localTime
+                self.id=obj.id
+                self.priorityQueue=obj.priorityQueue
+                self.drones=obj.drones
+                self.heuristic=obj.heuristic
+                self.hmint=obj.hmint
+                self.hmint.numTargets=obj.hmint.numTargets
+                self.hmint.count=obj.hmint.count
+                self.hmint.msgTimeStamp=obj.hmint.msgTimeStamp
+                self.hmint.mapNodes=obj.hmint.mapNodes
+                self.hmint.randSeed=obj.hmint.randSeed
 
