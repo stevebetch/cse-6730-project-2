@@ -1,1 +1,1 @@
-cmd /K python -Wignore -m Pyro4.naming -n lapdog
+cmd /K C:/Python27/python -Wignore -m Pyro4.naming -n Jane-Desktop

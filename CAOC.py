@@ -86,7 +86,7 @@ class CAOC (LogicalProcess):
                 # Determine distance of target from idle drones
                 tgtLocation=targetData[6] #x,y coords
                 indexCloseDrone=0
-                minDist=999999
+                minDist=999999 #arbitrarily large cut-off
                 for i in range(len(self.drones)):
                     droneLocation=self.drones[i][2]
                     dist=sqrt((tgtLocation[0]-droneLocation[0])^2+(tgtLocation[1]-droneLocation[1])^2)

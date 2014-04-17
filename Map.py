@@ -41,7 +41,6 @@ class GenMap:
         #   print 'EW Street ', j,' is at position ', point
         # print '\n'
         b=EntryNode(23)
-        # b.setProb(random.random()) #NEED TO MAKE THIS A BOUNDED PROBABILITY. CURRENTLY (0,1)
         self.MapEntryPt=b
         
         self.NSpos.sort() # get the lists sorted into the correct order

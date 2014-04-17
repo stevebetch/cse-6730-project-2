@@ -10,7 +10,7 @@ import Pyro4
 from LPInputQueue import *
 from DroneInputQueueContainer import *
 
-PYRO_HOST = '192.168.0.6'
+PYRO_HOST = '192.168.2.8'
 PYRO_PORT = 12778
 
 # parameters (later get from file)
@@ -33,9 +33,6 @@ def createNewDrone(uid, droneType):
     droneref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     return droneref
 
-def initEnv():
-    # initialization of map network
-    print('Environment initialized')
     
 def initIMINT():
     imintref = IMINT(heuristic)
@@ -64,7 +61,6 @@ def main():
     print 'Starting run'
     
     # Urban network/map
-    initEnv()
     
     # Create PYRO remote object daemon
     daemon = Pyro4.Daemon(host=PYRO_HOST, port=PYRO_PORT)
@@ -103,11 +99,7 @@ def main():
         droneInQs.addDroneInputQueue(dronename)
     droneInQs_uri = daemon.register(droneInQs)
     ns.register("inputqueue.drones", droneInQs_uri)    
-        
-    # create target priority queue shared object
-    targetPriQ = Queue.Queue()
-    targetPriQ_uri = daemon.register(targetPriQ)
-    ns.register("priorityqueue.targets", targetPriQ_uri)
+
     
     # Start Controller process, which starts everything else
     pController = Process(group=None, target=controller, name='Drone Sim Controller Process')

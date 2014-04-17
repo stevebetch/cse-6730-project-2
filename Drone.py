@@ -61,19 +61,18 @@ class Drone (LogicalProcess):
         print('Drone process running')
         
         self.saveState()
+
         
-        self.stateQueue[0] = self.getCurrentState()
-        
-#        # Get the message queue objects from Pyro
-#        nameserver = Pyro4.locateNS()
-#        controllerInQ_uri = nameserver.lookup('inputqueue.controller')
-#        self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
-#        caocInQ_uri = nameserver.lookup('inputqueue.caoc')
-#        self.caocInQ = Pyro4.Proxy(caocInQ_uri)
-#        imintInQ_uri = nameserver.lookup('inputqueue.imint')
-#        self.imintInQ = Pyro4.Proxy(imintInQ_uri)
-#        droneInQs_uri = nameserver.lookup('inputqueue.drones')
-#        self.droneInQs = Pyro4.Proxy(droneInQs_uri)
+      # Get the message queue objects from Pyro
+      nameserver = Pyro4.locateNS()
+      controllerInQ_uri = nameserver.lookup('inputqueue.controller')
+      self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
+      caocInQ_uri = nameserver.lookup('inputqueue.caoc')
+      self.caocInQ = Pyro4.Proxy(caocInQ_uri)
+      imintInQ_uri = nameserver.lookup('inputqueue.imint')
+      self.imintInQ = Pyro4.Proxy(imintInQ_uri)
+      droneInQs_uri = nameserver.lookup('inputqueue.drones')
+      self.droneInQs = Pyro4.Proxy(droneInQs_uri)
 
         # Event loop iteration
         #while True:
@@ -156,8 +155,8 @@ class Drone (LogicalProcess):
             self.Bingo=self.DroneLegs*0.9 # 45 minutes flight time to return to base
 
         else: #assuming we have more than 4 hours of flight time. If less than 4 hours, we should be premptively performing maintainance
-            self.Joker=self.MatenanceActionTime - 7200 # 2 hour joker
-            self.Bingo=self.MatenanceActionTime - 3600 # 1 hour bingo
+            self.Joker=self.MaintenanceActionTime - 7200 # 2 hour joker
+            self.Bingo=self.MaintenanceActionTime - 3600 # 1 hour bingo
 
         print "\nJoker set to:", self.Joker, "Bingo set to:",self.Bingo
 
@@ -190,17 +189,8 @@ class Drone (LogicalProcess):
             flightTime=int(length/self.FlightSpeed)
         self.updateTime(flightTime)
 
-        # Mark: Needs update as per below comments
-    def getNewTargetFromCAOC(self):
-        #lock = Lock()
-        #self.target=self.caoc.getNextTarget(lock, None, None)
-        #del lock
 
-        # Need to get target from shared object
-        # something like
-        # return self.tgtPriQ.get()
-        # but with parameters to specify location and radius
-        self.TarTime=0 #amount of target tracking time.
+       # self.TarTime=0 #amount of target tracking time.
     
     def subclassHandleMessage(self, msg):
         msg.printData(1)

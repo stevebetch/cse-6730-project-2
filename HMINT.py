@@ -51,7 +51,7 @@ class HMINT:
     #          HMINT generation rate [20,60,30] + pre-calc of CAOC server processing time [3,10,5]
     def generateNextTarget(self):
         tgtID=self.count
-        tgtIntelValue=triangular(10,100,80)
+        tgtIntelValue=triangular(1,100,60)
         tgtIntelPriority=tgtIntelValue
         r=random()
         if r<0.5:
