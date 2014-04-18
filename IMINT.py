@@ -2,6 +2,7 @@ import sys, time
 import Pyro4
 from LogicalProcess import *
 from random import *
+from state import *
 
 class IMINT (LogicalProcess):
 
