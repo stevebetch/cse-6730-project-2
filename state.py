@@ -37,13 +37,16 @@ class DRONEState():
 
 class IMINTState():
         def __init__(self,obj):
+                self.key=obj.localTime
                 self.id=obj.id
                 self.heuristic=obj.heuristic
                 self.totalValue=obj.totalValue
-                self.targetsTracked=obj.targetsTracked              
+                self.targetsTracked=obj.targetsTracked
+                self.localTime=obj.localTime
 
 class CAOCState():
         def __init__(self,obj):
+                self.key=obj.localTime
                 self.localTime=obj.localTime
                 self.id=obj.id
                 self.priorityQueue=obj.priorityQueue
