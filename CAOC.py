@@ -3,6 +3,7 @@ from HMINT import *
 from multiprocessing import Queue, Lock
 from LogicalProcess import *
 from Message import *
+from state import *
 import Pyro4
 
 class CAOC (LogicalProcess):
@@ -40,6 +41,28 @@ class CAOC (LogicalProcess):
     def saveState(self):
         saver=CAOCState(self)
         self.stateQueue.append(saver)
+
+    def restoreState(self,timeStamp):
+        print 'restoring to last state stored <= %d' % (timestamp)
+        index=0
+        for i in range(len(self.stateQueue)-1,-1,-1):
+            if(timeStamp>=self.stateQueue[i].key):
+                index=i
+                break
+        self.Restore(self.stateQueue(index))
+
+    def Restore(obj):
+        self.localTime=obj.localTime
+        self.id=obj.id
+        self.priorityQueue=obj.priorityQueue
+        self.drones=obj.drones
+        self.heuristic=obj.heuristic
+        self.hmint=obj.hmint
+        self.hmint.numTargets=obj.hmint.numTargets
+        self.hmint.count=obj.hmint.count
+        self.hmint.msgTimeStamp=obj.hmint.msgTimeStamp
+        self.hmint.mapNodes=obj.hmint.mapNodes
+        self.hmint.randSeed=obj.hmint.randSeed
 
     # Set Current Time
     # Input: time
