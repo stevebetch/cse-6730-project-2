@@ -224,16 +224,16 @@ class CAOC (LogicalProcess):
         
         self.hmint.start()
 
-        # Mark: Test code can be removed
-        self.tgtPriQ.put('target 1')
-        self.tgtPriQ.put('target 2')
-        self.tgtPriQ.put('target 3')
-        t=[1,85,85,"Vehicle",0.8,1.2,[3,10],30,0,0]
-        u=[2,95,95,"Vehicle",0.8,1.2,[3,10],30,0,0]
-        self.priorityQueue=[t]
-        self.addTarget(u)
-        print 'CAOC Priority Queue: '
-        print self.priorityQueue
+        ## Mark: Test code can be removed
+        #self.tgtPriQ.put('target 1')
+        #self.tgtPriQ.put('target 2')
+        #self.tgtPriQ.put('target 3')
+        #t=[1,85,85,"Vehicle",0.8,1.2,[3,10],30,0,0]
+        #u=[2,95,95,"Vehicle",0.8,1.2,[3,10],30,0,0]
+        #self.priorityQueue=[t]
+        #self.addTarget(u)
+        #print 'CAOC Priority Queue: '
+        #print self.priorityQueue
 
         # Event loop
         #while True:
