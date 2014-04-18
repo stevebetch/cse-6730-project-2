@@ -45,7 +45,20 @@ class IMINT (LogicalProcess):
     # Description: Restores all parameters needed to describe state of LP    
     def restoreState(self, timestamp):
         print 'restoring to last state stored <= %d' % (timestamp)
-        #
+        index=0
+        for i in range(len(self.stateQueue)-1,-1,-1):
+            if(timeStamp>=self.stateQueue[i].key):
+                index=i
+                break
+        self.Restore(self.stateQueue(index))
+        
+    def Restore(obj):
+        self.key=obj.localTime
+        self.id=obj.id
+        self.heuristic=obj.heuristic
+        self.totalValue=obj.totalValue
+        self.targetsTracked=obj.targetsTracked
+        self.localTime=obj.localTime 
 
     # Handle Message [IN PROGRESS]
     # Input: Message data structure (see Message.py for documentation)
