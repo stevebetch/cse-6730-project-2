@@ -50,15 +50,13 @@ class Message:
         self.sender = sender
         self.recipient = recipient
         self.timestamp = timestamp
+        self.color = None
         
     def __eq__(self, other): 
         return self.__dict__ == other.__dict__   
     
     def clone(self):
         return Message(self.msgType, self.data, self.sender, self.recipient, self.timestamp, self.id)
-    
-    def setColor(self, color):
-        self.color = color
     
     # Anti Message Function (IN PROGRESS)
     # Description: Creates an anti-message from an existing message

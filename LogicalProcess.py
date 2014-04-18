@@ -39,7 +39,8 @@ class LogicalProcess(SharedMemoryClient):
         
     def sendMessage(self, msg):
         
-        msg.setColor(self.gvtData.color)
+        msg.color = self.gvtData.color            
+            
         if (msg.isAntiMessage()):
             print 'sending anti-message with timestamp %s' % (msg.timestamp)
         else:
@@ -47,14 +48,28 @@ class LogicalProcess(SharedMemoryClient):
             
         if (msg.recipient == 'CAOC'):
             self.caocInQ.addMessage(msg)
+            if msg.color == LPGVTData.WHITE:
+                self.gvtData.counts[self.caocInQ.LPID] += 1
+            else:
+                self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
         elif (msg.recipient == 'IMINT'):
             self.imintInQ.addMessage(msg)
+            if msg.color == LPGVTData.WHITE:
+                self.gvtData.counts[self.imintInQ.LPID] += 1
+            else:
+                self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)                
         elif (msg.recipient == 'Controller'):
             self.controllerInQ.addMessage(msg)
+            # Controller not part of Logical Process GVT token ring
         else:
             # Drone
-            self.droneInQs.addMessage(msg.recipient, msg) # assumes recipient set to drone's ID in msg
-            
+            droneid = msg.recipient
+            self.droneInQs.addMessage(droneid, msg) # assumes recipient set to drone's ID in msg
+            if msg.color == LPGVTData.WHITE:
+                self.gvtData.counts[self.droneInQs.getLPID(droneid)] += 1
+            else:
+                self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
+
         self.saveAntiMessage(msg)
     
     def rollback(self, msg):
@@ -84,14 +99,26 @@ class LogicalProcess(SharedMemoryClient):
             self.handleMessage(msg)
     
     def handleMessage(self, msg):
-        # handle LogicalProcess messages (GVT, etc) here
-        if msg.timestamp < self.localTime:
-            self.rollback(msg)
+
+        if msg.type == 1: # and ???
+            # handle GVT control message
+            if self.color == LPGVTData.WHITE:
+                self.gvtData.tRed = LPGVTData.INF
+                self.color = LPGVTData.RED
+            # wait until V_i[i] + CMsg_Count[i] <= 0
+            # send (min(CMsg_T_min, T_min), min(CMsg_T_red, T_red), V_i + CMsg_Count) to next LP in ring
+            # V_i = 0 (reset all counts)
+                
         else:
-            self.saveState() #define getCurrentState() in subclass
-            self.setLocalTime(msg.timestamp)
-            self.inputMsgHistory.append(msg.clone())
-            self.subclassHandleMessage(msg)
+            if msg.color == LPGVTData.WHITE:
+                self.gvtData.counts[self.LPID] -= 1
+            if msg.timestamp < self.localTime:
+                self.rollback(msg)
+            else:
+                self.saveState() #define getCurrentState() in subclass
+                self.setLocalTime(msg.timestamp)
+                self.inputMsgHistory.append(msg.clone())
+                self.subclassHandleMessage(msg)
     
     def getNextMessage(self):
         msg = None       

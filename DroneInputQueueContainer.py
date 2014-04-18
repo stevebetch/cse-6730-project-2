@@ -15,10 +15,14 @@ class DroneInputQueueContainer:
             
     def getLPIDs(self):
         lpids = []
-        for droneid in self.queues.keys:
+        for droneid in self.queues:
             q = self.queues[droneid]
+            print 'LPID for drone %d = %d' % (droneid, q.LPID)
             lpids.append(q.LPID)
         return lpids
+    
+    def getLPID(self, droneid):
+        return self.queues[droneid].LPID    
         
     def hasMessages(self, uid):
         return self.queues[uid].hasMessages()

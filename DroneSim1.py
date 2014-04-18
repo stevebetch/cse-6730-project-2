@@ -105,16 +105,16 @@ def main():
     print 'starting controller'
     pController.start()
     
-    # IMINT
-    pIMINT = Process(group=None, target=imint, name='IMINT Process')
-    pIMINT.start()
-    
     # Drones
     pDrones = []
     for i in range(0, len(drones)):
         pDrone = Process(group=None, target=drones[i], name='drone'+str(drones[i].uid), args=(map,)) 
         pDrones.append(pDrone)
-        pDrone.start()
+        pDrone.start()    
+    
+    # IMINT
+    pIMINT = Process(group=None, target=imint, name='IMINT Process')
+    pIMINT.start()
     
     # HMINT/CAOC
     pCAOC = Process(group=None, target=caoc, name='HMINT/CAOC Process')

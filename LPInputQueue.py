@@ -4,6 +4,8 @@ class LPInputQueue():
     
     def __init__(self):
         self.q = list()
+        self.localTMin = 0
+        self.LPID = None
         
     def setLPID(self, lpid):
         self.LPID = lpid
@@ -24,6 +26,8 @@ class LPInputQueue():
         self.localTime = time
         
     def justPut(self, msg):
+        if msg.timestamp < self.localTMin:
+            self.localTMin = msg.timestamp
         self.q.insert(0, msg)
         
     def addMessage(self, msg):
@@ -32,12 +36,24 @@ class LPInputQueue():
     def getNextMessage(self):
         if len(self.q) == 0:
             return None
-        return self.q.pop()
+        msg = self.q.pop()
+        if msg.timestamp == self.localTMin:
+            self.recalculateLocalTMin()
+        return msg
+    
+    def recalculateLocalTMin(self):
+        for msg in self.q:
+            if msg.timestamp < self.localTMin:
+                self.localTMin = msg.timestamp
     
     def insertAtFront(self, msg):
+        if msg.timestamp < self.localTMin:
+            self.localTMin = msg.timestamp        
         self.q.append(msg)
         
     def insertAtBack(self, msg):
+        if msg.timestamp < self.localTMin:
+            self.localTMin = msg.timestamp        
         if msg.isAntiMessage():
             # check if matching message is still in input queue, if so annihalate both
             match = None

@@ -3,7 +3,8 @@ class LPGVTData:
     
     # Class constants
     WHITE = 'white' # Set when before cut 1 or after cut 2
-    RED = 'red'  # Set when between cut 1 and cut 2  
+    RED = 'red'  # Set when between cut 1 and cut 2
+    INF = 999999999999
     
     def __init__(self):
         self.tMin = 0 # smallest timestamp of any unprocessed message in inputqueue
