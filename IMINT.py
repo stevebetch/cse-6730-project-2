@@ -76,7 +76,7 @@ class IMINT (LogicalProcess):
             # update target track attempts for target data
             msg[1][9]+=1
             # check hueristic number
-            if self.heuristic==1 or self.heuristic==2:
+            if self.heuristic==1:
                 # if goal track time has not been achieved, send updated tgt assignment to CAOC after processing time
                 if msg[1][8]-msg[1][7]<0:
                     # send message to CAOC process
@@ -88,7 +88,7 @@ class IMINT (LogicalProcess):
                     #    In the current implementation we allow IMINT to clear out it's backlog of unprocessed images at the sim end time
                     self.totalValue+=msg[1][1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
                     self.targetsTracked+=1
-            elif self.heuristic==3:
+            elif self.heuristic==3 or self.heuristic==2:
                 if msg[1][8]-msg[1][7]<0:
                     # if goal track time has not been achieved, adjsut priority and send updated tgt assignment to CAOC after processing time
                     newTgtData=[targetData[0],targetData[1],self.priorityAdjust*targetData[2],targetData[3],targetData[4],targetData[5],targetData[6],targetData[7],targetData[8],targetData[9]]
@@ -127,12 +127,12 @@ class IMINT (LogicalProcess):
         #droneInQs_uri = nameserver.lookup('inputqueue.drones')
         #self.droneInQs = Pyro4.Proxy(droneInQs_uri)
 
-        # Event loop iteration
-        while True:
-            # print 'IMINT loop iteration'
-            msg = self.getNextMessage()
-            #print msg
-            if msg:
-                self.handleMessage(msg)
-            time.sleep(0.05)
-                
+        ## Event loop iteration
+        #while True:
+            ## print 'IMINT loop iteration'
+            #msg = self.getNextMessage()
+            ##print msg
+            #if msg:
+                #self.handleMessage(msg)
+            #time.sleep(0.05) 
+
