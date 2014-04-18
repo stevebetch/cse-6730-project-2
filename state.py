@@ -55,7 +55,7 @@ class CAOCState():
                 self.hmint=obj.hmint
                 self.hmint.numTargets=obj.hmint.numTargets
                 self.hmint.count=obj.hmint.count
-                self.hmint.msgTimeStamp=obj.hmint.msgTimeStamp
+                self.hmint.msgTimestamp=obj.hmint.msgTimestamp
                 self.hmint.mapNodes=obj.hmint.mapNodes
                 self.hmint.randSeed=obj.hmint.randSeed
 

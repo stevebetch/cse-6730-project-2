@@ -47,8 +47,8 @@ class Drone (LogicalProcess):
         self.searchdwell=0
         self.TarTime=0
 
-    def __call__(self):
-        self.run()
+    def __call__(self, mapObj):
+        self.run(mapObj)
         
     def getCurrentState(self):
         return None        
@@ -63,16 +63,16 @@ class Drone (LogicalProcess):
         self.saveState()
 
         
-      # Get the message queue objects from Pyro
-      nameserver = Pyro4.locateNS()
-      controllerInQ_uri = nameserver.lookup('inputqueue.controller')
-      self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
-      caocInQ_uri = nameserver.lookup('inputqueue.caoc')
-      self.caocInQ = Pyro4.Proxy(caocInQ_uri)
-      imintInQ_uri = nameserver.lookup('inputqueue.imint')
-      self.imintInQ = Pyro4.Proxy(imintInQ_uri)
-      droneInQs_uri = nameserver.lookup('inputqueue.drones')
-      self.droneInQs = Pyro4.Proxy(droneInQs_uri)
+        # Get the message queue objects from Pyro
+        nameserver = Pyro4.locateNS()
+        controllerInQ_uri = nameserver.lookup('inputqueue.controller')
+        self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
+        caocInQ_uri = nameserver.lookup('inputqueue.caoc')
+        self.caocInQ = Pyro4.Proxy(caocInQ_uri)
+        imintInQ_uri = nameserver.lookup('inputqueue.imint')
+        self.imintInQ = Pyro4.Proxy(imintInQ_uri)
+        droneInQs_uri = nameserver.lookup('inputqueue.drones')
+        self.droneInQs = Pyro4.Proxy(droneInQs_uri)
 
         # Event loop iteration
         #while True:
@@ -85,7 +85,6 @@ class Drone (LogicalProcess):
         
         self.setEntry(mapObj) #MUST PASS THE ENTRY NODE!!! (map.MapEntryPt)
         self.currentNode=mapObj #the only time we directly set the current node.
-        self.getNewTargetFromCAOC()
         self.LocalSimTime=0 ############## HOW ARE WE SETTING THIS??? ############
 
         while(1):
