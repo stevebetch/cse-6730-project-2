@@ -5,8 +5,7 @@ class Message:
     # For MsgID (NOT USED) (saving code in case we change our minds)
     nextMsgID = 0
     
-    # Update Message ID Function (NOT USED)
-    # No message IDs necessary (saving code in case we change our minds)
+    # Update Message ID Function
     # Description: Iterate message ID to provide unique ids for new messages
     # Input: None
     # Output: Message ID integer
@@ -57,6 +56,9 @@ class Message:
     
     def clone(self):
         return Message(self.msgType, self.data, self.sender, self.recipient, self.timestamp, self.id)
+    
+    def setColor(self, color):
+        self.color = color
     
     # Anti Message Function (IN PROGRESS)
     # Description: Creates an anti-message from an existing message

@@ -51,14 +51,21 @@ class DroneSimController(GlobalControlProcess):
 
         # Get the message queue objects from Pyro    
         nameserver = Pyro4.locateNS()
+        
         controllerInQ_uri = nameserver.lookup('inputqueue.controller')
         self.inputQueue = Pyro4.Proxy(controllerInQ_uri)
+        
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
-        self.caocInQ = Pyro4.Proxy(caocInQ_uri)        
+        self.caocInQ = Pyro4.Proxy(caocInQ_uri)
+        self.caocInQ.setLPID(self.caoc.LPID)
+        
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
         self.imintInQ = Pyro4.Proxy(imintInQ_uri)
+        self.imintInQ.setLPID(self.imint.LPID)
+        
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
+        self.droneInQs.setLPIDs(self.drones)
         
         # Mark: Test code can be commented out
         self.imintInQ.addMessage(Message(1, 'Data', 'Controller', 'IMINT', 5))

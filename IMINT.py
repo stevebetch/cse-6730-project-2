@@ -119,14 +119,24 @@ class IMINT (LogicalProcess):
 
         # Get the message queue objects from Pyro    
         nameserver = Pyro4.locateNS()
+        LPIDs = []
+        
         controllerInQ_uri = nameserver.lookup('inputqueue.controller')
         self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
+        
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
-        self.caocInQ = Pyro4.Proxy(caocInQ_uri)        
+        self.caocInQ = Pyro4.Proxy(caocInQ_uri)     
+        LPIDs.append(self.caocInQ.LPID)
+        
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
         self.inputQueue = Pyro4.Proxy(imintInQ_uri)
+        LPIDs.append(self.caocInQ.LPID)
+        
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
+        LPIDs.append(self.droneInQs.getLPIDs())
+        
+        self.initGVTCounts(LPIDs)        
 
         ## Event loop iteration
         #while True:

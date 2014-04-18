@@ -1,10 +1,22 @@
 import sys
 from Message import *
 from SharedMemoryClient import *
+from LPGVTData import *
 
 
 class LogicalProcess(SharedMemoryClient):
     # Implements Time Warp Local Control Mechanism
+    
+    nextLPID = 0
+    
+    # Get next Logical Process ID Function
+    # Description: Provide unique ids for new logical processes
+    # Input: None
+    # Output: LP ID integer
+    def getNextLPID(self):
+        LPID = LogicalProcess.nextLPID
+        LogicalProcess.nextLPID += 1
+        return LPID    
     
     # instance variable list
     #inputQueue - FIFO queue for incoming messages
@@ -14,18 +26,25 @@ class LogicalProcess(SharedMemoryClient):
     #gvt - last gvt value received from controller
     
     
-    def __init__(self):      
+    def __init__(self): 
+        self.LPID = self.getNextLPID()     
         self.stateQueue = []
         self.outputQueue = {}
         self.inputMsgHistory = []
         self.localTime = 0
-        self.gvt = 0
+        self.gvtData = LPGVTData()
+        
+    def initGVTCounts(self, lpids):
+        self.gvtData.initCounts(lpids)
         
     def sendMessage(self, msg):
+        
+        msg.setColor(self.gvtData.color)
         if (msg.isAntiMessage()):
             print 'sending anti-message with timestamp %s' % (msg.timestamp)
         else:
             print 'sending message with timestamp %s' % (msg.timestamp)
+            
         if (msg.recipient == 'CAOC'):
             self.caocInQ.addMessage(msg)
         elif (msg.recipient == 'IMINT'):
