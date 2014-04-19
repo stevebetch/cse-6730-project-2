@@ -46,10 +46,10 @@ class HMINT:
     #    Tgt Speed: Real number from a [0.5,1,0.8] or [1,2,1.5] triangular distribution (based on tgt type)
     #    Tgt Predicted Location: Node pointer from node vector from DroneSim1 Map object, randomly selected
     #    Tgt Goal Track Time: Real number from a[10,360,30] triangular distribution
-    #    Tgt Actual Track Time: Initialized to 0
-    #    Tgt Track Attempts: Initialized to 0
-    #    Msg Timestamp: Real number from a last_msg_time+[23,70,35] triangular distribution, 
-    #          HMINT generation rate [20,60,30] + pre-calc of CAOC server processing time [3,10,5]
+    #    Tgt Actual Track Time: Initialized to 0 seconds
+    #    Tgt Track Attempts: Initialized to 0 seconds
+    #    Msg Timestamp: Real number from a last_msg_time+[1380,4200,2100] triangular distribution in seconds,
+    #          HMINT generation rate [1200,3600,1800] + pre-calc of CAOC server processing time [180,600,300]
     def generateNextTarget(self):
         tgtID=self.count
         tgtIntelValue=random.triangular(1,100,60)
@@ -57,12 +57,12 @@ class HMINT:
         r=random.random()
         if r<0.5:
             tgtType='Vehicle'
-            tgtStealth=random.triangular(1,2,1.5)
-            tgtSpeed=random.triangular(1,2,1.5)
+            tgtStealth=random.triangular(0.5, 0.95, 0.8)
+            tgtSpeed=random.triangular(11.11, 19.44, 15.28)#based on average urban speed for several countries
         else:
             tgtType='Pedestrian'
-            tgtStealth=random.triangular(0.5,1,0.8)
-            tgtSpeed=random.triangular(0.5,1,0.8)
+            tgtStealth=random.triangular(0.1, 0.9, 0.5)
+            tgtSpeed=random.normalvariate(1.44, 0.288)#based on project 1 data
         tgtPredLoc=self.randNodes[self.count]
         tgtGoalTrackTime=random.triangular(10,360,30)
         tgtActualTrackTime=0
