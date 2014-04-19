@@ -15,7 +15,7 @@ PYRO_HOST = ''
 PYRO_PORT = 12778
 
 # parameters (later get from file)
-numDrones = 10
+numDrones = 3
 typeOfDrone = "DroneType1"
 numTargets = 10
 seedNum = 1
@@ -43,9 +43,9 @@ def get_local_ip_address():
         pass
     return ipaddr
 
-def createNewDrone(uid, droneType):
+def createNewDrone(uid, droneType,heuristic):
     print('Creating new drone of type ' + droneType)
-    droneref = Drone(uid, droneType)
+    droneref = Drone(uid, droneType,heuristic)
     droneref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     return droneref
     
@@ -118,7 +118,7 @@ def main():
     drones = []
     for i in range(numDrones):
         dronename = i
-        drone = createNewDrone(dronename, typeOfDrone)
+        drone = createNewDrone(dronename, typeOfDrone,heuristic)
         drones.append(drone)
         controller.addDrone(drone)
         droneInQs.addDroneInputQueue(dronename)

@@ -158,11 +158,12 @@ class IMINT (LogicalProcess):
         self.initGVTCounts(LPIDs)        
 
         ## Event loop iteration
-        #while True:
+        while True:
             ## print 'IMINT loop iteration'
-            #msg = self.getNextMessage()
-            ##print msg
-            #if msg:
-                #self.handleMessage(msg)
-            #time.sleep(0.05) 
+            msg = self.getNextMessage()
+            #print msg
+            if msg:
+                self.handleMessage(msg)
+                print "Target Complete"
+            time.sleep(0.05)
 

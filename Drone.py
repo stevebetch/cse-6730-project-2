@@ -15,8 +15,9 @@ class Drone (LogicalProcess):
     #id - unique id of drone
     #droneType - descriptive
 
-    def __init__(self, uid, droneType):
+    def __init__(self, uid, droneType,heuristic):
         self.uid = uid
+        self.heuristic=heuristic
         LogicalProcess.__init__(self)
         self.droneType = droneType
 
@@ -47,7 +48,10 @@ class Drone (LogicalProcess):
         self.searchTime=60 #It takes 20 seconds to search the area.
         self.searchdwell=0
         self.TarTime=0
-
+        self.startNode=[]
+            
+        self.droneRadLim= 50 # The search radius is only 50 m
+    
     def __call__(self, mapObj):
         self.run(mapObj)
         
@@ -87,51 +91,133 @@ class Drone (LogicalProcess):
         
         self.setEntry(mapObj) #MUST PASS THE ENTRY NODE!!! (map.MapEntryPt)
         self.currentNode=mapObj #the only time we directly set the current node.
-        self.LocalSimTime=0 ############## HOW ARE WE SETTING THIS??? ############
-
-        while(1):
-
-            if(self.target==42): #NO TARGET IN QUEUE
-                self.getNewTgt()
-            
-     # Check fuel before anything else!!
-            if(not(self.jokerflag)): #joker not set yet. can search for targets
-                if(not(self.detectBool)): #dont have a detection
-                    self.search()
-                    self.detection()
-                    self.searchdwell+=self.searchTime
-                
-                else: #we have a detection! woooo
-                    self.detection()
-                    self.searchdwell=0
+        self.LocalSimTime=0
         
+        
+        if(self.heuristic==1): #Naive heuristic
+            while(1):
 
-            else: # joker flag set.
-                if(not(detectBool)):
-                    #dont have an active detection. RTB.
-                    self.ReturnToBase()
-                else: # detection flag set. We have a target in active track.
-                    if(self.Bingo>0): #we still have fuel!
-                    # We have fuel and can still start tracking.
+                if(self.target==42): #NO TARGET IN QUEUE
+                    self.getNewTgt()
+                
+         # Check fuel before anything else!!
+                if(not(self.jokerflag)): #joker not set yet. can search for targets
+                    if(not(self.detectBool)): #dont have a detection
+                        self.search()
                         self.detection()
-                    else:
+                        self.searchdwell+=self.searchTime
+                    
+                    else: #we have a detection! woooo
+                        self.detection()
+                        self.searchdwell=0
+            
+                else: # joker flag set.
+                    if(not(detectBool)):
+                        #dont have an active detection. RTB.
                         self.ReturnToBase()
-            if(self.searchdwell>=5*self.searchTime): # searched for the target 5 times Why 5? Why not!
-                self.ReturnTgt()
-                self.removeTgt()
-                self.getNewTgt()
-
-            if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
-                self.SendIMINT()
-                self.removeTgt()
-                self.getNewTgt()
+                    else: # detection flag set. We have a target in active track.
+                        if(self.Bingo>0): #we still have fuel!
+                        # We have fuel and can still start tracking.
+                            self.detection()
+                        else:
+                            self.ReturnToBase()
+            
+                if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
+                    self.SendIMINT()
+                    self.removeTgt()
+                    self.getNewTgt()
+    ################################################
     
+        elif(self.heuristic==2): # Local Heuristic
+            while(1):
+                
+                if(self.target==42): #NO TARGET IN QUEUE
+                    self.getNewTgt()
+                
+                # Check fuel before anything else!!
+                if(not(self.jokerflag)): #joker not set yet. can search for targets
+                    if(not(self.detectBool)): #dont have a detection
+                        self.search()
+                        self.detection()
+                        self.searchdwell+=self.searchTime
+                    
+                    else: #we have a detection! woooo
+                        self.detection()
+                        self.searchdwell=0
+                
+                
+                else: # joker flag set.
+                    if(not(detectBool)):
+                        #dont have an active detection. RTB.
+                        self.ReturnToBase()
+                    else: # detection flag set. We have a target in active track.
+                        if(self.Bingo>0): #we still have fuel!
+                            # We have fuel and can still start tracking.
+                            self.detection()
+                        else:
+                            self.ReturnToBase()
+
+                droneRad=math.sqrt((self.xpos-self.node.xpos)**2+(self.ypos-self.node.ypos)**2)
+                                    
+                if(droneRad>self.droneRadLim): # searched for the target within the local area
+                    self.SendIMINT()
+                    self.removeTgt()
+                    self.getNewTgt()
+                
+                if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
+                    self.SendIMINT()
+                    self.removeTgt()
+                    self.getNewTgt()
+
+################################################
+
+        else: # Impatient Heuristic
+            while(1):
+                
+                if(self.target==42): #NO TARGET IN QUEUE
+                    self.getNewTgt()
+                
+                # Check fuel before anything else!!
+                if(not(self.jokerflag)): #joker not set yet. can search for targets
+                    if(not(self.detectBool)): #dont have a detection
+                        self.search()
+                        self.detection()
+                        self.searchdwell+=self.searchTime
+                    
+                    else: #we have a detection! woooo
+                        self.detection()
+                        self.searchdwell=0
+                
+                
+                else: # joker flag set.
+                    if(not(detectBool)):
+                        #dont have an active detection. RTB.
+                        self.ReturnToBase()
+                    else: # detection flag set. We have a target in active track.
+                        if(self.Bingo>0): #we still have fuel!
+                            # We have fuel and can still start tracking.
+                            self.detection()
+                        else:
+                            self.ReturnToBase()
+                                
+                                
+                if(self.searchdwell>=5*self.searchTime): # searched for the target 5 times Why 5? Why not!
+                    self.ReturnTgt()
+                    self.removeTgt()
+                    self.getNewTgt()
+                
+                if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
+                    self.SendIMINT()
+                    self.removeTgt()
+                    self.getNewTgt()
+                
 
 
     def setTarget(self,obj):
         # This function will take in the target object created by the message handler and assign it to the drone. 
         self.target=obj
         self.TarTime=0 #amount of target tracking time.
+        self.startNode=obj.node
 
     def updateTime(self,timeDif): # timeDif= time delta. How much you want to update the clock by,
         #Update the timers with each timestep
@@ -199,6 +285,8 @@ class Drone (LogicalProcess):
             length=oldnode.length
             flightTime=int(length/self.FlightSpeed)
         self.updateTime(flightTime)
+        if(self.detectBool):
+            self.startNode=obj
 
 
        # 
@@ -266,7 +354,7 @@ class Drone (LogicalProcess):
         if(self.xpos!=self.target.node.xpos or self.ypos!=self.target.node.ypos): # we know we arnt looking at the right node.
             #Assume our intel came with a direction of movement and speed
             choice=random.random()
-            if(choice>=.2): #80% chance we choose the correct direction. Why 80? I have no clue.
+            if(choice>=.2): #80% chance we choose the correct direction. Assuming Intel keeps us updated and is usually right
                 if(self.currentNode.nodeType==0): #curent node is a street
                     if(self.target.node.xpos>self.xpos):
                         self.updateCurNode(self.currentNode.nextNode)
@@ -383,13 +471,23 @@ class Drone (LogicalProcess):
         self.TarTime=obj.TarTime
 
     def ReturnTgt(self):
-        retTgt=Message(2,self.target,self.uid,'CAOC',self.LocalSimTime) #create message
+        #update the target
+        self.target.ActTractTime+=self.TarTime
+        self.target.trackAttempts+=1
+        
+        
+        retTgt=Message(2,self.target,self.uid,'IMINT',self.LocalSimTime) #create message
         self.sendMessage(retTgt)   # sends message
         self.removeTgt()
 
     def SendIMINT(self):
+        #update the target
+        self.target.ActTractTime+=self.TarTime
+        self.target.trackAttempts+=1
+        
         sendMsg=Message(2,self.target,self.uid,'IMINT',self.LocalSimTime)
         self.sendMessage(sendMsg)
+        self.removeTgt()
 
     def removeTgt(self):
         self.target=42
@@ -399,6 +497,7 @@ class Drone (LogicalProcess):
             msg=self.getNextMessage() # Gets a new target
             if(not(msg==None)):
                 self.subclassHandleMessage(msg)
+                print "New target aquired"
                 break
 
 

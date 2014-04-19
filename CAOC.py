@@ -243,8 +243,9 @@ class CAOC (LogicalProcess):
         print self.priorityQueue
 
         # Event loop
-        #while True:
-            #msg = self.getNextMessage()
-            #print 'CAOC iteration'
-            #if msg:
-                #self.handleMessage(msg)
+        while True:
+            msg = self.getNextMessage()
+        #print 'CAOC iteration'
+            if msg:
+                self.handleMessage(msg)
+
