@@ -341,18 +341,20 @@ class Drone (LogicalProcess):
     def saveState(self):
         saver=DRONEState(self)
         self.stateQueue.append(saver)
-    
+#        print self.LocalSimTime
+
 
     def restoreState(self,timeStamp):
         #Get the old state:
         temp=[]
-        for i in LogicalProcess.stateQueue:
+        for i in self.stateQueue:
             if(i.LocalSimTime<=timeStamp):
                 #incase the time stamp is not exactly the correct one. Find the closest, previous state save
                 temp=i
+#                print i.LocalSimTime
         self.Restore(i)
 
-    def Restore(obj):
+    def Restore(self,obj):
     #restore drone to old state.
         self.uid = obj.uid
         self.droneType = obj.droneType
@@ -380,18 +382,23 @@ class Drone (LogicalProcess):
         self.TarTime=obj.TarTime
 
     def ReturnTgt(self):
-        retTgt=Message(2,self.target,self.uid,'CAOC',self.localSimTime) #create message
+        retTgt=Message(2,self.target,self.uid,'CAOC',self.LocalSimTime) #create message
         self.sendMessage(retTgt)   # sends message
         self.removeTgt()
 
     def SendIMINT(self):
-        sendMsg=Message(2,self.target,self.uid,'IMINT',self.localSimTime)
+        sendMsg=Message(2,self.target,self.uid,'IMINT',self.LocalSimTime)
         self.sendMessage(sendMsg)
 
     def removeTgt(self):
         self.target=42
 
     def getNewTgt(self):
-        msg=self.getNextMessage() # Gets a new target
-        self.subclassHandleMessage(msg)
+        while(1): #Wait for a new message to come in
+            msg=self.getNextMessage() # Gets a new target
+            if(not(msg==None)):
+                self.subclassHandleMessage(msg)
+                break
+
+
 

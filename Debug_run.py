@@ -5,7 +5,7 @@ from Drone import *
 from Target import *
 
 a=GenMap(480,480)
-a.map(50)
+a.map(50,.8)
 ger=LogicalProcess()
 
 drone=Drone(3,ger)
@@ -14,8 +14,11 @@ drone.setJokerBingo()
 drone.setEntry(a.MapEntryPt)
 moo=a.RandNode()
 drone.target=Target(moo)
+drone.saveState()
 drone.updateTime(800)
-drone.run(a.MapEntryPt)
+drone.saveState()
+drone.restoreState(0)
+#drone.run(a.MapEntryPt)
 #for i in range(50):
 #    b=a.RandNode()
 #    pp=Target(b)
