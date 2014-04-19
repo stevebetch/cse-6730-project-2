@@ -9,6 +9,7 @@ import Pyro4
 from LPInputQueue import *
 from DroneInputQueueContainer import *
 import socket
+import threading
 
 PYRO_HOST = ''
 PYRO_PORT = 12778
@@ -124,7 +125,11 @@ def main():
     droneInQs_uri = daemon.register(droneInQs)
     ns.register("inputqueue.drones", droneInQs_uri)    
 
-    
+    #creating semaphore
+    a=threading.Semaphore(numDrones)
+
+
+
     # Start Controller process, which starts everything else
     pController = Process(group=None, target=controller, name='Drone Sim Controller Process')
     print 'starting controller'
@@ -133,17 +138,20 @@ def main():
     # Drones
     pDrones = []
     for i in range(0, len(drones)):
+        a.acquire()
         pDrone = Process(group=None, target=drones[i], name='drone'+str(drones[i].uid), args=(Map.MapEntryPt,)) 
         pDrones.append(pDrone)
+        a.release()
         pDrone.start()    
     
-    # IMINT
-    pIMINT = Process(group=None, target=imint, name='IMINT Process')
-    pIMINT.start()
     
     # HMINT/CAOC
     pCAOC = Process(group=None, target=caoc, name='HMINT/CAOC Process')
     pCAOC.start()        
+
+    # IMINT
+    pIMINT = Process(group=None, target=imint, name='IMINT Process')
+    pIMINT.start()
     
     # Run shared object requests loop
     print 'starting shared objects request loop'

@@ -6,6 +6,7 @@ from multiprocessing import Lock
 from state import *
 import random
 from Message import *
+
 import Pyro4
 
 class Drone (LogicalProcess):
@@ -21,7 +22,7 @@ class Drone (LogicalProcess):
 
         self.LocalSimTime=0 #current simulation time for the drone
 
-        self.MaintenanceActionTime=144000 #how much time until we need to land for maintainance (40 hr engine overhaul (yes andrew it should be 100hr), ect)
+        self.MaintenanceActionTime=144000 #how much time until we need to land for maintainance (80 hr engine overhaul)
         self.Joker=0 #how much time we have to search
         self.jokerflag=0
 
@@ -29,7 +30,7 @@ class Drone (LogicalProcess):
 
         self.DistEntry=0.0 #distance from the entry node
 
-        self.FlightSpeed=random.randint(10,50)#Random flight speed of the drone, ft/s? something/s Should be m/s, people speed will be in m/s - jane
+        self.FlightSpeed=random.randint(10,50)#Random flight speed of the drone, m/s
         self.DroneLegs=28800 # Assuming the drone has 8hr legs (8*3600=28800 sec) We can change this later if we want
 
         self.xpos=0 #current x location
@@ -328,7 +329,7 @@ class Drone (LogicalProcess):
 
         if(self.MaintenanceActionTime<=14400): #the drone is within 4 hours of needing prevenative ma
             self.resetMaintenanceTimer()
-            self.updateTime(18000) #5 hours for maintenance. IS THIS REASONABLE?
+            self.updateTime(10800) #5 hours for maintenance. IS THIS REASONABLE?
         self.setJokerBingo()
         self.updateCurNode(self.EntNode)
 
