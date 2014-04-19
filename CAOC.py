@@ -52,20 +52,20 @@ class CAOC (LogicalProcess):
             if(timestamp>=self.stateQueue[i].key):
                 index=i
                 break
-        self.Restore(self.stateQueue(index))
+        self.Restore(self.stateQueue[index])
 
-    def Restore(obj):
+    def Restore(self,obj):
         self.localTime=obj.localTime
         self.id=obj.id
         self.priorityQueue=obj.priorityQueue
         self.drones=obj.drones
         self.heuristic=obj.heuristic
         self.hmint=obj.hmint
-        self.hmint.numTargets=obj.hmint.numTargets
-        self.hmint.count=obj.hmint.count
-        self.hmint.msgTimeStamp=obj.hmint.msgTimeStamp
-        self.hmint.randNodes=obj.hmint.randNodes
-        self.hmint.randSeed=obj.hmint.randSeed
+        #self.hmint.numTargets=obj.hmint.numTargets
+        #self.hmint.count=obj.hmint.count
+        #self.hmint.msgTimeStamp=obj.hmint.msgTimeStamp
+        #self.hmint.randNodes=obj.hmint.randNodes
+        #self.hmint.randSeed=obj.hmint.randSeed
 
     # Set Current Time
     # Input: time

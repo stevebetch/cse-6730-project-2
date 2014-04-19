@@ -55,12 +55,12 @@ class IMINT (LogicalProcess):
         print 'restoring to last IMINT state stored <= %d' % (timestamp)
         index=0
         for i in range(len(self.stateQueue)-1,-1,-1):
-            if(timeStamp>=self.stateQueue[i].key):
+            if(timestamp>=self.stateQueue[i].key):
                 index=i
                 break
-        self.Restore(self.stateQueue(index))
+        self.Restore(self.stateQueue[index])
         
-    def Restore(obj):
+    def Restore(self,obj):
         self.key=obj.localTime
         self.id=obj.id
         self.heuristic=obj.heuristic

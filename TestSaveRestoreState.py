@@ -56,8 +56,15 @@ def main():
     imint.saveState()
     print 'IMINT state queue: ' + str(imint.stateQueue)
 
-    #caoc.restoreState(0)
-    #imint.restoreState(0)
+    print 'CAOC state queue length: ' + str(len(caoc.stateQueue))
+    print 'CAOC state queue[0]: ' + str(caoc.stateQueue[0])
+    print 'IMINT state queue length: ' + str(len(imint.stateQueue))
+    print 'IMINT state queue[0]: ' + str(imint.stateQueue[0])
+    print 'IMINT state queue[0].localTime: ' + str(imint.stateQueue[0].localTime)
+
+    imint.restoreState(0)
+    caoc.restoreState(0)
+    
     print 'End'
 
 main()
