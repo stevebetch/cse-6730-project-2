@@ -19,12 +19,9 @@ numDrones = 3
 typeOfDrone = "DroneType1"
 numTargets = 10
 seedNum = 1
-mapSize = 100 # notional so that we can call HMINT initialization, eventually we can get this from initEnv()
-#mapsize really means number of map nodes.
 mapX=300
 mapY=300
 numStreets=50
-
 heuristic = 1
 
 #
