@@ -1,6 +1,3 @@
-from Drone import *
-from IMINT import *
-from CAOC import *
 
 class DRONEState(): 
         def __init__(self, obj):

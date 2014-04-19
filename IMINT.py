@@ -2,7 +2,7 @@ import sys, time
 import Pyro4
 from LogicalProcess import *
 from random import *
-from state import *
+from state import IMINTState
 from HMINT import *
 from multiprocessing import Queue, Lock
 from Message import *
