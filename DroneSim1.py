@@ -1,4 +1,3 @@
-#from DroneType1 import *
 from Drone import *
 from DroneSimController import *
 from HMINT import *
@@ -9,7 +8,6 @@ import math, time, sys
 import Pyro4
 from LPInputQueue import *
 from DroneInputQueueContainer import *
-
 import socket
 
 PYRO_HOST = ''
@@ -44,13 +42,11 @@ def get_local_ip_address():
         pass
     return ipaddr
 
-
 def createNewDrone(uid, droneType):
     print('Creating new drone of type ' + droneType)
     droneref = Drone(uid, droneType)
     droneref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     return droneref
-
     
 def initIMINT():
     imintref = IMINT(heuristic)
@@ -76,7 +72,7 @@ def main():
     #
     # initialization
     #
-    print "Starting run"
+    print 'Starting run'
     
     PYRO_HOST=get_local_ip_address()
     print PYRO_HOST

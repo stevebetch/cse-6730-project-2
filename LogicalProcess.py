@@ -103,11 +103,11 @@ class LogicalProcess(SharedMemoryClient):
     
     def handleMessage(self, msg):
 
-        if msg.type == 1: # and ???
+        if msg.msgType == 1: # and ???
             # handle GVT control message
-            if self.color == LPGVTData.WHITE:
+            if self.gvtData.color == LPGVTData.WHITE:
                 self.gvtData.tRed = LPGVTData.INF
-                self.color = LPGVTData.RED
+                self.gvtData.color = LPGVTData.RED
             # wait until V_i[i] + CMsg_Count[i] <= 0
             # send (min(CMsg_T_min, T_min), min(CMsg_T_red, T_red), V_i + CMsg_Count) to next LP in ring
             # V_i = 0 (reset all counts)

@@ -244,7 +244,7 @@ class CAOC (LogicalProcess):
 
         # Event loop
         #while True:
-            #msg = self.inputQueue.getNextMessage()
+            #msg = self.getNextMessage()
             #print 'CAOC iteration'
             #if msg:
                 #self.handleMessage(msg)

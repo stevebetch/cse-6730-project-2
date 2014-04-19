@@ -73,13 +73,14 @@ class Drone (LogicalProcess):
         self.imintInQ = Pyro4.Proxy(imintInQ_uri)
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
+        self.inputQueue = self.droneInQs.getInputQueue(self.uid)
 
         # Event loop iteration
         #while True:
-        #print 'Drone %d event loop iteration' % (self.uid)
-        #msg = self.droneInQs.getNextMessage(self.uid)
+            #print 'Drone %d event loop iteration' % (self.uid)
+            #msg = self.getNextMessage()
         #if msg:
-        #self.handleMessage(msg)
+            #self.handleMessage(msg)
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         # Begin at entry node. aka, only pass drone the entry node!!!
         

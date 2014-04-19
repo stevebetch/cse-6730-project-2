@@ -22,7 +22,10 @@ class DroneInputQueueContainer:
         return lpids
     
     def getLPID(self, droneid):
-        return self.queues[droneid].LPID    
+        return self.queues[droneid].LPID
+    
+    def getInputQueue(self, droneid):
+            return self.queues[droneid]    
         
     def hasMessages(self, uid):
         return self.queues[uid].hasMessages()
