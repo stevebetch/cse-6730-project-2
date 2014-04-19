@@ -54,9 +54,9 @@ class CAOCState():
                 self.drones=obj.drones
                 self.heuristic=obj.heuristic
                 self.hmint=obj.hmint
-                self.hmint.numTargets=obj.hmint.numTargets
-                self.hmint.count=obj.hmint.count
-                self.hmint.msgTimestamp=obj.hmint.msgTimestamp
-                self.hmint.randNodes=obj.hmint.randNodes
-                self.hmint.randSeed=obj.hmint.randSeed
+#                self.hmint.numTargets=obj.hmint.numTargets
+#                self.hmint.count=obj.hmint.count
+#                self.hmint.msgTimestamp=obj.hmint.msgTimestamp
+#                self.hmint.randNodes=obj.hmint.randNodes
+#                self.hmint.randSeed=obj.hmint.randSeed
 
