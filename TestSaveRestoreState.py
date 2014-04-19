@@ -22,10 +22,11 @@ def main():
     numDrones=3
     heuristic=1
     seedNum=1
+    Nuisance=0.8    
     
     print '---Generate Map---'
     Map = GenMap(mapX,mapY)
-    Map.map(numStreets)
+    Map.map(numStreets,Nuisance)
     randNodes=[]
     for i in range(numTargets):
         randNodes.append(Map.RandNode())
@@ -52,8 +53,10 @@ def main():
     print 'CAOC Local Time: ' + str(caoc.localTime)
     print 'IMINT Local Time: ' + str(imint.localTime)
     caoc.saveState()
-    print 'CAOC state queue: ' + str(caoc.stateQueue)    
     imint.saveState()
+    caoc.saveState()
+    imint.saveState()    
+    print 'CAOC state queue: ' + str(caoc.stateQueue)    
     print 'IMINT state queue: ' + str(imint.stateQueue)
 
     print 'CAOC state queue length: ' + str(len(caoc.stateQueue))
@@ -62,8 +65,11 @@ def main():
     print 'IMINT state queue[0]: ' + str(imint.stateQueue[0])
     print 'IMINT state queue[0].localTime: ' + str(imint.stateQueue[0].localTime)
 
-    imint.restoreState(0)
-    caoc.restoreState(0)
+    imint.restoreState(9)
+    caoc.restoreState(7)
+    print 'CAOC state queue: ' + str(caoc.stateQueue)    
+    print 'IMINT state queue: ' + str(imint.stateQueue)
+    
     
     print 'End'
 
