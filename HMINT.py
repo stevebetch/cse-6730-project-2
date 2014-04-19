@@ -1,7 +1,7 @@
 import sys
 from CAOC import *
 from Target import *
-from random import *
+import random
 class HMINT:
     "Human intelligence"
     
@@ -54,7 +54,7 @@ class HMINT:
         tgtID=self.count
         tgtIntelValue=triangular(1,100,60)
         tgtIntelPriority=tgtIntelValue
-        r=random()
+        r=random.random()
         if r<0.5:
             tgtType='Vehicle'
             tgtStealth=triangular(1,2,1.5)
@@ -63,7 +63,7 @@ class HMINT:
             tgtType='Pedestrian'
             tgtStealth=triangular(0.5,1,0.8)
             tgtSpeed=triangular(0.5,1,0.8)
-        tgtPredLoc=randNodes[self.count]
+        tgtPredLoc=self.randNodes[self.count]
         tgtGoalTrackTime=triangular(10,360,30)
         tgtActualTrackTime=0
         tgtTrackAttempts=0

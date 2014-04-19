@@ -13,11 +13,20 @@ class Target:
         self.loitertime= random.uniform(180,600) #loiter at first node for 2-10 min
         self.node=obj #pass the target the pointer to the map node.
         self.stay=.3 #probability a person will loiter on a node
-        self.intel=1 #set at one for now, but will likely be a discrete distribution
+        self.intelVal=1 #set at one for now, but will likely be a discrete distribution
+        self.intelPriority=1
+        
         self.ObsTime=90 # set the default time for sucessful tracking at 90sec,
+        self.goalTime=0
         self.speed=random.randint(1,20) #m/s
         self.transitTime=10
         self.loiterbit=1
+        
+        self.ID=0
+        self.Type='Pedestrian'
+        self.Stealth=0
+        self.ActTracTime=0
+        self.trackAttempts=0
     
         
     def movement(self):

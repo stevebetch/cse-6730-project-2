@@ -202,7 +202,23 @@ class Drone (LogicalProcess):
        # 
     
     def subclassHandleMessage(self, msg):
-        msg.printData(1)
+        # tgtData = [tgtID 0,tgtIntelValue 1,tgtIntelPriority 2,tgtType 3,tgtStealth 4,tgtSpeed 5,tgtPredLoc 6,tgtGoalTrackTime 7,tgtActualTrackTime 8,tgtTrackAttempts 9]
+        Data=msg[1]
+        tgt=Target(Data[6])
+        tgt.ID=Data[0]
+        tgt.intelVal=Data[1]
+        tgt.intelPriority=Data[1]
+        tgt.Type=Data[3]
+        tgt.Stealth=Data[4]
+        tgt.speed=Data[5]
+        tgt.ObsTime=Data[7]-Data[8]
+        tgt.ActTractTime=Data[8]
+        tgt.goalTime=Data[7]
+        tgt.trackAttempts=Data[9]
+        
+        
+        self.Target=tgt
+    
 
     def probTest(self,probVal):
         #This function will be called to determine if we get a positive detection on the target

@@ -2,6 +2,8 @@ import sys
 from Message import *
 from SharedMemoryClient import *
 from LPGVTData import *
+from DroneInputQueueContainer import *
+
 
 
 class LogicalProcess(SharedMemoryClient):

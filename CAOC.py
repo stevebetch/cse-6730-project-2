@@ -31,7 +31,7 @@ class CAOC (LogicalProcess):
         for i in range(numDrones):
             self.drones.insert(i,["Idle",0])
         self.heuristic=heuristicNum
- 
+        self.hmint=[]
     # Call function
     def __call__(self):
         self.run()
@@ -216,7 +216,7 @@ class CAOC (LogicalProcess):
     def run(self):
         print('CAOC/HMINT Running')
 
-        self.saveState()
+
 
         # Get the message queue objects from Pyro    
         nameserver = Pyro4.locateNS()
@@ -229,8 +229,10 @@ class CAOC (LogicalProcess):
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
         
-        self.hmint.start()
-
+        #self.hmint.start()
+        self.hmint=HMINT(numTargets,seedNum,randNodes)
+        self.saveState()
+        
         ## Mark: Test code can be removed
         t=[1,85,85,"Vehicle",0.8,1.2,[3,10],30,0,0]
         u=[2,95,95,"Vehicle",0.8,1.2,[3,10],30,0,0]
