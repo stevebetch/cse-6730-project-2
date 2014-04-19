@@ -10,7 +10,9 @@ import Pyro4
 from LPInputQueue import *
 from DroneInputQueueContainer import *
 
-PYRO_HOST = '192.168.0.6'
+import socket
+
+PYRO_HOST = ''
 PYRO_PORT = 12778
 
 # parameters (later get from file)
@@ -29,6 +31,19 @@ heuristic = 1
 #
 # Function definitions
 #
+
+def get_local_ip_address():
+    ipaddr = ''
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('1.1.1.1', 8000))
+        ipaddr = s.getsockname()[0]
+        s.close()
+        
+    except:
+        pass
+    return ipaddr
+
 
 def createNewDrone(uid, droneType):
     print('Creating new drone of type ' + droneType)
@@ -62,6 +77,9 @@ def main():
     # initialization
     #
     print "Starting run"
+    
+    PYRO_HOST=get_local_ip_address()
+    print PYRO_HOST
     
     # Urban network/map
     Map = GenMap(mapX,mapY)

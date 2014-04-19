@@ -38,7 +38,7 @@ class Drone (LogicalProcess):
         self.EntNode=[]
         self.currentNode=[]
 
-        self.target=[]
+        self.target=42
         self.detectBool=0 # Boolian used for detection logic
         self.sNeedBool=1 #boolian to determine if we need to activate the search logic.
         self.timeOnNode=0 #how long have we been on the current node?
@@ -88,7 +88,11 @@ class Drone (LogicalProcess):
         self.LocalSimTime=0 ############## HOW ARE WE SETTING THIS??? ############
 
         while(1):
-    # Check fuel before anything else!!
+
+            if(self.target==42): #NO TARGET IN QUEUE
+                self.getNewTgt()
+            
+     # Check fuel before anything else!!
             if(not(self.jokerflag)): #joker not set yet. can search for targets
                 if(not(self.detectBool)): #dont have a detection
                     self.search()
@@ -112,8 +116,13 @@ class Drone (LogicalProcess):
                         self.ReturnToBase()
             if(self.searchdwell>=5*self.searchTime): # searched for the target 5 times Why 5? Why not!
                 self.ReturnTgt()
-                self.getNewTargetFromCAOC() # Gets a new target
-            
+                self.removeTgt()
+                self.getNewTgt()
+
+            if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
+                self.SendIMINT()
+                self.removeTgt()
+                self.getNewTgt()
     
 
 
@@ -354,10 +363,18 @@ class Drone (LogicalProcess):
         self.TarTime=obj.TarTime
 
     def ReturnTgt(self):
-        retTgt=Message(2,self.target,self.uid,'CAOC',self.localTime) #create message
-        self.caocInQ.addMessage(retTgt)   # sends message
+        retTgt=Message(2,self.target,self.uid,'CAOC',self.localSimTime) #create message
+        self.sendMessage(retTgt)   # sends message
+        self.removeTgt()
 
+    def SendIMINT(self):
+        sendMsg=Message(2,self.target,self.uid,'IMINT',self.localSimTime)
+        self.sendMessage(sendMsg)
 
+    def removeTgt(self):
+        self.target=42
 
-
+    def getNewTgt(self):
+        msg=self.getNextMessage() # Gets a new target
+        self.subclassHandleMessage(msg)
 
