@@ -23,7 +23,7 @@ class Drone (LogicalProcess):
 
         self.LocalSimTime=0 #current simulation time for the drone
 
-        self.MaintenanceActionTime=144000 #how much time until we need to land for maintainance (80 hr engine overhaul)
+        self.MaintenanceActionTime=75600 #MTBF 21 hrs based on DoD study, here in seconds
         self.Joker=0 #how much time we have to search
         self.jokerflag=0
 
@@ -32,7 +32,7 @@ class Drone (LogicalProcess):
         self.DistEntry=0.0 #distance from the entry node
 
         self.FlightSpeed=random.randint(10,50)#Random flight speed of the drone, m/s
-        self.DroneLegs=28800 # Assuming the drone has 8hr legs (8*3600=28800 sec) We can change this later if we want
+        self.DroneLegs=41760 #11.6hrs = 41760s max endurance, 5.8hrs = 20880s median endurance
 
         self.xpos=0 #current x location
         self.ypos=0 #current y location
@@ -259,7 +259,7 @@ class Drone (LogicalProcess):
 
 
     def resetMaintenanceTimer(self):
-        self.MaintenanceActionTime=144000
+        self.MaintenanceActionTime=75600
 
     def setEntry(self,obj):
         self.EntryNode=obj
@@ -415,9 +415,9 @@ class Drone (LogicalProcess):
         timeToentry=int(self.DistEntry/self.FlightSpeed)
         self.updateTime(timeToentry) #update sim time
 
-        if(self.MaintenanceActionTime<=14400): #the drone is within 4 hours of needing prevenative ma
+        if(self.MaintenanceActionTime<=75600): #MTBF
             self.resetMaintenanceTimer()
-            self.updateTime(10800) #5 hours for maintenance. IS THIS REASONABLE?
+            self.updateTime(10800) #3 hrs for MTTR based on DoD study
         self.setJokerBingo()
         self.updateCurNode(self.EntNode)
 
