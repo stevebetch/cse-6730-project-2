@@ -15,7 +15,7 @@ class Target:
         self.stay=.3 #probability a person will loiter on a node
         self.intel=1 #set at one for now, but will likely be a discrete distribution
         self.ObsTime=90 # set the default time for sucessful tracking at 90sec,
-        self.speed=random.randint(10,20) #ft/s
+        self.speed=random.randint(1,20) #m/s
         self.transitTime=10
         self.loiterbit=1
     

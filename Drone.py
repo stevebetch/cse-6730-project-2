@@ -29,7 +29,7 @@ class Drone (LogicalProcess):
 
         self.DistEntry=0.0 #distance from the entry node
 
-        self.FlightSpeed=random.randint(50,200)#Random flight speed of the drone, ft/s? something/s Should be m/s, people speed will be in m/s - jane
+        self.FlightSpeed=random.randint(10,50)#Random flight speed of the drone, ft/s? something/s Should be m/s, people speed will be in m/s - jane
         self.DroneLegs=28800 # Assuming the drone has 8hr legs (8*3600=28800 sec) We can change this later if we want
 
         self.xpos=0 #current x location
@@ -118,8 +118,9 @@ class Drone (LogicalProcess):
 
 
     def setTarget(self,obj):
-        # This function will take in the target object and assign it to the drone. Looks like it will not be used. Propose we drop it.
+        # This function will take in the target object created by the message handler and assign it to the drone. 
         self.target=obj
+        self.TarTime=0 #amount of target tracking time.
 
     def updateTime(self,timeDif): # timeDif= time delta. How much you want to update the clock by,
         #Update the timers with each timestep
@@ -189,7 +190,7 @@ class Drone (LogicalProcess):
         self.updateTime(flightTime)
 
 
-       # self.TarTime=0 #amount of target tracking time.
+       # 
     
     def subclassHandleMessage(self, msg):
         msg.printData(1)

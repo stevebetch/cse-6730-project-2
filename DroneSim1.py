@@ -1,4 +1,4 @@
-from DroneType1 import *
+#from DroneType1 import *
 from Drone import *
 from DroneSimController import *
 from HMINT import *
@@ -10,7 +10,7 @@ import Pyro4
 from LPInputQueue import *
 from DroneInputQueueContainer import *
 
-PYRO_HOST = '192.168.0.3'
+PYRO_HOST = '192.168.1.10'
 PYRO_PORT = 12778
 
 # parameters (later get from file)
@@ -19,6 +19,11 @@ typeOfDrone = "DroneType1"
 numTargets = 10
 seedNum = 1
 mapSize = 100 # notional so that we can call HMINT initialization, eventually we can get this from initEnv()
+#mapsize really means number of map nodes.
+mapX=300
+mapY=300
+numStreets=50
+
 heuristic = 1
 
 #
@@ -56,10 +61,11 @@ def main():
     #
     # initialization
     #
-    print 'Starting run'
+    print "Starting run"
     
     # Urban network/map
-    map = None
+    Map = GenMap(mapX,mapY)
+    Map.map(numStreets)
     
     # Create PYRO remote object daemon
     daemon = Pyro4.Daemon(host=PYRO_HOST, port=PYRO_PORT)
@@ -108,7 +114,7 @@ def main():
     # Drones
     pDrones = []
     for i in range(0, len(drones)):
-        pDrone = Process(group=None, target=drones[i], name='drone'+str(drones[i].uid), args=(map,)) 
+        pDrone = Process(group=None, target=drones[i], name='drone'+str(drones[i].uid), args=(Map.MapEntryPt,)) 
         pDrones.append(pDrone)
         pDrone.start()    
     
