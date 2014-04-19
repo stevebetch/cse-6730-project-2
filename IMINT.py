@@ -3,6 +3,11 @@ import Pyro4
 from LogicalProcess import *
 from random import *
 from state import *
+from HMINT import *
+from multiprocessing import Queue, Lock
+from Message import *
+from nodes import *
+from Map import *
 
 class IMINT (LogicalProcess):
 
@@ -38,14 +43,16 @@ class IMINT (LogicalProcess):
     # Output: Saves current state of IMINT logical process
     # Description: Saves all parameters needed to describe state of LP
     def saveState(self):
-        print 'Saving current state'
+        print 'Saving current IMINT state'
+        saver=IMINTState(self)
+        self.stateQueue.append(saver)        
     
     # Restore State
     # Input: timestamp to restore to
     # Output: Restores past state of IMINT logical process
     # Description: Restores all parameters needed to describe state of LP    
     def restoreState(self, timestamp):
-        print 'restoring to last state stored <= %d' % (timestamp)
+        print 'restoring to last IMINT state stored <= %d' % (timestamp)
         index=0
         for i in range(len(self.stateQueue)-1,-1,-1):
             if(timeStamp>=self.stateQueue[i].key):

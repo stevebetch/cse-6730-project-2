@@ -41,14 +41,15 @@ class CAOC (LogicalProcess):
     # Output: Saves current state of CAOC logical process
     # Description: Saves all parameters needed to describe state of LP, including HMINT state variables
     def saveState(self):
+        print 'Saving current CAOC state'
         saver=CAOCState(self)
         self.stateQueue.append(saver)
 
-    def restoreState(self,timeStamp):
-        print 'restoring to last state stored <= %d' % (timestamp)
+    def restoreState(self,timestamp):
+        print 'restoring to last CAOC state stored <= %d' % (timestamp)
         index=0
         for i in range(len(self.stateQueue)-1,-1,-1):
-            if(timeStamp>=self.stateQueue[i].key):
+            if(timestamp>=self.stateQueue[i].key):
                 index=i
                 break
         self.Restore(self.stateQueue(index))
@@ -63,7 +64,7 @@ class CAOC (LogicalProcess):
         self.hmint.numTargets=obj.hmint.numTargets
         self.hmint.count=obj.hmint.count
         self.hmint.msgTimeStamp=obj.hmint.msgTimeStamp
-        self.hmint.mapNodes=obj.hmint.mapNodes
+        self.hmint.randNodes=obj.hmint.randNodes
         self.hmint.randSeed=obj.hmint.randSeed
 
     # Set Current Time
