@@ -25,7 +25,7 @@ class HMINT:
         self.msgTimestamp = 0
         self.randNodes = randNodes
         self.randSeed = seedNum
-        seed(seedNum)
+        random.seed(seedNum)
     
     # Set CAOC
     # Input: None

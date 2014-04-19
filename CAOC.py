@@ -230,7 +230,7 @@ class CAOC (LogicalProcess):
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
         
         #self.hmint.start()
-        self.hmint=HMINT(numTargets,seedNum,randNodes)
+        #self.hmint=HMINT(self.numTargets,slf.seedNum,randNodes)
         self.saveState()
         
         ## Mark: Test code can be removed
