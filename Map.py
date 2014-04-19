@@ -18,11 +18,13 @@ class GenMap:
         self.xleng=XgridSize #limit on grid size
         self.yleng=YgridSize
         self.MapEntryPt=[]
-        visGrid=[[]] #probably wont be used. For Growth.
+        #        visGrid=[[]] #probably wont be used. For Growth.
+        self.Nuisance=0
         
         random.seed(3) #PUT IN FOR DEBUGGING ONLY!!!
 
-    def map(self, numStreets):
+    def map(self, numStreets,Nuisance):
+        self.Nuisance=Nuisance
         
         start_time = time.time()
         EW=math.floor(numStreets/2.0)
@@ -48,7 +50,7 @@ class GenMap:
         
         for k in self.NSpos: #create all of the intersection nodes
             for l in self.EWpos:
-                a=intersecNode(42)
+                a=intersecNode(42,self.Nuisance)
                 a.setXY(l,k)
                 self.intersectionNodes.append(a)
 #        for a in self.NSpos:
@@ -147,7 +149,7 @@ class GenMap:
                 if(EWfcount<=int(EW) and modnum>1): #not the edge case
                     for k in range(int(modnum),0,-1): #create each node for each street length
                         
-                        a=streetNode(44)
+                        a=streetNode(44,self.Nuisance)
                         a.xpos=EWf-(length/modnum)*k
                         a.ypos=NSf
                         a.setLeng(length)
@@ -158,7 +160,7 @@ class GenMap:
                         #  print 'Next number', nextNum, 'total number:', nNum
                         
                         if(k==1 and EWfcount==0): #node is at the edge of the sim
-                            prevNd=EndNode(a) #point next node to end nodes outside of the sim
+                            prevNd=EndNode(a,self.Nuisance) #point next node to end nodes outside of the sim
                             self.streetNodes[nextNum+1].prevNode=prevNd
                             self.streetNodes[nextNum+1].nextNode=self.streetNodes[nextNum]
                             self.streetNodes[nextNum].prevNode=self.streetNodes[nextNum+1]
@@ -190,7 +192,7 @@ class GenMap:
                 if(EWfcount==int(EW) and modnum>1): # need to go rigth and left of the intersection at the furthest right intersection
                     for k in range(0,int(modnum)): #create each node for each street length
                         
-                        a=streetNode(67)
+                        a=streetNode(67,self.Nuisance)
                         a.xpos=EWf+(length2/modnum)*k
                         a.ypos=NSf
                         a.setLeng(length2)
@@ -201,9 +203,9 @@ class GenMap:
                         nNum=len(self.streetNodes)
                         
                         if(k==int(modnum)): #node is at the edge of the sim
-                                nextNd=EndNode(a) #point next node to end nodes outside of the sim
+                                nextNd=EndNode(a,self.Nuisance) #point next node to end nodes outside of the sim
                                 if(k==int(modnum)): #node is at the edge of the sim
-                                    nextNd=EndNode(a) #point next node to end nodes outside of the sim
+                                    nextNd=EndNode(a,self.Nuisance) #point next node to end nodes outside of the sim
                                     nextNd.mapNode=self.streetNodes[nextNum+1]
                                     # self.endNodes.append(nextNd)
                                     self.streetNodes[nextNum+1].nextNode=nextNd
@@ -318,7 +320,7 @@ class GenMap:
                 if(NSfcount<=int(NS) and modnum>1): #not the edge case
                     for k in range(int(modnum),0,-1): #create each node for each street length
                         
-                        a=streetNode(89)
+                        a=streetNode(89,self.Nuisance)
                         a.ypos=NSf-(length/modnum)*k
                         a.xpos=EWf
                         a.setLeng(length)
@@ -332,7 +334,7 @@ class GenMap:
                         
                         if(NSfcount==0): #node is at the edge of the sim
                             if(k==1):
-                                prevNd=EndNode(self.streetNodes[nextNum+1]) #point next node to end nodes outside of the sim
+                                prevNd=EndNode(self.streetNodes[nextNum+1],self.Nuisance) #point next node to end nodes outside of the sim
                                 self.streetNodes[nextNum+1].prevNode=prevNd
                                 self.streetNodes[nextNum+1].nextNode=self.streetNodes[nextNum]
                                 self.streetNodes[nextNum].prevNode=self.streetNodes[nextNum+1]
@@ -384,7 +386,7 @@ class GenMap:
                 if(NSfcount==int(NS) and modnum>1): # need to go rigth and left of the intersection at the furthest right intersection
                     for k in range(0,int(modnum)): #create each node for each street length
                         
-                        a=streetNode(5280)
+                        a=streetNode(5280,self.Nuisance)
                         a.ypos=NSf+(length2/modnum)*k
                         a.xpos=EWf
                         a.setLeng(length2)
@@ -396,7 +398,7 @@ class GenMap:
                         if(k==int(modnum)): #node is at the edge of the sim
                                 
                                 if(k==int(modnum)): #node is at the edge of the sim
-                                    nextNd=EndNode(a) #point next node to end nodes outside of the sim
+                                    nextNd=EndNode(a,self.Nuisance) #point next node to end nodes outside of the sim
                                     #self.endNodes.append(nextNd)
                                     nextNd.setNode(self.streetNodes[nextNum])
                                     self.streetNodes[nextNum+1].nextNode=nextNd

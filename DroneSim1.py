@@ -73,13 +73,15 @@ def main():
     # initialization
     #
     print 'Starting run'
+    Nuisance=.8
+    print "Using Nuisance mean of:", Nuisance
     
     PYRO_HOST=get_local_ip_address()
     print PYRO_HOST
     
     # Urban network/map
     Map = GenMap(mapX,mapY)
-    Map.map(numStreets)
+    Map.map(numStreets,Nuisance)
     randNodes=[]
     for i in range(numTargets):
         randNodes.append(Map.RandNode())

@@ -89,7 +89,7 @@ class IMINT (LogicalProcess):
                 if msg[1][8]-msg[1][7]<0:
                     # send message to CAOC process
                     newTgtData=msg[1]
-                    newTgtMsg=Message(2,newTgtData,self.id,'CAOC',self.localTime+triangular(self.high,self.low,self.mode))
+                    newTgtMsg=Message(2,newTgtData,self.id,'CAOC',self.localTime+random.triangular(self.high,self.low,self.mode))
                     self.sendMessage(newTgtMsg)
                 else:
                     # if goal track time has been achieved, update the total value and number of tracked targets 
@@ -100,7 +100,7 @@ class IMINT (LogicalProcess):
                 if msg[1][8]-msg[1][7]<0:
                     # if goal track time has not been achieved, adjsut priority and send updated tgt assignment to CAOC after processing time
                     newTgtData=[targetData[0],targetData[1],self.priorityAdjust*targetData[2],targetData[3],targetData[4],targetData[5],targetData[6],targetData[7],targetData[8],targetData[9]]
-                    newTgtMsg=Message(2,newTgtData,self.id,'CAOC',self.localTime+triangular(self.high,self.low,self.mode))
+                    newTgtMsg=Message(2,newTgtData,self.id,'CAOC',self.localTime+random.triangular(self.high,self.low,self.mode))
                     self.sendMessage(newTgtMsg)
                 else:
                     # if goal track time has been achieved, update the total value and number of tracked targets 

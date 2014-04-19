@@ -2,11 +2,11 @@ import random
 
 
 class streetNode:
-    def __init__(self,obj):
+    def __init__(self,obj,mid):
         self.nextNode=self
         self.prevNode=self
-        self.DetectprobHigh=random.uniform(0,.8)#justification for limiting to 80%? - Jane
-        self.TrackprobLow=random.uniform(0,.6)############# NEED TO CHANGE THIS TO THE CORRECT TYPE OF DISTRIBUTION!!! should vary with the type of drone/sensor - Jane
+        self.prob=random.triangular(mid-.1,mid+.1,mid) #Nuisance value
+        #        self.Trackprob=random.triangular(mid-.1,mid+.1,mid)
         self.targets=[] #Probabily will not use this. Or needs to be changed to a queue of some sort
         self.length=25.0
         self.xpos=0.0
@@ -26,12 +26,13 @@ class streetNode:
         self.length=obj
 
 class intersecNode:
-    def __init__(self,obj):
+    def __init__(self,obj,mid):
         self.numRoads=4.0 #number of road nodes connected to an intersection
         self.Nodes=[]
         self.NodeLeng=[]
-        self.Detectprob=random.uniform(0,.8)
-        self.Trackprob=random.uniform(0,.6)
+        self.prob=random.triangular(mid-.1,mid+.1,mid) #Nuisance value
+    #        self.Trackprob=random.triangular(mid-.1,mid+.1,mid)
+
         self.targets=[] #Probabily will not use this. Or needs to be changed to a queue of some sort
         self.xpos=0.0
         self.ypos=0.0
@@ -82,14 +83,17 @@ class EntryNode:
 
 
 class EndNode: #this node is a terminator node for the outskirts of the map. it allows targets to move out of the map
-    def __init__(self,obj):
+    def __init__(self,obj,mid):
         self.mapNode=obj
         self.nextNode=obj
         self.prevNode=obj
         self.nodeType=3
         self.xpos=-999
         self.ypos=-999
-    
+        self.prob=random.triangular(mid-.1,mid+.1,mid) #Nuisance value
+    #        self.Trackprob=random.triangular(mid-.1,mid+.1,mid)
+
+
     def setNode(self,obj):
         self.mapNode=obj
         self.nextNode=obj

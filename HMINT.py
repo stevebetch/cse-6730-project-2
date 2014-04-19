@@ -52,22 +52,22 @@ class HMINT:
     #          HMINT generation rate [20,60,30] + pre-calc of CAOC server processing time [3,10,5]
     def generateNextTarget(self):
         tgtID=self.count
-        tgtIntelValue=triangular(1,100,60)
+        tgtIntelValue=random.triangular(1,100,60)
         tgtIntelPriority=tgtIntelValue
         r=random.random()
         if r<0.5:
             tgtType='Vehicle'
-            tgtStealth=triangular(1,2,1.5)
-            tgtSpeed=triangular(1,2,1.5)
+            tgtStealth=random.triangular(1,2,1.5)
+            tgtSpeed=random.triangular(1,2,1.5)
         else:
             tgtType='Pedestrian'
-            tgtStealth=triangular(0.5,1,0.8)
-            tgtSpeed=triangular(0.5,1,0.8)
+            tgtStealth=random.triangular(0.5,1,0.8)
+            tgtSpeed=random.triangular(0.5,1,0.8)
         tgtPredLoc=self.randNodes[self.count]
-        tgtGoalTrackTime=triangular(10,360,30)
+        tgtGoalTrackTime=random.triangular(10,360,30)
         tgtActualTrackTime=0
         tgtTrackAttempts=0
-        self.msgTimestamp=self.msgTimestamp+triangular(23,70,35)
+        self.msgTimestamp=self.msgTimestamp+random.triangular(23,70,35)
         tgtData = [tgtID,tgtIntelValue,tgtIntelPriority,tgtType,tgtStealth,tgtSpeed,tgtPredLoc,tgtGoalTrackTime,tgtActualTrackTime,tgtTrackAttempts]
         tgtMsg=Message(2,tgtData,'CAOC','CAOC',self.msgTimestamp)
         self.caoc.inputQueue.addMessage(tgtMsg) # will this mess up the anti-message process?
