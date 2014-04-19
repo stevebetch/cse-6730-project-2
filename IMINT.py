@@ -107,6 +107,8 @@ class IMINT (LogicalProcess):
                     #    In the current implementation we allow IMINT to clear out it's backlog of unprocessed images at the sim end time                    
                     self.totalValue+=msg[1][1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
                     self.targetsTracked+=1
+                    print 'Total Value: ' + str(self.totalValue)
+                    print 'Total Targets Tracked: ' + str(self.targetsTracked)
         elif msg.msgType==3:
             # print error message
             print 'IMINT Error: Received Message Type 3 from ' + str(msg[2]) + ' at ' + str(msg[4])
