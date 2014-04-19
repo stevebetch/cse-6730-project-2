@@ -3,6 +3,8 @@ from HMINT import *
 from multiprocessing import Queue, Lock
 from LogicalProcess import *
 from Message import *
+from nodes import *
+from Map import *
 from state import *
 import Pyro4
 
@@ -102,12 +104,14 @@ class CAOC (LogicalProcess):
             # Check which target assignment heruristic is in use
             elif self.heuristic==2:
                 # Determine distance of target from idle drones
-                tgtLocation=targetData[6] #x,y coords
+                tgtX=targetData[6].xpos #x coord
+                tgtY=targetData[6].ypos #y coord
                 indexCloseDrone=0
                 minDist=999999 #arbitrarily large cut-off
                 for i in range(len(self.drones)):
-                    droneLocation=self.drones[i][2]
-                    dist=sqrt((tgtLocation[0]-droneLocation[0])^2+(tgtLocation[1]-droneLocation[1])^2)
+                    droneX=self.drones[i][1].xpos
+                    droneY=self.drones[i][1].ypos
+                    dist=sqrt((tgtX-droneX)^2+(tgtY-droneY)^2)
                     if dist<minDist and self.drones[i][0]=="Idle":
                         minDist=dist
                         indexCloseDrone=i   
@@ -124,12 +128,14 @@ class CAOC (LogicalProcess):
                 if msg[1][9]==0:
                     msg[1][2]=msg[1][1]/msg[1][7]   
                 # Determine distance of target from idle drones
-                tgtLocation=targetData[6] #x,y coords
+                tgtX=targetData[6].xpos #x coord
+                tgtY=targetData[6].ypos #y coord
                 indexCloseDrone=0
                 minDist=999999
                 for i in range(len(self.drones)):
-                    droneLocation=self.drones[i][2]
-                    dist=sqrt((tgtLocation[0]-droneLocation[0])^2+(tgtLocation[1]-droneLocation[1])^2)
+                    droneX=self.drones[i][1].xpos
+                    droneY=self.drones[i][1].ypos
+                    dist=sqrt((tgtX-droneX)^2+(tgtY-droneY)^2)
                     if dist<minDist and self.drones[i][0]=="Idle":
                         minDist=dist
                         indexCloseDrone=i   
@@ -187,12 +193,15 @@ class CAOC (LogicalProcess):
             elif self.heuristic==2 or self.heuristic==3:
                 # If the drone is idle and there are target assignments in the queue, assign that drone the nearest target
                 if (self.drones[msg.data[0]][1]=="Idle") and (len(self.priorityQueue)!=0):
-                    droneLocation=self.drones[msg.data[0]][2] #x,y coords
+                    droneLocation=self.drones[msg.data[0]][1] #x,y coords
+                    droneX=self.drones[msg.data[0]][1].xpos
+                    droneY=self.drones[msg.data[0]][1].ypos                  
                     indexCloseTgt=0
                     minDist=999999
                     for i in range(len(self.priorityQueue)):
-                        tgtLocation=self.prioirityQueue[i][2]
-                        dist=sqrt((tgtLocation[0]-droneLocation[0])^2+(tgtLocation[1]-droneLocation[1])^2)
+                        tgtX=self.prioirityQueue[i][6].xpos #x coord
+                        tgtY=self.prioirityQueue[i][6].ypos #y coord                        
+                        dist=sqrt((tgtX-droneX)^2+(tgtY-droneY)^2)
                         if dist<minDist:
                             minDist=dist
                             indexCloseTgt=i   

@@ -10,7 +10,7 @@ import Pyro4
 from LPInputQueue import *
 from DroneInputQueueContainer import *
 
-PYRO_HOST = '192.168.1.10'
+PYRO_HOST = '192.168.0.6'
 PYRO_PORT = 12778
 
 # parameters (later get from file)
@@ -43,9 +43,9 @@ def initIMINT():
     print('IMINT initialized')
     return imintref
 
-def initCAOC():
+def initCAOC(randNodes):
     caocref = CAOC(numDrones,heuristic)
-    hmint = HMINT(numTargets, seedNum, mapSize)
+    hmint = HMINT(numTargets, seedNum, randNodes)
     caocref.setHMINT(hmint)
     hmint.setCAOC(caocref)
     caocref.setConnectionParams(PYRO_HOST, PYRO_PORT)
@@ -66,13 +66,16 @@ def main():
     # Urban network/map
     Map = GenMap(mapX,mapY)
     Map.map(numStreets)
+    randNodes=[]
+    for i in range(numTargets):
+        randNodes.append(Map.RandNode())
     
     # Create PYRO remote object daemon
     daemon = Pyro4.Daemon(host=PYRO_HOST, port=PYRO_PORT)
     ns = Pyro4.locateNS()    
     
     # Create CAOC/HMINT, will be separate process started by Controller
-    caoc = initCAOC()
+    caoc = initCAOC(randNodes)
     caocInQ = LPInputQueue()
     caocInQ.setLocalTime(0)   
     caocInQ_uri = daemon.register(caocInQ)

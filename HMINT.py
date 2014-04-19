@@ -18,13 +18,13 @@ class HMINT:
     # Input: numTargets=total number of targets that might need to be targeted, seedNum=seed for this sim replication
     # Output: Initializes HMINT class object
     # Description: Intialization of parameters that control target generation    
-    def __init__(self, numTargets,seedNum,mapSize):       
+    def __init__(self, numTargets,seedNum,randNodes):       
         running = 'false'
         self.numTargets = numTargets
         self.count = 0
-        self.msgTimestamp=0
-        self.mapNodes=mapSize
-        self.randSeed=seedNum
+        self.msgTimestamp = 0
+        self.randNodes = randNodes
+        self.randSeed = seedNum
         seed(seedNum)
     
     # Set CAOC
@@ -44,7 +44,7 @@ class HMINT:
     #    Tgt Type: "Vehicle" or "Pedestrian" with equal likelihood
     #    Tgt Stealth: Real number from a [0.5,1,0.8] or [1,2,1.5] triangular distribution (based on tgt type)
     #    Tgt Speed: Real number from a [0.5,1,0.8] or [1,2,1.5] triangular distribution (based on tgt type)
-    #    Tgt Predicted Location: Integer from a [0,mapNodes] uniform distribution
+    #    Tgt Predicted Location: Node pointer from node vector from DroneSim1 Map object, randomly selected
     #    Tgt Goal Track Time: Real number from a[10,360,30] triangular distribution
     #    Tgt Actual Track Time: Initialized to 0
     #    Tgt Track Attempts: Initialized to 0
@@ -63,7 +63,7 @@ class HMINT:
             tgtType='Pedestrian'
             tgtStealth=triangular(0.5,1,0.8)
             tgtSpeed=triangular(0.5,1,0.8)
-        tgtPredLoc=round(uniform(0,self.mapNodes))
+        tgtPredLoc=randNodes[self.count]
         tgtGoalTrackTime=triangular(10,360,30)
         tgtActualTrackTime=0
         tgtTrackAttempts=0
