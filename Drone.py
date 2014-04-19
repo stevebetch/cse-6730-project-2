@@ -92,13 +92,16 @@ class Drone (LogicalProcess):
         self.setEntry(mapObj) #MUST PASS THE ENTRY NODE!!! (map.MapEntryPt)
         self.currentNode=mapObj #the only time we directly set the current node.
         self.LocalSimTime=0
-        
+        self.getNextMessage()
         
         if(self.heuristic==1): #Naive heuristic
             while(1):
-
+                self.getNextMessage()
+                print self.target
                 if(self.target==42): #NO TARGET IN QUEUE
                     self.getNewTgt()
+                    self.saveState()
+                
                 
          # Check fuel before anything else!!
                 if(not(self.jokerflag)): #joker not set yet. can search for targets
@@ -125,7 +128,7 @@ class Drone (LogicalProcess):
                 if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
                     self.SendIMINT()
                     self.removeTgt()
-                    self.getNewTgt()
+    
     ################################################
     
         elif(self.heuristic==2): # Local Heuristic
@@ -133,6 +136,7 @@ class Drone (LogicalProcess):
                 
                 if(self.target==42): #NO TARGET IN QUEUE
                     self.getNewTgt()
+                    self.saveState()
                 
                 # Check fuel before anything else!!
                 if(not(self.jokerflag)): #joker not set yet. can search for targets
@@ -162,12 +166,12 @@ class Drone (LogicalProcess):
                 if(droneRad>self.droneRadLim): # searched for the target within the local area
                     self.SendIMINT()
                     self.removeTgt()
-                    self.getNewTgt()
+                
                 
                 if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
                     self.SendIMINT()
                     self.removeTgt()
-                    self.getNewTgt()
+                   
 
 ################################################
 
@@ -176,6 +180,7 @@ class Drone (LogicalProcess):
                 
                 if(self.target==42): #NO TARGET IN QUEUE
                     self.getNewTgt()
+                    self.saveState()
                 
                 # Check fuel before anything else!!
                 if(not(self.jokerflag)): #joker not set yet. can search for targets
@@ -204,12 +209,12 @@ class Drone (LogicalProcess):
                 if(self.searchdwell>=5*self.searchTime): # searched for the target 5 times Why 5? Why not!
                     self.ReturnTgt()
                     self.removeTgt()
-                    self.getNewTgt()
+                
                 
                 if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
                     self.SendIMINT()
                     self.removeTgt()
-                    self.getNewTgt()
+
                 
 
 
@@ -218,6 +223,11 @@ class Drone (LogicalProcess):
         self.target=obj
         self.TarTime=0 #amount of target tracking time.
         self.startNode=obj.node
+
+
+
+
+
 
     def updateTime(self,timeDif): # timeDif= time delta. How much you want to update the clock by,
         #Update the timers with each timestep
@@ -244,6 +254,10 @@ class Drone (LogicalProcess):
         if(self.Bingo<=0): # Reached bingo. need to RTB.
             self.ReturnToBase()
 
+
+
+
+
     def setJokerBingo(self):
     # Call this funtion after the drone returns from a maintainance action, refuleing or at the start of the sim
         if(self.DroneLegs<self.MaintenanceActionTime):#We have less fuel time than maintainance time
@@ -258,12 +272,23 @@ class Drone (LogicalProcess):
         print "\nJoker set to:", self.Joker, "Bingo set to:",self.Bingo
 
 
+
+
+
     def resetMaintenanceTimer(self):
         self.MaintenanceActionTime=75600
+
+
+
+
 
     def setEntry(self,obj):
         self.EntryNode=obj
         #print "Map entry at:" , self.EntryNode.xpos,",",self.EntryNode.ypos
+
+
+
+
 
     def updateCurNode(self,obj):
         oldnode=self.currentNode
@@ -292,23 +317,30 @@ class Drone (LogicalProcess):
        # 
     
     def subclassHandleMessage(self, msg):
-        # tgtData = [tgtID 0,tgtIntelValue 1,tgtIntelPriority 2,tgtType 3,tgtStealth 4,tgtSpeed 5,tgtPredLoc 6,tgtGoalTrackTime 7,tgtActualTrackTime 8,tgtTrackAttempts 9]
-        Data=msg[1]
-        tgt=Target(Data[6])
-        tgt.ID=Data[0]
-        tgt.intelVal=Data[1]
-        tgt.intelPriority=Data[1]
-        tgt.Type=Data[3]
-        tgt.Stealth=Data[4]
-        tgt.speed=Data[5]
-        tgt.ObsTime=Data[7]-Data[8]
-        tgt.ActTractTime=Data[8]
-        tgt.goalTime=Data[7]
-        tgt.trackAttempts=Data[9]
-        
-        
-        self.Target=tgt
-    
+        if(msg[0]==2): # New target
+            # tgtData = [tgtID 0,tgtIntelValue 1,tgtIntelPriority 2,tgtType 3,tgtStealth 4,tgtSpeed 5,tgtPredLoc 6,tgtGoalTrackTime 7,tgtActualTrackTime 8,tgtTrackAttempts 9]
+            Data=msg[1]
+            tgt=Target(Data[6])
+            tgt.ID=Data[0]
+            tgt.intelVal=Data[1]
+            tgt.intelPriority=Data[1]
+            tgt.Type=Data[3]
+            tgt.Stealth=Data[4]
+            tgt.speed=Data[5]
+            tgt.ObsTime=Data[7]-Data[8]
+            tgt.ActTractTime=Data[8]
+            tgt.goalTime=Data[7]
+            tgt.trackAttempts=Data[9]
+            
+            
+            self.Target=tgt
+        elif(msg[0]==1):
+            pass
+     
+     
+     
+     
+            
 
     def probTest(self,probVal):
         #This function will be called to determine if we get a positive detection on the target
@@ -318,6 +350,10 @@ class Drone (LogicalProcess):
             return 1
         else:
             return 0
+
+
+
+
 
 
     def detection(self):
@@ -348,6 +384,12 @@ class Drone (LogicalProcess):
                 self.detectBool=0
                 self.sNeedBool=0
         self.updateTime(self.searchTime) # the cost of doing one search operation
+
+
+
+
+
+
 
 
     def search(self): # this function needs a lot of work. How are we actually doing the search method?!?
@@ -406,6 +448,10 @@ class Drone (LogicalProcess):
                                 break
 
 
+
+
+
+
     def ReturnToBase(self):
     #cant have any new assignments durning this time. May need to look at the messages to reject taskers.
     # need to delete target, return it to the queue.
@@ -421,16 +467,28 @@ class Drone (LogicalProcess):
         self.setJokerBingo()
         self.updateCurNode(self.EntNode)
 
+
+
+
+
     def flyTotgt(self,tgtx,tgty):
     # code to move the drone from the current location to the target's intel location. assuming the intel location is within 1 node of actual.
         distTgt=math.sqrt((self.xpos-tgtx)**2 +(self.ypos-tgty)**2) #distance to the intel location x,y
         TOT=int(distTgt/self.FlightSpeed)
         self.updateTime(TOT)
 
+
+
+
+
     def saveState(self):
         saver=DRONEState(self)
         self.stateQueue.append(saver)
 #        print self.LocalSimTime
+
+
+
+
 
 
     def restoreState(self,timeStamp):
@@ -442,6 +500,10 @@ class Drone (LogicalProcess):
                 temp=i
 #                print i.LocalSimTime
         self.Restore(i)
+
+
+
+
 
     def Restore(self,obj):
     #restore drone to old state.
@@ -470,15 +532,24 @@ class Drone (LogicalProcess):
         self.searchdwell=obj.searchdwell
         self.TarTime=obj.TarTime
 
+
+
+
+
+
     def ReturnTgt(self):
         #update the target
         self.target.ActTractTime+=self.TarTime
         self.target.trackAttempts+=1
         
-        
         retTgt=Message(2,self.target,self.uid,'IMINT',self.LocalSimTime) #create message
         self.sendMessage(retTgt)   # sends message
         self.removeTgt()
+
+
+
+
+
 
     def SendIMINT(self):
         #update the target
@@ -489,16 +560,35 @@ class Drone (LogicalProcess):
         self.sendMessage(sendMsg)
         self.removeTgt()
 
+
+
     def removeTgt(self):
         self.target=42
 
+
+
+
+
     def getNewTgt(self):
-        while(1): #Wait for a new message to come in
-            msg=self.getNextMessage() # Gets a new target
-            if(not(msg==None)):
-                self.subclassHandleMessage(msg)
-                print "New target aquired"
-                break
-
-
+        if(self.heuristic==1): # Naive Heuristic =Priorty order
+            queue=self.inputQueue.getInputQueue
+            for i in queue:
+                if(not(msg==None)):
+                    self.HandleMessage(msg)
+                    print "New target aquired"
+                    break
+        elif(self.heuristic==2): # Naive Heuristic
+            while(1): #Wait for a new message to come in
+                msg=self.getNextMessage() # Gets a new target
+                if(not(msg==None)):
+                    self.HandleMessage(msg)
+                    print "New target aquired"
+                    break
+        else: # Naive Heuristic
+            while(1): #Wait for a new message to come in
+                msg=self.getNextMessage() # Gets a new target
+                if(not(msg==None)):
+                    self.HandleMessage(msg)
+                    print "New target aquired"
+                    break
 
