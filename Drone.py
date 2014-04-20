@@ -91,11 +91,12 @@ class Drone (LogicalProcess):
         
 
         # Event loop iteration
-        #while True:
-            #print 'Drone %d event loop iteration' % (self.uid)
-            #msg = self.getNextMessage()
-        #if msg:
-            #self.handleMessage(msg)
+        while True:
+            time.sleep(2)
+            print 'Drone %d event loop iteration' % (self.uid)
+            msg = self.getNextMessage()
+        if msg:
+            self.handleMessage(msg)
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         # Begin at entry node. aka, only pass drone the entry node!!!
         

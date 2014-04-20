@@ -70,22 +70,24 @@ class DroneSimController(GlobalControlProcess):
 #        self.droneInQs.addMessage(1, Message(1, 'Data', 'Controller', 'Drone', 7))      
 #        msg = 'Message to drone' + str(0)
 #        self.droneInQs.addMessage(0, Message(1, 'Data', 'Controller', 'Drone', 5))         
-        
+        time.sleep(10)
         while True:
-            # GVT: Trigger round for cut C1 (IMINT is first LP in token ring)
-            self.imintInQ.addMessage(Message(1, GVTControlMessageData(self.gvtTokenRing), 'Controller', 'IMINT', self.gvt + 10)) # timestamp value??
+            # GVT: Trigger round for cut C1 (CAOC is first LP in token ring)
+            self.caocInQ.addMessage(Message(1, GVTControlMessageData(self.gvtTokenRing), 'Controller', 'IMINT', self.gvt + 100)) # timestamp value??
             msg = self.inputQueue.getNextMessage()
-            if msg != None and msg.msgType == 1 and msg.data is GVTControlMessageData:
+            while msg is None:
+                time.sleep(0.1)
+            if msg.msgType == 1 and isinstance(msg.data, GVTControlMessageData):
                 count = 0
                 for i in msg.data.counts:
                     count += msg.data.counts[i]
                 if count > 0:
                     # GVT: Send GVT value to all LPs
                     gvt = min(msg.data.tMin, msg.data.tRed)
-                    self.imintInQ.addMessage(Message(1, GVTValue(gvt), 'Controller', 'IMINT', self.gvt)) # timestamp value??                  
+                    self.caocInQ.addMessage(Message(1, GVTValue(gvt), 'Controller', 'IMINT', self.gvt + 110)) # timestamp value??                  
                 else:
                     # GVT: Trigger round for cut C2
-                    self.imintInQ.addMessage(msg)
+                    self.caocInQ.addMessage(msg)
 
         print "Time elapsed: ", time.time() - start_time, "s"
 

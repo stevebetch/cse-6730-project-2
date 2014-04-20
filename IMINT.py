@@ -139,6 +139,7 @@ class IMINT (LogicalProcess):
         
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
         self.inputQueue = Pyro4.Proxy(imintInQ_uri)
+        self.imintInQ = None
         LPIDs.append(self.inputQueue.LPID)
         
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
@@ -149,11 +150,11 @@ class IMINT (LogicalProcess):
 
         ## Event loop iteration
         while True:
-            ## print 'IMINT loop iteration'
+            print 'IMINT loop iteration'
             msg = self.getNextMessage()
             #print msg
             if msg:
                 self.handleMessage(msg)
                 print "Target Complete"
-            time.sleep(0.05)
+            time.sleep(2)
 

@@ -3,33 +3,29 @@ from threading import Thread
 
 class GVTWaitForThread(Thread):
     
-    def onGVTThreadFinished(self):
+    def onGVTThreadFinished(self, lpids, msg):
         pass  # this is deliberately set to 'pass' to make callback work
     
-    def __init__(self, parent, controlMsgCounts, localCounts):
+    def __init__(self, parent, controlMsg, localCounts):
         Thread.__init__(self)
         self.parent = parent
         self.LPID = parent.LPID
-        self.controlMsgCounts = controlMsgCounts
+        self.controlMsg = controlMsg
         self.localCounts = localCounts
         
     def run(self):
         numMsgsSentToThisLP = 0
-        for i in self.controlMsgCounts:
-            if i != this.LPID:
-                numMsgsSentToThisLP += controlMsgCounts[i]
+        LPIDs = []
+        for i in self.controlMsg.data.counts:
+            LPIDs.append(i)
+            if i != self.LPID:
+                numMsgsSentToThisLP += self.controlMsg.data.counts[i]
         while self.localCounts[self.LPID] < numMsgsSentToThisLP:
+            print self.localCounts[self.LPID]
+            print numMsgsSentToThisLP
             print 'LP %d: Waiting for all white messages sent to this LP to be received' % (self.LPID)
-            time.sleep(1)
-        self.parent and self.parent.onGVTThreadFinished()
-        
-class ControllerGVTData:
-    
-    def __init__(self):
-        self.tMin = 0   # min time stamp value among unprocessed msgs among LPs visited so far
-        self.tRed = 0   # min time stamp value of RED msgs sent by LPs visited so far
-        self.count = {}   # cumulative vector counters among LPs visited so far
-                          # count[i] is number of white msgs sent to P_i that have not yet been rcvd
+            time.sleep(5)
+        self.parent and self.parent.onGVTThreadFinished(LPIDs, self.controlMsg)
         
 class GVTControlMessageData():
     'Data content for GVT Control Message'
@@ -40,6 +36,7 @@ class GVTControlMessageData():
         self.counts = {}
         for i in range(len(lpids)):
             self.counts[i] = 0
+        self.LPIDs = lpids
             
     def addLocalCounts(self, localCounts):
         for i in self.counts:

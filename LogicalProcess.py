@@ -36,6 +36,7 @@ class LogicalProcess(SharedMemoryClient):
         self.inputMsgHistory = []
         self.localTime = 0
         self.gvtData = LPGVTData()
+        self.nextLPInTokenRingInQ = None
         
     def initGVTCounts(self, lpids):
         self.gvtData.initCounts(lpids)
@@ -102,12 +103,33 @@ class LogicalProcess(SharedMemoryClient):
             self.handleMessage(msg)  
             
     def forwardGVTControlMessage(self, msg):
-        msg.data.tMin = min(msg.data.tMin, self.tMin)
-        msg.data.tRed = min(msg.data.tRed, self.tRed)
-        # TODO: send to next LP in ring
+        msg.data.tMin = min(msg.data.tMin, self.gvtData.tMin)
+        msg.data.tRed = min(msg.data.tRed, self.gvtData.tRed)
+        # send to next LP in ring
+        if self.nextLPInTokenRingInQ is None:
+            self.getNextLPInTokenRing(msg.data.LPIDs)
+        self.nextLPInTokenRingInQ.addMessage(msg)
+        
+    def getNextLPInTokenRing(self, lpids):
+        print self.LPID
+        if (not (self.caocInQ is None) and self.caocInQ.getLPID() == self.LPID + 1):
+            print 'next LP is CAOC'
+            self.nextLPInTokenRingInQ = self.caocInQ
+        elif (not (self.imintInQ is None) and self.imintInQ.getLPID() == self.LPID + 1):
+            print 'next LP is IMINT'
+            self.nextLPInTokenRingInQ = self.imintInQ
+        else:
+            # Drone
+            self.nextLPInTokenRingInQ = self.droneInQs.getNextLPInputQueue(self.LPID)
+            # This is last LP in token ring, will return token back to controller
+            if self.nextLPInTokenRingInQ is None:
+                print 'this is last LP in token ring'
+                self.nextLPInTokenRingInQ = self.controllerInQ
+            else:
+                print 'next LP is a drone'
     
-    def onGVTThreadFinished(self):
-        self.gvtData.initCounts()
+    def onGVTThreadFinished(self, lpids, msg):
+        self.gvtData.initCounts(lpids)
         self.forwardGVTControlMessage(msg)
         print 'GVT thread callback executed'
     
@@ -124,7 +146,7 @@ class LogicalProcess(SharedMemoryClient):
             else:  # Cut C2
                 # Create new Thread to wait until num white msgs received by local process == num sent 
                 # to this process by all other processes
-                t = GVTWaitForThread(parent=self, controlData=msg.data, localCounts=self.gvtData.counts)
+                t = GVTWaitForThread(parent=self, controlMsg=msg, localCounts=self.gvtData.counts)
                 print 'Starting GVT C2 cut thread in background'
                 t.start()
                 print 'Continuing after starting GVT C2 cut thread...'            

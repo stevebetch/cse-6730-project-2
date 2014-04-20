@@ -226,7 +226,8 @@ class CAOC (LogicalProcess):
         self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
         
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
-        self.inputQueue = Pyro4.Proxy(caocInQ_uri)     
+        self.inputQueue = Pyro4.Proxy(caocInQ_uri)
+        self.caocInQ = None
         LPIDs.append(self.inputQueue.LPID)
         
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
@@ -253,8 +254,9 @@ class CAOC (LogicalProcess):
 
         # Event loop
         while True:
+            time.sleep(2)
             msg = self.getNextMessage()
-        #print 'CAOC iteration'
+            print 'CAOC iteration'
             if msg:
                 self.handleMessage(msg)
 

@@ -12,6 +12,17 @@ class DroneInputQueueContainer:
         self.queues[droneId] = LPInputQueue()
         self.queues[droneId].setLocalTime(0)
         
+    def getNextLPInputQueue(self, lpid):
+        print 'in getNextLPInputQueue'
+        for i in range(len(self.queues)):
+            print i
+            print self.queues[i].LPID
+            print lpid + 1
+            if self.queues[i].LPID == lpid + 1:
+                print 'found it'
+                return self.queues[i]
+        return None
+        
     def setLPIDs(self, drones):
         for drone in drones:
             self.queues[drone.uid].setLPID(drone.LPID)
