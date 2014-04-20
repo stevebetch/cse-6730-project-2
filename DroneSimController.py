@@ -68,19 +68,19 @@ class DroneSimController(GlobalControlProcess):
         self.droneInQs.setLPIDs(self.drones)
         
         # Mark: Test code can be commented out
-        self.imintInQ.addMessage(Message(1, 'Data', 'Controller', 'IMINT', 5))
-        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 2))
-        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 3))
-        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 4))
-        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 5))        
-        self.inputQueue.addMessage(Message(1, 'Data', 'Controller', 'Controller', 3))        
-        print 'In Controller:', self.inputQueue.getNextMessage()                    
-        msg = 'Message to drone' + str(2)
-        self.droneInQs.addMessage(2, Message(1, 'Data', 'Controller', 'Drone', 6))     
-        msg = 'Message to drone' + str(1)
-        self.droneInQs.addMessage(1, Message(1, 'Data', 'Controller', 'Drone', 7))      
-        msg = 'Message to drone' + str(0)
-        self.droneInQs.addMessage(0, Message(1, 'Data', 'Controller', 'Drone', 5))         
+#        self.imintInQ.addMessage(Message(1, 'Data', 'Controller', 'IMINT', 5))
+#        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 2))
+#        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 3))
+#        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 4))
+#        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 5))        
+#        self.inputQueue.addMessage(Message(1, 'Data', 'Controller', 'Controller', 3))        
+#        print 'In Controller:', self.inputQueue.getNextMessage()                    
+#        msg = 'Message to drone' + str(2)
+#        self.droneInQs.addMessage(2, Message(1, 'Data', 'Controller', 'Drone', 6))     
+#        msg = 'Message to drone' + str(1)
+#        self.droneInQs.addMessage(1, Message(1, 'Data', 'Controller', 'Drone', 7))      
+#        msg = 'Message to drone' + str(0)
+#        self.droneInQs.addMessage(0, Message(1, 'Data', 'Controller', 'Drone', 5))         
 
 
         print "Time elapsed: ", time.time() - start_time, "s"

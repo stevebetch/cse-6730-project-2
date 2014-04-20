@@ -91,16 +91,16 @@ class Drone (LogicalProcess):
         
         self.setEntry(mapObj) #MUST PASS THE ENTRY NODE!!! (map.MapEntryPt)
         self.currentNode=mapObj #the only time we directly set the current node.
-        self.LocalSimTime=0
-        self.getNextMessage()
+        self.LocalSimTime=self.localTime
+        self.removeTgt() #Starts the logic to get a new target
         
         if(self.heuristic==1): #Naive heuristic
             while(1):
-                self.getNextMessage()
+                
                 print self.target
                 if(self.target==42): #NO TARGET IN QUEUE
                     self.getNewTgt()
-                    self.saveState()
+                
                 
                 
          # Check fuel before anything else!!
@@ -545,7 +545,7 @@ class Drone (LogicalProcess):
         retTgt=Message(2,self.target,self.uid,'IMINT',self.LocalSimTime) #create message
         self.sendMessage(retTgt)   # sends message
         self.removeTgt()
-
+        self.setLocalTime(self.LocalSimTime)
 
 
 
@@ -559,36 +559,30 @@ class Drone (LogicalProcess):
         sendMsg=Message(2,self.target,self.uid,'IMINT',self.LocalSimTime)
         self.sendMessage(sendMsg)
         self.removeTgt()
+        self.setLocalTime(self.LocalSimTime)
 
 
 
     def removeTgt(self):
         self.target=42
-
+        data=[self.uid,'Idle',self.currentNode]
+        sendMes=Message(3,data,self.uid,'CAOC',self.LocalSimTime)
+        sendMes.printData(1)
+        self.sendMessage(sendMes)
+        self.setLocalTime(self.LocalSimTime)
 
 
 
 
     def getNewTgt(self):
-        if(self.heuristic==1): # Naive Heuristic =Priorty order
-            queue=self.inputQueue.getInputQueue
-            for i in queue:
-                if(not(msg==None)):
-                    self.HandleMessage(msg)
-                    print "New target aquired"
-                    break
-        elif(self.heuristic==2): # Naive Heuristic
-            while(1): #Wait for a new message to come in
-                msg=self.getNextMessage() # Gets a new target
-                if(not(msg==None)):
-                    self.HandleMessage(msg)
-                    print "New target aquired"
-                    break
-        else: # Naive Heuristic
-            while(1): #Wait for a new message to come in
-                msg=self.getNextMessage() # Gets a new target
-                if(not(msg==None)):
-                    self.HandleMessage(msg)
-                    print "New target aquired"
-                    break
+        self.setLocalTime(self.LocalSimTime)
+        while(1): #Wait for a new message to come in
+            msg=self.getNextMessage() # Gets a new target
+            if(not(msg==None)):
+                self.HandleMessage(msg)
+                print "New target aquired"
+                sendMes=Message(3,'Busy',self.uid,'CAOC',self.currentNode)
+                self.sendMessage(sendMes)
+                break
+
 

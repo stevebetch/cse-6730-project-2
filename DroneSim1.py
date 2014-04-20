@@ -15,7 +15,7 @@ PYRO_HOST = ''
 PYRO_PORT = 12778
 
 # parameters (later get from file)
-numDrones = 3
+numDrones = 1
 typeOfDrone = "DroneType1"
 numTargets = 10
 seedNum = 1

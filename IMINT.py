@@ -153,7 +153,7 @@ class IMINT (LogicalProcess):
             if(not(id==None)):
                 break
     #print id
-        LPIDs.append(self.droneInQs.getLPIDs())
+        LPIDs.append(id)
         
         self.initGVTCounts(LPIDs)        
 
