@@ -1,4 +1,4 @@
-import sys
+import sys,time
 from Drone import *
 from GlobalControlProcess import *
 from multiprocessing import Process
@@ -68,12 +68,12 @@ class DroneSimController(GlobalControlProcess):
         self.droneInQs.setLPIDs(self.drones)
         
         # Mark: Test code can be commented out
-#        self.imintInQ.addMessage(Message(1, 'Data', 'Controller', 'IMINT', 5))
-#        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 2))
-#        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 3))
-#        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 4))
-#        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 5))        
-#        self.inputQueue.addMessage(Message(1, 'Data', 'Controller', 'Controller', 3))        
+        self.imintInQ.addMessage(Message(1, 'Data', 'Controller', 'IMINT', 5))
+        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 2))
+        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 3))
+        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 4))
+        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 5))
+        self.inputQueue.addMessage(Message(1, 'Data', 'Controller', 'Controller', 3))
 #        print 'In Controller:', self.inputQueue.getNextMessage()                    
 #        msg = 'Message to drone' + str(2)
 #        self.droneInQs.addMessage(2, Message(1, 'Data', 'Controller', 'Drone', 6))     

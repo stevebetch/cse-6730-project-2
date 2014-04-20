@@ -11,22 +11,35 @@ from DroneInputQueueContainer import *
 import socket
 import threading
 
-PYRO_HOST = ''
-PYRO_PORT = 12778
 
-# parameters (later get from file)
-numDrones = 1
-typeOfDrone = "DroneType1"
-numTargets = 10
-seedNum = 1
-mapX=300
-mapY=300
-numStreets=50
-heuristic = 1
 
 #
 # Function definitions
 #
+PYRO_HOST = ''
+PYRO_PORT = 12778
+
+
+def createNewDrone(uid, droneType,heuristic):
+    print('Creating new drone of type ' + droneType)
+    droneref = Drone(uid, droneType,heuristic)
+    droneref.setConnectionParams(PYRO_HOST, PYRO_PORT)
+    return droneref
+    
+def initIMINT(heuristic):
+    imintref = IMINT(heuristic)
+    imintref.setConnectionParams(PYRO_HOST, PYRO_PORT)
+    print('IMINT initialized')
+    return imintref
+
+def initCAOC(randNodes,Data):
+    caocref = CAOC(Data.numDrones,Data.heuristic)
+    hmint = HMINT(Data.numTargets, Data.seedNum, randNodes)
+    caocref.setHMINT(hmint)
+    hmint.setCAOC(caocref)
+    caocref.setConnectionParams(PYRO_HOST, PYRO_PORT)
+    print('HMINT/CAOC initialized')
+    return caocref
 
 def get_local_ip_address():
     ipaddr = ''
@@ -35,53 +48,33 @@ def get_local_ip_address():
         s.connect(('1.1.1.1', 8000))
         ipaddr = s.getsockname()[0]
         s.close()
-        
+    
     except:
         pass
     return ipaddr
 
-def createNewDrone(uid, droneType,heuristic):
-    print('Creating new drone of type ' + droneType)
-    droneref = Drone(uid, droneType,heuristic)
-    droneref.setConnectionParams(PYRO_HOST, PYRO_PORT)
-    return droneref
-    
-def initIMINT():
-    imintref = IMINT(heuristic)
-    imintref.setConnectionParams(PYRO_HOST, PYRO_PORT)
-    print('IMINT initialized')
-    return imintref
-
-def initCAOC(randNodes):
-    caocref = CAOC(numDrones,heuristic)
-    hmint = HMINT(numTargets, seedNum, randNodes)
-    caocref.setHMINT(hmint)
-    hmint.setCAOC(caocref)
-    caocref.setConnectionParams(PYRO_HOST, PYRO_PORT)
-    print('HMINT/CAOC initialized')
-    return caocref
-    
 #
 # Main method
 #
 
-def main():
-        
+def main(Data):
+
+    
     #
     # initialization
     #
     print 'Starting run'
-    Nuisance=.8
-    print "Using Nuisance mean of:", Nuisance
+    
+    #print "Using Nuisance mean of:", Nuisance
     
     PYRO_HOST=get_local_ip_address()
-    print PYRO_HOST
+    print "Using IP address:", PYRO_HOST
     
     # Urban network/map
-    Map = GenMap(mapX,mapY)
-    Map.map(numStreets,Nuisance)
+    Map = GenMap(Data.mapX,Data.mapY)
+    Map.map(Data.numStreets,Data.Nuisance)
     randNodes=[]
-    for i in range(numTargets):
+    for i in range(Data.numTargets):
         randNodes.append(Map.RandNode())
     
     # Create PYRO remote object daemon
@@ -89,14 +82,14 @@ def main():
     ns = Pyro4.locateNS()    
     
     # Create CAOC/HMINT, will be separate process started by Controller
-    caoc = initCAOC(randNodes)
+    caoc = initCAOC(randNodes,Data)
     caocInQ = LPInputQueue()
     caocInQ.setLocalTime(0)   
     caocInQ_uri = daemon.register(caocInQ)
     ns.register("inputqueue.caoc", caocInQ_uri)    
     
     # Create IMINT, will be separate process started by Controller
-    imint = initIMINT()
+    imint = initIMINT(Data.heuristic)
     imintInQ = LPInputQueue()
     imintInQ.setLocalTime(0)
     imintInQ_uri = daemon.register(imintInQ)
@@ -113,9 +106,9 @@ def main():
     # Create drone entities, each will be separate process started by Controller
     droneInQs = DroneInputQueueContainer()
     drones = []
-    for i in range(numDrones):
+    for i in range(Data.numDrones):
         dronename = i
-        drone = createNewDrone(dronename, typeOfDrone,heuristic)
+        drone = createNewDrone(dronename, Data.typeOfDrone,Data.heuristic)
         drones.append(drone)
         controller.addDrone(drone)
         droneInQs.addDroneInputQueue(dronename)
@@ -123,7 +116,7 @@ def main():
     ns.register("inputqueue.drones", droneInQs_uri)    
 
     #creating semaphore
-    a=threading.Semaphore(numDrones)
+#a=threading.Semaphore(numDrones)
 
 
 
@@ -135,10 +128,10 @@ def main():
     # Drones
     pDrones = []
     for i in range(0, len(drones)):
-        a.acquire()
+        # a.acquire()
         pDrone = Process(group=None, target=drones[i], name='drone'+str(drones[i].uid), args=(Map.MapEntryPt,)) 
         pDrones.append(pDrone)
-        a.release()
+        #a.release()
         pDrone.start()    
     
     
