@@ -1,9 +1,9 @@
 import sys
 from Message import *
 from SharedMemoryClient import *
-from LPGVTData import *
+from GVT import *
 from DroneInputQueueContainer import *
-
+from threading import Thread
 
 
 class LogicalProcess(SharedMemoryClient):
@@ -52,13 +52,13 @@ class LogicalProcess(SharedMemoryClient):
         if (msg.recipient == 'CAOC'):
             self.caocInQ.addMessage(msg)
             if msg.color == LPGVTData.WHITE:
-                self.gvtData.counts[self.caocInQ.LPID] += 1
+                self.gvtData.counts[self.caocInQ.getLPID()] += 1
             else:
                 self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
         elif (msg.recipient == 'IMINT'):
             self.imintInQ.addMessage(msg)
             if msg.color == LPGVTData.WHITE:
-                self.gvtData.counts[self.imintInQ.LPID] += 1
+                self.gvtData.counts[self.imintInQ.getLPID()] += 1
             else:
                 self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)                
         elif (msg.recipient == 'Controller'):
@@ -99,19 +99,35 @@ class LogicalProcess(SharedMemoryClient):
         
         # process straggler if not an anti-message
         if (not msg.isAntiMessage()):
-            self.handleMessage(msg)
+            self.handleMessage(msg)  
+            
+    def forwardGVTControlMessage(self, msg):
+        msg.data.tMin = min(msg.data.tMin, self.tMin)
+        msg.data.tRed = min(msg.data.tRed, self.tRed)
+        # TODO: send to next LP in ring
+    
+    def onGVTThreadFinished(self):
+        self.gvtData.initCounts()
+        self.forwardGVTControlMessage(msg)
+        print 'GVT thread callback executed'
     
     def handleMessage(self, msg):
 
-        if msg.msgType == 1: # and ???
+        if msg.msgType == 1 and isinstance(msg.data, GVTControlMessageData):
             # handle GVT control message
             if self.gvtData.color == LPGVTData.WHITE:
+                # Cut C1, change color to red and add local counts of white msgs sent to control msg
                 self.gvtData.tRed = LPGVTData.INF
                 self.gvtData.color = LPGVTData.RED
-            # wait until V_i[i] + CMsg_Count[i] <= 0
-            # send (min(CMsg_T_min, T_min), min(CMsg_T_red, T_red), V_i + CMsg_Count) to next LP in ring
-            # V_i = 0 (reset all counts)
-                
+                msg.data.addLocalCounts(self.gvtData.counts)
+                self.forwardGVTControlMessage(msg)
+            else:  # Cut C2
+                # Create new Thread to wait until num white msgs received by local process == num sent 
+                # to this process by all other processes
+                t = GVTWaitForThread(parent=self, controlData=msg.data, localCounts=self.gvtData.counts)
+                print 'Starting GVT C2 cut thread in background'
+                t.start()
+                print 'Continuing after starting GVT C2 cut thread...'            
         else:
             if msg.color == LPGVTData.WHITE:
                 self.gvtData.counts[self.LPID] -= 1

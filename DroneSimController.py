@@ -1,6 +1,7 @@
 import sys,time
 from Drone import *
 from GlobalControlProcess import *
+from GVT import *
 from multiprocessing import Process
 import Pyro4
 from DroneSim1 import *
@@ -23,23 +24,14 @@ class DroneSimController(GlobalControlProcess):
         self.imint = imint
         self.drones = []
         self.gvt = 0
+        self.gvtTokenRing = [self.imint.LPID, self.caoc.LPID]
 
     def __call__(self):
         self.run()
 
     def addDrone(self, drone):
         self.drones.append(drone)
-
-    def advanceTime(time):
-        pass
-
-    def updateGVT():
-        minTimesList = []
-        minTimesList.append(caoc.requestGVT())
-        minTimesList.append(imint.requestGVT())
-        for drone in drones:
-            minTimesList.append(drone.requestGVT())
-        gvt = min(minTimesList)
+        self.gvtTokenRing.append(drone.LPID)
 
     def run(self):
 
@@ -57,15 +49,12 @@ class DroneSimController(GlobalControlProcess):
         
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
         self.caocInQ = Pyro4.Proxy(caocInQ_uri)
-        self.caocInQ.setLPID(self.caoc.LPID)
         
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
         self.imintInQ = Pyro4.Proxy(imintInQ_uri)
-        self.imintInQ.setLPID(self.imint.LPID)
         
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
-        self.droneInQs.setLPIDs(self.drones)
         
         # Mark: Test code can be commented out
         self.imintInQ.addMessage(Message(1, 'Data', 'Controller', 'IMINT', 5))
@@ -81,7 +70,22 @@ class DroneSimController(GlobalControlProcess):
 #        self.droneInQs.addMessage(1, Message(1, 'Data', 'Controller', 'Drone', 7))      
 #        msg = 'Message to drone' + str(0)
 #        self.droneInQs.addMessage(0, Message(1, 'Data', 'Controller', 'Drone', 5))         
-
+        
+        while True:
+            # GVT: Trigger round for cut C1 (IMINT is first LP in token ring)
+            self.imintInQ.addMessage(Message(1, GVTControlMessageData(self.gvtTokenRing), 'Controller', 'IMINT', self.gvt + 10)) # timestamp value??
+            msg = self.inputQueue.getNextMessage()
+            if msg != None and msg.msgType == 1 and msg.data is GVTControlMessageData:
+                count = 0
+                for i in msg.data.counts:
+                    count += msg.data.counts[i]
+                if count > 0:
+                    # GVT: Send GVT value to all LPs
+                    gvt = min(msg.data.tMin, msg.data.tRed)
+                    self.imintInQ.addMessage(Message(1, GVTValue(gvt), 'Controller', 'IMINT', self.gvt)) # timestamp value??                  
+                else:
+                    # GVT: Trigger round for cut C2
+                    self.imintInQ.addMessage(msg)
 
         print "Time elapsed: ", time.time() - start_time, "s"
 

@@ -84,7 +84,8 @@ def main(Data):
     # Create CAOC/HMINT, will be separate process started by Controller
     caoc = initCAOC(randNodes,Data)
     caocInQ = LPInputQueue()
-    caocInQ.setLocalTime(0)   
+    caocInQ.setLocalTime(0)
+    caocInQ.setLPID(caoc.LPID)
     caocInQ_uri = daemon.register(caocInQ)
     ns.register("inputqueue.caoc", caocInQ_uri)    
     
@@ -92,6 +93,7 @@ def main(Data):
     imint = initIMINT(Data.heuristic)
     imintInQ = LPInputQueue()
     imintInQ.setLocalTime(0)
+    imintInQ.setLPID(imint.LPID)
     imintInQ_uri = daemon.register(imintInQ)
     ns.register("inputqueue.imint", imintInQ_uri)    
     
@@ -112,6 +114,7 @@ def main(Data):
         drones.append(drone)
         controller.addDrone(drone)
         droneInQs.addDroneInputQueue(dronename)
+    droneInQs.setLPIDs(drones)
     droneInQs_uri = daemon.register(droneInQs)
     ns.register("inputqueue.drones", droneInQs_uri)    
 

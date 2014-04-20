@@ -215,20 +215,29 @@ class CAOC (LogicalProcess):
     # Output: Starts associated objects and queues
     # Description: Save state, start queues, start linked HMINT      
     def run(self):
+        
         print('CAOC/HMINT Running')
-
-
 
         # Get the message queue objects from Pyro    
         nameserver = Pyro4.locateNS()
+        LPIDs = []
+        
         controllerInQ_uri = nameserver.lookup('inputqueue.controller')
         self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
+        
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
-        self.inputQueue = Pyro4.Proxy(caocInQ_uri)
+        self.inputQueue = Pyro4.Proxy(caocInQ_uri)     
+        LPIDs.append(self.inputQueue.LPID)
+        
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
         self.imintInQ = Pyro4.Proxy(imintInQ_uri)
+        LPIDs.append(self.imintInQ.LPID)
+        
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
+        LPIDs.append(self.droneInQs.getLPIDs())
+        
+        self.initGVTCounts(LPIDs)        
         
         #self.hmint.start()
         #self.hmint=HMINT(self.numTargets,slf.seedNum,randNodes)

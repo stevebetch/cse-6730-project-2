@@ -10,6 +10,9 @@ class LPInputQueue():
     def setLPID(self, lpid):
         self.LPID = lpid
         
+    def getLPID(self):
+        return self.LPID
+        
     def getLength(self):
         return len(self.q)
     

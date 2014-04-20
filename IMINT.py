@@ -139,23 +139,13 @@ class IMINT (LogicalProcess):
         
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
         self.inputQueue = Pyro4.Proxy(imintInQ_uri)
-        LPIDs.append(self.caocInQ.LPID)
+        LPIDs.append(self.inputQueue.LPID)
         
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
-        id=None
-        while(1):
-            try:
-                id=self.droneInQs.getLPIDs()
-            except:
-                pass
-            
-            if(not(id==None)):
-                break
-    #print id
-        LPIDs.append(id)
+        LPIDs.append(self.droneInQs.getLPIDs())
         
-        self.initGVTCounts(LPIDs)        
+        self.initGVTCounts(LPIDs)
 
         ## Event loop iteration
         while True:

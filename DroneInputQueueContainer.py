@@ -4,6 +4,9 @@ class DroneInputQueueContainer:
     
     def __init__(self):
         self.queues = dict()
+        
+    def __len__(self):
+        return len(self.queues)
     
     def addDroneInputQueue(self, droneId):
         self.queues[droneId] = LPInputQueue()
