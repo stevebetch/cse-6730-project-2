@@ -10,7 +10,7 @@ class Target:
 
     def __init__(self,obj):
         # initialize parameters for target
-        self.loitertime= random.uniform(180,600) #loiter at first node for 2-10 min
+        self.loitertime= random.uniform(60,600) #loiter at first node for 1-10 min, based on survey data for length of average face-to-face conversation
         self.node=obj #pass the target the pointer to the map node.
         self.stay=.3 #probability a person will loiter on a node
         self.intelVal=1 #set at one for now, but will likely be a discrete distribution
