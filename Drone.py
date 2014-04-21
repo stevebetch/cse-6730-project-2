@@ -1,4 +1,4 @@
-import sys
+import sys,math
 from LogicalProcess import *
 from Map import GenMap
 from nodes import EntryNode
@@ -88,23 +88,33 @@ class Drone (LogicalProcess):
         self.inputQueue = self.droneInQs.getInputQueue(self.uid)
         
         self.initGVTCounts(LPIDs)  
+    
+        count=0
         
-
+        self.setEntry(mapObj) #MUST PASS THE ENTRY NODE!!! (map.MapEntryPt)
+        self.currentNode=mapObj #the only time we directly set the current node.
+        self.LocalSimTime=self.localTime
+        self.setJokerBingo()
+        
         # Event loop iteration
         while True:
             time.sleep(2)
             print 'Drone %d event loop iteration' % (self.uid)
             msg = self.getNextMessage()
-        if msg:
-            self.handleMessage(msg)
+            print "Drone message:",msg
+            if msg:
+                self.handleMessage(msg)
+                break
+#            if count>6:
+#                break
+#            count+=1
+            self.updateTime(1)
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         # Begin at entry node. aka, only pass drone the entry node!!!
         
-        self.setEntry(mapObj) #MUST PASS THE ENTRY NODE!!! (map.MapEntryPt)
-        self.currentNode=mapObj #the only time we directly set the current node.
-        self.LocalSimTime=self.localTime
-        self.removeTgt() #Starts the logic to get a new target
-        
+       
+#        self.removeTgt() #Starts the logic to get a new target
+
         if(self.heuristic==1): #Naive heuristic
             while(1):
                 
@@ -250,16 +260,17 @@ class Drone (LogicalProcess):
         self.MaintenanceActionTime-=timeDif
         self.LocalSimTime+=timeDif
         self.timeOnNode+=timeDif
-        if(self.timeOnNode>=self.target.transitTime): #The target has had enough time to move.
-            if(self.target.loiterbit):
-                self.target.loitertime-=self.timeOnNode
-                self.timeOnNode=0
-                if(self.target.loitertime<0):
-                    self.timeOnNode=self.target.loitertime*-1
-                    self.target.loiterbit=0
-            else:
-                self.target.movement()
-                self.timeOnNode=self.timeOnNode-self.target.transitTime
+        if(not(self.target==42)):
+            if(self.timeOnNode>=self.target.transitTime): #The target has had enough time to move.
+                if(self.target.loiterbit):
+                    self.target.loitertime-=self.timeOnNode
+                    self.timeOnNode=0
+                    if(self.target.loitertime<0):
+                        self.timeOnNode=self.target.loitertime*-1
+                        self.target.loiterbit=0
+                else:
+                    self.target.movement()
+                    self.timeOnNode=self.timeOnNode-self.target.transitTime
 
         print "\nNew Joker:", self.Joker, "New Bingo:",self.Bingo
         if(self.Bingo<=0): # Reached bingo. need to RTB.
@@ -355,8 +366,14 @@ class Drone (LogicalProcess):
 
     def probTest(self,probVal):
         #This function will be called to determine if we get a positive detection on the target
-        testprob=random.uniform(0,1)
-        if(probVal<=testprob):
+
+        testprob=random.uniform(0,1)# JANE, this is the distribution you wanted to work on.
+        
+        #Fuseing the probVal, which is the map Nusicnce factor, with target properties.
+        TotProb= probVal*self.target.Stealth
+
+        
+        if(TotProb<=testprob):
             # Weve got a positive hit!
             return 1
         else:
@@ -466,8 +483,9 @@ class Drone (LogicalProcess):
     def ReturnToBase(self):
     #cant have any new assignments durning this time. May need to look at the messages to reject taskers.
     # need to delete target, return it to the queue.
-        self.ReturnTgt()
-
+        if(not(self.target==42)):
+            self.ReturnTgt()
+        self.removeTgt()
         self.DistEntry=math.sqrt((self.xpos-self.EntNode.xpos)**2 +(self.ypos-self.EntNode.ypos)**2)
         timeToentry=int(self.DistEntry/self.FlightSpeed)
         self.updateTime(timeToentry) #update sim time
@@ -578,7 +596,7 @@ class Drone (LogicalProcess):
         self.target=42
         data=[self.uid,'Idle',self.currentNode]
         sendMes=Message(3,data,self.uid,'CAOC',self.LocalSimTime)
-        sendMes.printData(1)
+#        sendMes.printData(1)
         self.sendMessage(sendMes)
         self.setLocalTime(self.LocalSimTime)
 
@@ -594,6 +612,8 @@ class Drone (LogicalProcess):
                 print "New target aquired"
                 sendMes=Message(3,'Busy',self.uid,'CAOC',self.currentNode)
                 self.sendMessage(sendMes)
+                timedif=math.abs(self.LocalSimTime-self.localTime)
+                self.updateTime(timedif)
                 break
 
 

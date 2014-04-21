@@ -96,7 +96,8 @@ class CAOC (LogicalProcess):
                 for i in range(len(self.drones)):
                     if self.drones[i][0]=="Idle":
                         newTgtMsg=Message(2,targetData,self.id,i,self.localTime)
-                        self.sendMessage(newTgtMsg)    
+                        self.sendMessage(newTgtMsg)
+                        print "sent message to idle drone:",i
                         break
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
                 else:
@@ -174,12 +175,13 @@ class CAOC (LogicalProcess):
     #        Local or timer heuristic: Nearest target is assigned to drone (out of priority order)
     def subclassHandleMessage(self, msg):
         # determine message type and process accordingly
+#       ss print "Handling message in CAOC, proirity queue length:", len(self.priorityQueue)
         if msg.msgType==1:
             # TBD
             pass
         elif msg.msgType==2:
             # Start the add target process with the target data of the message
-            self.addTarget(msg[1])
+            self.addTarget(msg.data[1])
         elif msg.msgType==3:
             # Update drone status list
             self.drones[msg.data[0]]=[msg.data[1],msg.data[2]]
@@ -189,7 +191,8 @@ class CAOC (LogicalProcess):
                 if (self.drones[msg.data[0]][1]=="Idle") and (len(self.priorityQueue)!=0):
                     newTgtData=self.priorityQueue.pop()
                     newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
-                    self.sendMessage(newTgtMsg) 
+                    self.sendMessage(newTgtMsg)
+                    newTgtData.printData()
             # Check which target assignment heruristic is in use
             elif self.heuristic==2 or self.heuristic==3:
                 # If the drone is idle and there are target assignments in the queue, assign that drone the nearest target
@@ -227,7 +230,7 @@ class CAOC (LogicalProcess):
         
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
         self.inputQueue = Pyro4.Proxy(caocInQ_uri)
-        self.caocInQ = None
+        self.caocInQ = self.inputQueue
         LPIDs.append(self.inputQueue.LPID)
         
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
@@ -243,20 +246,26 @@ class CAOC (LogicalProcess):
         #self.hmint.start()
         #self.hmint=HMINT(self.numTargets,slf.seedNum,randNodes)
         self.saveState()
+        for i in range(self.hmint.numTargets):
+            self.hmint.generateNextTarget()
+            print "New target added from HMINT"
         
         ## Mark: Test code can be removed
-        t=[1,85,85,"Vehicle",0.8,1.2,[3,10],30,0,0]
-        u=[2,95,95,"Vehicle",0.8,1.2,[3,10],30,0,0]
-        self.priorityQueue=[t]
-        self.addTarget(u)
-        print 'CAOC Priority Queue: '
-        print self.priorityQueue
+#        t=[1,85,85,"Vehicle",0.8,1.2,[3,10],30,0,0]
+#        u=[2,95,95,"Vehicle",0.8,1.2,[3,10],30,0,0]
+#        self.priorityQueue=[t]
+#        self.addTarget(u)
+        print 'CAOC Priority Queue: ', self.priorityQueue
+#        print "lenghth of input queue:", len(self.inputQueue.q)
 
         # Event loop
         while True:
             time.sleep(2)
             msg = self.getNextMessage()
-            print 'CAOC iteration'
+            print 'CAOC iteration. Local time',self.localTime
+#            print 'CAOC Priority Queue: '
+#            print self.priorityQueue
             if msg:
                 self.handleMessage(msg)
+                msg.printData(1)
 

@@ -155,6 +155,8 @@ class IMINT (LogicalProcess):
             #print msg
             if msg:
                 self.handleMessage(msg)
-                print "Target Complete"
+                if msg.msgType==2:
+                    print "IMINT passed a traget"
+            
             time.sleep(2)
 

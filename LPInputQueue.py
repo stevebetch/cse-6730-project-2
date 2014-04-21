@@ -39,7 +39,9 @@ class LPInputQueue():
     def getNextMessage(self):
         if len(self.q) == 0:
             return None
+#        print "Length of input queue:", len(self.q)
         msg = self.q.pop()
+
         if msg.timestamp == self.localTMin:
             self.recalculateLocalTMin()
         return msg

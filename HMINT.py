@@ -70,7 +70,7 @@ class HMINT:
         self.msgTimestamp=self.msgTimestamp+random.triangular(23,70,35)
         tgtData = [tgtID,tgtIntelValue,tgtIntelPriority,tgtType,tgtStealth,tgtSpeed,tgtPredLoc,tgtGoalTrackTime,tgtActualTrackTime,tgtTrackAttempts]
         tgtMsg=Message(2,tgtData,'CAOC','CAOC',self.msgTimestamp)
-        self.caoc.inputQueue.addMessage(tgtMsg) # will this mess up the anti-message process?
+        self.caoc.sendMessage(tgtMsg) # will this mess up the anti-message process?
         self.count = self.count + 1
     
     # Start
