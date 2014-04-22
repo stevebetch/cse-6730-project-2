@@ -1,4 +1,5 @@
 import Queue
+from GVT import *
 
 class LPInputQueue():
     
@@ -36,14 +37,49 @@ class LPInputQueue():
     def addMessage(self, msg):
         self.insertAtBack(msg)
         
+    def remove(self, msg):
+        self.q.remove(msg)
+        if msg.timestamp == self.localTMin:
+            self.recalculateLocalTMin()        
+        
     def getNextMessage(self):
+        
         if len(self.q) == 0:
             return None
-#        print "Length of input queue:", len(self.q)
-        msg = self.q.pop()
-
-        if msg.timestamp == self.localTMin:
-            self.recalculateLocalTMin()
+        
+        msg = None
+        removeMsg = None
+        smallestTimestamp = 99999999999999
+        for currMsg in self.q:
+            if currMsg is None:
+                # catch the case of null message
+                removeMsg = currMsg                
+            if currMsg.msgType == 1 and isinstance(currMsg.data, GVTControlMessageData):
+                # handle control messages first
+                msg = currMsg
+                break            
+            if currMsg.isAntiMessage():
+                if currMsg.timestamp <= self.localTime:
+                    # corresponding message was already processed, need to process this
+                    # antimessage, which should trigger rollback
+                    smallestTimestamp = currMsg.timestamp
+                    msg = currMsg
+                    break
+                else:
+                    # corresponding message hasn't arrived yet, leave in queue
+                    continue
+            # regular message
+            if currMsg.timestamp < smallestTimestamp:
+                smallestTimestamp = currMsg.timestamp
+                msg = currMsg
+                
+        if not(removeMsg is None):
+            self.q.remove(removeMsg)
+            
+        if not(msg is None):
+            self.q.remove(msg)
+            if msg.timestamp == self.localTMin:
+                self.recalculateLocalTMin()                      
         return msg
     
     def recalculateLocalTMin(self):
@@ -94,7 +130,8 @@ class LPInputQueue():
             # check if time is before currTime, if so then do rollback
             if msg.timestamp <= self.localTime:
                 self.insertAtFront(msg) # will trigger rollback
-                print 'Straggler message found, should trigger rollback'
+                if not(isinstance(msg.data, GVTControlMessageData)):
+                    print 'Straggler message found, should trigger rollback'
             else:
                 self.q.insert(0, msg) #inserts at end of queue
                 print 'Adding message to queue'

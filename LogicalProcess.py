@@ -166,7 +166,9 @@ class LogicalProcess(SharedMemoryClient):
                 print 'Continuing after starting GVT C2 cut thread...'            
         else:
             if msg.color == LPGVTData.WHITE:
+                print 'LP %d recvd WHITE msg, rcvd count was %d' % (self.LPID, self.gvtData.counts[self.LPID])
                 self.gvtData.counts[self.LPID] -= 1
+                print 'LP %d recvd WHITE msg, rcvd count is now %d' % (self.LPID, self.gvtData.counts[self.LPID])
             if msg.timestamp < self.localTime:
                 self.rollback(msg)
             else:
@@ -178,47 +180,20 @@ class LogicalProcess(SharedMemoryClient):
     def getNextMessage(self):
         msg = None
         q = None
+        
+        # if a drone, get local copy of input queue from DroneInputQueueContainer shared object 
         if self.inputQueue is None:
             q = self.droneInQs.getInputQueue(self.uid)
         else:
             q = self.inputQueue
 
+        # get smallest timestamp message
         if q.hasMessages():
-            # peek at first message
-            firstMsg = q.getNextMessage()
-            if firstMsg is None:
-                q.remove(firstMsg)
-            elif (not firstMsg.isAntiMessage()):
-                #print 'Found First Message (not an AntiMessage)'
-                return firstMsg
-            elif (firstMsg.timestamp <= self.localTime):
-                print 'Found First Message (AntiMessage w/ ts <= localTime)'
-                return firstMsg
-            else:
-                #print 'Found First Message is an AntiMessage, returning to queue'
-                q.justPut(firstMsg)
-                # loop until non-antiMessage is found
-                while True:
-                    currMsg = q.getNextMessage()
-                    if currMsg == firstMsg:
-                        q.justPut(currMsg)
-                        #print 'All messages in queue are AntiMessages'
-                        break
-                    if (currMsg.isAntiMessage()):
-                        if (firstMsg.timestamp <= self.localTime):
-                            print 'Found Message (AntiMessage w/ ts <= localTime)'
-                            return currMsg
-                        else:
-                            # put it back and get another one
-                            #print 'Found AntiMessage, returning to queue'
-                            q.justPut(currMsg)                        
-                    else:
-                        #print 'Found Message'
-                        msg = currMsg
-                        break
-                    
-                if self.inputQueue is None:
-                    self.droneInQs.setInputQueue(self.uid, q)
+            msg = q.getNextMessage()
+            
+        # if a drone, save modified input queue back into DroneInputQueueContainer shared object    
+        if self.inputQueue is None:
+            self.droneInQs.setInputQueue(self.uid, q)
         
         return msg        
                 

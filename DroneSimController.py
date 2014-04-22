@@ -57,25 +57,19 @@ class DroneSimController(GlobalControlProcess):
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
         
         # Mark: Test code can be commented out
-        self.imintInQ.addMessage(Message(1, 'Data', 'Controller', 'IMINT', 5))
-        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 2))
-        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 3))
-        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 4))
-        self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 5))
-        self.inputQueue.addMessage(Message(1, 'Data', 'Controller', 'Controller', 3))
-#        print 'In Controller:', self.inputQueue.getNextMessage()                    
-#        msg = 'Message to drone' + str(2)
-#        self.droneInQs.addMessage(2, Message(1, 'Data', 'Controller', 'Drone', 6))     
-#        msg = 'Message to drone' + str(1)
-#        self.droneInQs.addMessage(1, Message(1, 'Data', 'Controller', 'Drone', 7))      
-#        msg = 'Message to drone' + str(0)
-#        self.droneInQs.addMessage(0, Message(1, 'Data', 'Controller', 'Drone', 5))         
+        #self.imintInQ.addMessage(Message(1, 'Data', 'Controller', 'IMINT', 5))
+        #self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 2))
+        #self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 3))
+        #self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 4))
+        #self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 5))
+        #self.inputQueue.addMessage(Message(1, 'Data', 'Controller', 'Controller', 3))
+         
         time.sleep(10)
-        while False:
+        while True:
             # GVT: Trigger round for cut C1 (CAOC is first LP in token ring)
             print 'Controller sending cut C1 token to first LP'
             sys.stdout.flush()
-            self.caocInQ.addMessage(Message(1, GVTControlMessageData(self.gvtTokenRing), 'Controller', 'CAOC', self.gvt + 100)) # timestamp value??
+            self.caocInQ.addMessage(Message(1, GVTControlMessageData(self.gvtTokenRing), 'Controller', 'CAOC', 0)) # timestamp value??
             msg = None
             while True:
                 time.sleep(0.1)
@@ -87,8 +81,8 @@ class DroneSimController(GlobalControlProcess):
                         break
             
             print 'Controller received GVT control token back from LPs (Cut C1)'
-            msg.dump()
             sys.stdout.flush()
+            break
             #count = 0
             #for i in msg.data.counts:
                 #count += msg.data.counts[i]

@@ -2,7 +2,7 @@ import sys
 
 class Message:
     
-    # For MsgID (NOT USED) (saving code in case we change our minds)
+    # For MsgID
     nextMsgID = 0
     
     # Update Message ID Function
