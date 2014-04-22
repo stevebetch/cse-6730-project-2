@@ -336,7 +336,9 @@ class Drone (LogicalProcess):
     def subclassHandleMessage(self, msg):
         if(msg.msgType==2): # New target
             # tgtData = [tgtID 0,tgtIntelValue 1,tgtIntelPriority 2,tgtType 3,tgtStealth 4,tgtSpeed 5,tgtPredLoc 6,tgtGoalTrackTime 7,tgtActualTrackTime 8,tgtTrackAttempts 9]
+            print
             Data=msg.data
+            
             tgt=Target(Data[6])
             tgt.ID=Data[0]
             tgt.intelVal=Data[1]
@@ -351,7 +353,7 @@ class Drone (LogicalProcess):
             
             
             self.Target=tgt
-        elif(msg[0]==1):
+        elif(msg.msgType==1): # Need to fill this out still....
             pass
      
      

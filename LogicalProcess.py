@@ -3,12 +3,16 @@ from Message import *
 from SharedMemoryClient import *
 from GVT import *
 from DroneInputQueueContainer import *
-from threading import Thread
+import threading
 
+a = threading.Lock()
+b=threading.Lock()
+c=threading.Lock()
+d=threading.Lock()
 
 class LogicalProcess(SharedMemoryClient):
     # Implements Time Warp Local Control Mechanism
-    
+
     nextLPID = 0
     
     # Get next Logical Process ID Function
@@ -51,6 +55,7 @@ class LogicalProcess(SharedMemoryClient):
             print 'sending message with timestamp %s' % (msg.timestamp)
             
         if (msg.recipient == 'CAOC'):
+            a.acquire()
             if (msg.sender == 'CAOC' or msg.sender == 'HMINT'):
                 self.inputQueue.addMessage(msg)
             else:
@@ -62,17 +67,23 @@ class LogicalProcess(SharedMemoryClient):
                     self.gvtData.counts[self.caocInQ.getLPID()] += 1
             else:
                 self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
+            a.release()
         elif (msg.recipient == 'IMINT'):
+            b.acquire()
             self.imintInQ.addMessage(msg)
             if msg.color == LPGVTData.WHITE:
                 self.gvtData.counts[self.imintInQ.getLPID()] += 1
             else:
-                self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)                
+                self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
+            b.release()
         elif (msg.recipient == 'Controller'):
+            c.acquire()
             self.controllerInQ.addMessage(msg)
+            c.release()
             # Controller not part of Logical Process GVT token ring
         else:
             # Drone
+            d.acquire()
             droneid = msg.recipient
             self.droneInQs.addMessage(droneid, msg) # assumes recipient set to drone's ID in msg
             if msg.color == LPGVTData.WHITE:
@@ -81,7 +92,7 @@ class LogicalProcess(SharedMemoryClient):
             else:
                 print 'updating tRed value for drone %d' % (droneid)
                 self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
-
+            d.release()
         self.saveAntiMessage(msg)
     
     def rollback(self, msg):
