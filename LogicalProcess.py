@@ -76,8 +76,10 @@ class LogicalProcess(SharedMemoryClient):
             droneid = msg.recipient
             self.droneInQs.addMessage(droneid, msg) # assumes recipient set to drone's ID in msg
             if msg.color == LPGVTData.WHITE:
+                print 'incrementing count of WHITE messages sent to drone %d' % (droneid)
                 self.gvtData.counts[self.droneInQs.getLPID(droneid)] += 1
             else:
+                print 'updating tRed value for drone %d' % (droneid)
                 self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
 
         self.saveAntiMessage(msg)
@@ -144,31 +146,35 @@ class LogicalProcess(SharedMemoryClient):
     def onGVTThreadFinished(self, lpids, msg):
         self.gvtData.initCounts(lpids)
         self.forwardGVTControlMessage(msg)
-        print 'GVT thread (cut C2) callback executed'
+        print 'LP %d: GVT thread (cut C2) callback executed' % (self.LPID)
     
     def handleMessage(self, msg):
         print 'LP %d handleMessage' % (self.LPID)
-        if msg.msgType == 1 and isinstance(msg.data, GVTControlMessageData):
-            print 'LP %d received GVT control message' % (self.LPID)
-            if self.gvtData.color == LPGVTData.WHITE:
-                print 'LP %d cut C1, changing color to Red' % (self.LPID)
-                # Cut C1, change color to red and add local counts of white msgs sent to control msg
-                self.gvtData.tRed = LPGVTData.INF
-                self.gvtData.color = LPGVTData.RED
-                msg.data.addLocalCounts(self.gvtData.counts)
-                self.forwardGVTControlMessage(msg)
-            else:  # Cut C2
-                # Create new Thread to wait until num white msgs received by local process == num sent 
-                # to this process by all other processes
-                t = GVTWaitForThread(parent=self, controlMsg=msg, localCounts=self.gvtData.counts)
-                print 'Starting GVT C2 cut thread in background'
-                t.start()
-                print 'Continuing after starting GVT C2 cut thread...'            
+        if msg.msgType == 1:
+            if isinstance(msg.data, GVTControlMessageData):
+                print 'LP %d received GVT control message' % (self.LPID)
+                if self.gvtData.color == LPGVTData.WHITE:
+                    print 'LP %d cut C1, changing color to Red' % (self.LPID)
+                    # Cut C1, change color to red and add local counts of white msgs sent to control msg
+                    self.gvtData.tRed = LPGVTData.INF
+                    self.gvtData.color = LPGVTData.RED
+                    msg.data.addLocalCounts(self.gvtData.counts, self.LPID)
+                    self.forwardGVTControlMessage(msg)
+                else:  # Cut C2
+                    # Create new Thread to wait until num white msgs received by local process == num sent 
+                    # to this process by all other processes
+                    t = GVTWaitForThread(parent=self, controlMsg=msg)
+                    print 'Starting GVT C2 cut thread in background'
+                    t.start()
+                    print 'Continuing after starting GVT C2 cut thread...'
+            elif isinstance(msg.data, GVTValue):
+                self.setGVT(msg.data.gvt)
         else:
             if msg.color == LPGVTData.WHITE:
                 print 'LP %d recvd WHITE msg, rcvd count was %d' % (self.LPID, self.gvtData.counts[self.LPID])
                 self.gvtData.counts[self.LPID] -= 1
                 print 'LP %d recvd WHITE msg, rcvd count is now %d' % (self.LPID, self.gvtData.counts[self.LPID])
+                self.gvtData.dump()
             if msg.timestamp < self.localTime:
                 self.rollback(msg)
             else:
@@ -212,15 +218,16 @@ class LogicalProcess(SharedMemoryClient):
         pass
     
     def setGVT(self, gvt):
+        print 'LP %d setting GVT value to %d' % (self.LPID, gvt)
         self.gvt = gvt
-        releaseResources(gvt)
-        executeIO(gvt)
+        self.releaseResources(gvt)
+        self.executeIO(gvt)
         
-    def releaseResources(self):
+    def releaseResources(self, gvt):
         # delete items in state/output queues prior to GVT
-        pass
+        print 'LP %d releasing memory resources prior to GVT' % (self.LPID)
     
-    def executeIO(gvt):
+    def executeIO(self, gvt):
         # commit IO operations for times prior to GVT
-        pass
+        print 'LP %d committing I/O prior to GVT' % (self.LPID)
             

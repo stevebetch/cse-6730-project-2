@@ -54,22 +54,20 @@ class LPInputQueue():
             if currMsg is None:
                 # catch the case of null message
                 removeMsg = currMsg                
-            if currMsg.msgType == 1 and isinstance(currMsg.data, GVTControlMessageData):
+            if currMsg.msgType == 1:
                 # handle control messages first
-                msg = currMsg
-                break            
-            if currMsg.isAntiMessage():
+                msg = currMsg            
+            elif currMsg.isAntiMessage():
                 if currMsg.timestamp <= self.localTime:
                     # corresponding message was already processed, need to process this
                     # antimessage, which should trigger rollback
                     smallestTimestamp = currMsg.timestamp
                     msg = currMsg
-                    break
                 else:
                     # corresponding message hasn't arrived yet, leave in queue
                     continue
             # regular message
-            if currMsg.timestamp < smallestTimestamp:
+            elif currMsg.timestamp < smallestTimestamp:
                 smallestTimestamp = currMsg.timestamp
                 msg = currMsg
                 
@@ -130,7 +128,7 @@ class LPInputQueue():
             # check if time is before currTime, if so then do rollback
             if msg.timestamp <= self.localTime:
                 self.insertAtFront(msg) # will trigger rollback
-                if not(isinstance(msg.data, GVTControlMessageData)):
+                if not(isinstance(msg.data, GVTControlMessageData)) and not(isinstance(msg.data, GVTValue)):
                     print 'Straggler message found, should trigger rollback'
             else:
                 self.q.insert(0, msg) #inserts at end of queue

@@ -64,17 +64,18 @@ class DroneSimController(GlobalControlProcess):
         #self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 5))
         #self.inputQueue.addMessage(Message(1, 'Data', 'Controller', 'Controller', 3))
          
-        time.sleep(10)
         while True:
+            
+            time.sleep(10)
+            
             # GVT: Trigger round for cut C1 (CAOC is first LP in token ring)
             print 'Controller sending cut C1 token to first LP'
-            sys.stdout.flush()
-            self.caocInQ.addMessage(Message(1, GVTControlMessageData(self.gvtTokenRing), 'Controller', 'CAOC', 0)) # timestamp value??
+            self.caocInQ.addMessage(Message(1, GVTControlMessageData(self.gvtTokenRing), 'Controller', 'CAOC', -1))
             msg = None
+            print 'Controller waiting for cut C1 token'
+            sys.stdout.flush()            
             while True:
-                time.sleep(0.1)
-                print 'Controller waiting for cut C1 token'
-                sys.stdout.flush()
+                time.sleep(0)
                 msg = self.inputQueue.getNextMessage()
                 if not(msg is None):
                     if isinstance(msg.data, GVTControlMessageData):
@@ -82,21 +83,46 @@ class DroneSimController(GlobalControlProcess):
             
             print 'Controller received GVT control token back from LPs (Cut C1)'
             sys.stdout.flush()
+        
+            count = 0
+            for i in msg.data.counts:
+                print 'GVT counts[%d] = %d (after cut C1)' % (i, msg.data.counts[i])
+                count += msg.data.counts[i]
+            print 'Total counts in GVT = %d (after cut C1)' % (count)
+            if count <= 0:
+                # GVT: Send GVT value to all LPs
+                print 'Controller sending GVT value to first LP'
+                sys.stdout.flush()
+                gvt = min(msg.data.tMin, msg.data.tRed)
+                self.caocInQ.addMessage(Message(1, GVTValue(gvt), 'Controller', 'IMINT', -1))                  
+            else:
+                # GVT: Trigger round for cut C2
+                print 'Controller sending cut C2 token to first LP'
+                sys.stdout.flush()
+                self.caocInQ.addMessage(msg)
+                print 'Controller waiting for cut C2 token'
+                sys.stdout.flush()                
+                while True:
+                    time.sleep(0)                    
+                    msg = self.inputQueue.getNextMessage()
+                    if not(msg is None):
+                        if isinstance(msg.data, GVTControlMessageData):
+                            break
+                
+                print 'Controller received GVT control token back from LPs (Cut C2)'
+                count = 0
+                for i in msg.data.counts:
+                    print 'GVT counts[%d] = %d (after cut C2)' % (i, msg.data.counts[i])
+                    count += msg.data.counts[i]
+                print 'Total counts in GVT = %d (after cut C2)' % (count)  
+                # GVT: Send GVT value to all LPs
+                print 'Controller sending GVT value to first LP'
+                sys.stdout.flush()
+                gvt = min(msg.data.tMin, msg.data.tRed)
+                print 'GVT value is %d' % (gvt)
+                self.caocInQ.addMessage(Message(1, GVTValue(gvt), 'Controller', 'IMINT', -1))                 
+                sys.stdout.flush()                
             break
-            #count = 0
-            #for i in msg.data.counts:
-                #count += msg.data.counts[i]
-            #if count > 0:
-                ## GVT: Send GVT value to all LPs
-                #print 'Controller sending GVT value to first LP'
-                #sys.stdout.flush()
-                #gvt = min(msg.data.tMin, msg.data.tRed)
-                #self.caocInQ.addMessage(Message(1, GVTValue(gvt), 'Controller', 'IMINT', self.gvt + 110)) # timestamp value??                  
-            #else:
-                ## GVT: Trigger round for cut C2
-                #print 'Controller sending cut C2 token to first LP'
-                #sys.stdout.flush()
-                #self.caocInQ.addMessage(msg)
 
         print "Time elapsed: ", time.time() - start_time, "s"
 
