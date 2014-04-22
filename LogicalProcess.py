@@ -31,7 +31,7 @@ class LogicalProcess(SharedMemoryClient):
     def __init__(self): 
         self.LPID = self.getNextLPID()     
         self.stateQueue = []
-        self.inputQueue=DroneInputQueueContainer()
+        self.inputQueue = None
         self.outputQueue = {}
         self.inputMsgHistory = []
         self.localTime = 0
@@ -51,9 +51,15 @@ class LogicalProcess(SharedMemoryClient):
             print 'sending message with timestamp %s' % (msg.timestamp)
             
         if (msg.recipient == 'CAOC'):
-            self.caocInQ.addMessage(msg)
+            if (msg.sender == 'CAOC' or msg.sender == 'HMINT'):
+                self.inputQueue.addMessage(msg)
+            else:
+                self.caocInQ.addMessage(msg)
             if msg.color == LPGVTData.WHITE:
-                self.gvtData.counts[self.caocInQ.getLPID()] += 1
+                if (msg.sender == 'CAOC' or msg.sender == 'HMINT'):
+                    self.gvtData.counts[self.inputQueue.getLPID()] += 1
+                else:
+                    self.gvtData.counts[self.caocInQ.getLPID()] += 1
             else:
                 self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
         elif (msg.recipient == 'IMINT'):
@@ -108,7 +114,13 @@ class LogicalProcess(SharedMemoryClient):
         # send to next LP in ring
         if self.nextLPInTokenRingInQ is None:
             self.getNextLPInTokenRing(msg.data.LPIDs)
-        self.nextLPInTokenRingInQ.addMessage(msg)
+        
+        try:
+            print 'Forwarding GVT control message to next LP'
+            self.nextLPInTokenRingInQ.addMessage(msg)
+        except:
+            print 'Forwarding GVT control message to drone %d' % (self.nextDroneID)
+            self.nextLPInTokenRingInQ.addMessage(self.nextDroneID, msg)
         
     def getNextLPInTokenRing(self, lpids):
         print self.LPID
@@ -119,25 +131,27 @@ class LogicalProcess(SharedMemoryClient):
             print 'next LP is IMINT'
             self.nextLPInTokenRingInQ = self.imintInQ
         else:
-            # Drone
-            self.nextLPInTokenRingInQ = self.droneInQs.getNextLPInputQueue(self.LPID)
-            # This is last LP in token ring, will return token back to controller
-            if self.nextLPInTokenRingInQ is None:
+            # Drone or Controller
+            self.nextLPInTokenRingInQ = self.droneInQs
+            self.nextDroneID = self.droneInQs.getDroneIDForLPID(self.LPID + 1)            
+            if self.nextDroneID is None:
+                # This is last LP in token ring, will return token back to controller
                 print 'this is last LP in token ring'
                 self.nextLPInTokenRingInQ = self.controllerInQ
             else:
-                print 'next LP is a drone'
+                print 'next LP is a drone'                
     
     def onGVTThreadFinished(self, lpids, msg):
         self.gvtData.initCounts(lpids)
         self.forwardGVTControlMessage(msg)
-        print 'GVT thread callback executed'
+        print 'GVT thread (cut C2) callback executed'
     
     def handleMessage(self, msg):
-
+        print 'LP %d handleMessage' % (self.LPID)
         if msg.msgType == 1 and isinstance(msg.data, GVTControlMessageData):
-            # handle GVT control message
+            print 'LP %d received GVT control message' % (self.LPID)
             if self.gvtData.color == LPGVTData.WHITE:
+                print 'LP %d cut C1, changing color to Red' % (self.LPID)
                 # Cut C1, change color to red and add local counts of white msgs sent to control msg
                 self.gvtData.tRed = LPGVTData.INF
                 self.gvtData.color = LPGVTData.RED
@@ -162,12 +176,18 @@ class LogicalProcess(SharedMemoryClient):
                 self.subclassHandleMessage(msg)
     
     def getNextMessage(self):
-        msg = None       
-        if self.inputQueue.hasMessages():
+        msg = None
+        q = None
+        if self.inputQueue is None:
+            q = self.droneInQs.getInputQueue(self.uid)
+        else:
+            q = self.inputQueue
+
+        if q.hasMessages():
             # peek at first message
-            firstMsg = self.inputQueue.getNextMessage()
+            firstMsg = q.getNextMessage()
             if firstMsg is None:
-                self.inputQueue.remove(firstMsg)
+                q.remove(firstMsg)
             elif (not firstMsg.isAntiMessage()):
                 #print 'Found First Message (not an AntiMessage)'
                 return firstMsg
@@ -176,12 +196,12 @@ class LogicalProcess(SharedMemoryClient):
                 return firstMsg
             else:
                 #print 'Found First Message is an AntiMessage, returning to queue'
-                self.inputQueue.justPut(firstMsg)
+                q.justPut(firstMsg)
                 # loop until non-antiMessage is found
                 while True:
-                    currMsg = self.inputQueue.getNextMessage()
+                    currMsg = q.getNextMessage()
                     if currMsg == firstMsg:
-                        self.inputQueue.justPut(currMsg)
+                        q.justPut(currMsg)
                         #print 'All messages in queue are AntiMessages'
                         break
                     if (currMsg.isAntiMessage()):
@@ -191,7 +211,7 @@ class LogicalProcess(SharedMemoryClient):
                         else:
                             # put it back and get another one
                             #print 'Found AntiMessage, returning to queue'
-                            self.inputQueue.justPut(currMsg)                        
+                            q.justPut(currMsg)                        
                     else:
                         #print 'Found Message'
                         msg = currMsg
@@ -200,7 +220,10 @@ class LogicalProcess(SharedMemoryClient):
                 
     def setLocalTime(self, time):
         self.localTime = time
-        self.inputQueue.setLocalTime(time)        
+        try:
+            self.inputQueue.setLocalTime(time) 
+        except:
+            self.droneInQs.setLocalTime(self.uid, time)
         
     def saveAntiMessage(self, msg):
         antimsg = msg.getAntiMessage()

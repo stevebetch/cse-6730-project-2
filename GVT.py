@@ -39,8 +39,15 @@ class GVTControlMessageData():
         self.LPIDs = lpids
             
     def addLocalCounts(self, localCounts):
+        print 'self.counts'
         for i in self.counts:
-            self.counts[i] += localCounts[i]
+            print 'self.counts[%d] = %d' % (i,self.counts[i])        
+        print 'localCounts'
+        for i in localCounts:
+            print 'localCounts[%d] = %d' % (i,localCounts[i])         
+        for key, value in self.counts.items():
+            print 'key=%d, value=%s' % (key, value)
+            self.counts[key] += localCounts[key]
             
     def dump(self):
         print 'GVTControlMessageData dump:'

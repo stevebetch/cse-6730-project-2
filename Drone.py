@@ -84,8 +84,7 @@ class Drone (LogicalProcess):
         
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
-        LPIDs.append(self.droneInQs.getLPIDs())
-        self.inputQueue = self.droneInQs.getInputQueue(self.uid)
+        LPIDs.extend(self.droneInQs.getLPIDs())
         
         self.initGVTCounts(LPIDs)  
     
@@ -101,14 +100,9 @@ class Drone (LogicalProcess):
             time.sleep(2)
             print 'Drone %d event loop iteration' % (self.uid)
             msg = self.getNextMessage()
-            print "Drone message:",msg
             if msg:
                 self.handleMessage(msg)
-                break
-#            if count>6:
-#                break
-#            count+=1
-            self.updateTime(1)
+            sys.stdout.flush()
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         # Begin at entry node. aka, only pass drone the entry node!!!
         
@@ -339,7 +333,7 @@ class Drone (LogicalProcess):
        # 
     
     def subclassHandleMessage(self, msg):
-        if(msg[0]==2): # New target
+        if(msg.msgType==2): # New target
             # tgtData = [tgtID 0,tgtIntelValue 1,tgtIntelPriority 2,tgtType 3,tgtStealth 4,tgtSpeed 5,tgtPredLoc 6,tgtGoalTrackTime 7,tgtActualTrackTime 8,tgtTrackAttempts 9]
             Data=msg[1]
             tgt=Target(Data[6])

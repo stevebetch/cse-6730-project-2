@@ -144,7 +144,7 @@ class IMINT (LogicalProcess):
         
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
-        LPIDs.append(self.droneInQs.getLPIDs())
+        LPIDs.extend(self.droneInQs.getLPIDs())
         
         self.initGVTCounts(LPIDs)
 
@@ -159,4 +159,5 @@ class IMINT (LogicalProcess):
                     print "IMINT passed a traget"
             
             time.sleep(2)
+            sys.stdout.flush()
 

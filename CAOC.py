@@ -230,7 +230,7 @@ class CAOC (LogicalProcess):
         
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
         self.inputQueue = Pyro4.Proxy(caocInQ_uri)
-        self.caocInQ = self.inputQueue
+        self.caocInQ = None
         LPIDs.append(self.inputQueue.LPID)
         
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
@@ -239,7 +239,7 @@ class CAOC (LogicalProcess):
         
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
-        LPIDs.append(self.droneInQs.getLPIDs())
+        LPIDs.extend(self.droneInQs.getLPIDs())
         
         self.initGVTCounts(LPIDs)        
         
@@ -268,4 +268,5 @@ class CAOC (LogicalProcess):
             if msg:
                 self.handleMessage(msg)
                 msg.printData(1)
+	    sys.stdout.flush()
 
