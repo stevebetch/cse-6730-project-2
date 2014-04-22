@@ -216,6 +216,10 @@ class LogicalProcess(SharedMemoryClient):
                         #print 'Found Message'
                         msg = currMsg
                         break
+                    
+                if self.inputQueue is None:
+                    self.droneInQs.setInputQueue(self.uid, q)
+        
         return msg        
                 
     def setLocalTime(self, time):
