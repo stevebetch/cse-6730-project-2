@@ -31,11 +31,7 @@ class DroneInputQueueContainer:
         return self.queues[droneid].LPID
     
     def getDroneIDForLPID(self, lpid):
-        print 'lpid = %d' % (lpid)
-        print 'self.queues.items() = %s' % (self.queues.items())
         for droneid, q in self.queues.items():
-            print 'droneid = %d' % (droneid)
-            print 'q.getLPID() = %d' % (q.getLPID())
             if q.getLPID() == lpid:
                 return droneid
         return None

@@ -40,7 +40,7 @@ class LPInputQueue():
     def remove(self, msg):
         self.q.remove(msg)
         if msg.timestamp == self.localTMin:
-            self.recalculateLocalTMin()        
+            self.calculateLocalTMin()        
         
     def getNextMessage(self):
         
@@ -77,13 +77,20 @@ class LPInputQueue():
         if not(msg is None):
             self.q.remove(msg)
             if msg.timestamp == self.localTMin:
-                self.recalculateLocalTMin()                      
+                self.calculateLocalTMin()                      
         return msg
     
-    def recalculateLocalTMin(self):
+    def calculateLocalTMin(self):
+        self.localTMin = self.localTime
+        print 'LPInputQueue.calculateLocalTMin()'
+        print 'Local Time = %d' % (self.localTime)
         for msg in self.q:
-            if msg.timestamp < self.localTMin:
-                self.localTMin = msg.timestamp
+            print 'msg.timestamp = %d' % (msg.timestamp)
+            if msg.timestamp >= 0:
+                if msg.timestamp < self.localTMin:
+                        self.localTMin = msg.timestamp
+        print 'tMin = %d' % (self.localTMin)
+        return self.localTMin
     
     def insertAtFront(self, msg):
         if msg.timestamp < self.localTMin:

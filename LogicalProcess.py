@@ -104,7 +104,15 @@ class LogicalProcess(SharedMemoryClient):
             if histMsg.timestamp > msg.timestamp:
                 reprocessList.append(histMsg)
         reprocessList.sort(key=lambda x: x.timestamp, reverse=True)
-        self.inputQueue.extend(reprocessList)
+        # if a drone, get local copy of input queue from DroneInputQueueContainer shared object 
+        if self.inputQueue is None:
+            q = self.droneInQs.getInputQueue(self.uid)
+        else:
+            q = self.inputQueue        
+        q.extend(reprocessList)
+        self.gvtData.tMin = q.calculateLocalTMin()
+        if self.inputQueue is None:
+            self.droneInQs.setInputQueue(self.uid, q)        
         
         # process straggler if not an anti-message
         if (not msg.isAntiMessage()):
@@ -141,10 +149,21 @@ class LogicalProcess(SharedMemoryClient):
                 print 'this is last LP in token ring'
                 self.nextLPInTokenRingInQ = self.controllerInQ
             else:
-                print 'next LP is a drone'                
+                print 'next LP is a drone'
+                
+    def calculateLocalTMin(self):
+        # if a drone, get local copy of input queue from DroneInputQueueContainer shared object 
+        if self.inputQueue is None:
+            q = self.droneInQs.getInputQueue(self.uid)
+        else:
+            q = self.inputQueue        
+        self.gvtData.tMin = q.calculateLocalTMin()        
     
     def onGVTThreadFinished(self, lpids, msg):
         self.gvtData.initCounts(lpids)
+        self.calculateLocalTMin()
+        if not(self.gvtData.tMin is None):
+            msg.data.tMin = min(msg.data.tMin, self.gvtData.tMin)
         self.forwardGVTControlMessage(msg)
         print 'LP %d: GVT thread (cut C2) callback executed' % (self.LPID)
     
@@ -196,6 +215,7 @@ class LogicalProcess(SharedMemoryClient):
         # get smallest timestamp message
         if q.hasMessages():
             msg = q.getNextMessage()
+        self.gvtData.tMin = q.calculateLocalTMin()
             
         # if a drone, save modified input queue back into DroneInputQueueContainer shared object    
         if self.inputQueue is None:
@@ -215,7 +235,7 @@ class LogicalProcess(SharedMemoryClient):
         self.outputQueue[msg.id] = antimsg
                 
     def getLocalMinTimeForGVT(self):
-        pass
+        return self.gvtData.tMin
     
     def setGVT(self, gvt):
         print 'LP %d setting GVT value to %d' % (self.LPID, gvt)

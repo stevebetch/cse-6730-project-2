@@ -75,7 +75,10 @@ class LPGVTData:
             
     def dump(self):
         print 'LPGVTData dump'
-        print 'self.tMin = %d' % (self.tMin)
+        if self.tMin is None:
+            print 'self.tMin = None'
+        else:
+            print 'self.tMin = %d' % (self.tMin)
         print 'self.tRed = %d' % (self.tRed)
         print 'self.color = %s' % (self.color)        
         for i in self.counts:
