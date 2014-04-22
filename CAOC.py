@@ -127,8 +127,8 @@ class CAOC (LogicalProcess):
                     self.sendMessage(newTgtMsg)
             elif self.heuristic==3:
                 # Adjust tgt priority be intel value/goal track time if the tgt has no track attempts
-                if msg[1][9]==0:
-                    msg[1][2]=msg[1][1]/msg[1][7]   
+                if msg.data[9]==0:
+                    msg.data[2]=msg.data[1]/msg.data[7]   
                 # Determine distance of target from idle drones
                 tgtX=targetData[6].xpos #x coord
                 tgtY=targetData[6].ypos #y coord

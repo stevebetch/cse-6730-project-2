@@ -82,22 +82,22 @@ class IMINT (LogicalProcess):
             pass
         elif msg.msgType==2:
             # update target track attempts for target data
-            msg[1][9]+=1
+            msg.data[9]+=1
             # check hueristic number
             if self.heuristic==1:
                 # if goal track time has not been achieved, send updated tgt assignment to CAOC after processing time
-                if msg[1][8]-msg[1][7]<0:
+                if msg.data[8]-msg.data[7]<0:
                     # send message to CAOC process
-                    newTgtData=msg[1]
+                    newTgtData=msg.data
                     newTgtMsg=Message(2,newTgtData,self.id,'CAOC',self.localTime+random.triangular(self.high,self.low,self.mode))
                     self.sendMessage(newTgtMsg)
                 else:
                     # if goal track time has been achieved, update the total value and number of tracked targets 
                     #    In the current implementation we allow IMINT to clear out it's backlog of unprocessed images at the sim end time
-                    self.totalValue+=msg[1][1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
+                    self.totalValue+=msg.data[1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
                     self.targetsTracked+=1
             elif self.heuristic==3 or self.heuristic==2:
-                if msg[1][8]-msg[1][7]<0:
+                if msg.data[8]-msg.data[7]<0:
                     # if goal track time has not been achieved, adjsut priority and send updated tgt assignment to CAOC after processing time
                     newTgtData=[targetData[0],targetData[1],self.priorityAdjust*targetData[2],targetData[3],targetData[4],targetData[5],targetData[6],targetData[7],targetData[8],targetData[9]]
                     newTgtMsg=Message(2,newTgtData,self.id,'CAOC',self.localTime+random.triangular(self.high,self.low,self.mode))
@@ -105,13 +105,13 @@ class IMINT (LogicalProcess):
                 else:
                     # if goal track time has been achieved, update the total value and number of tracked targets 
                     #    In the current implementation we allow IMINT to clear out it's backlog of unprocessed images at the sim end time                    
-                    self.totalValue+=msg[1][1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
+                    self.totalValue+=msg.data[1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
                     self.targetsTracked+=1
                     print 'Total Value: ' + str(self.totalValue)
                     print 'Total Targets Tracked: ' + str(self.targetsTracked)
         elif msg.msgType==3:
             # print error message
-            print 'IMINT Error: Received Message Type 3 from ' + str(msg[2]) + ' at ' + str(msg[4])
+            print 'IMINT Error: Received Message Type 3 from ' + str(msg.sender) + ' at ' + str(msg.recipient)
         msg.printData(1)
         # Mark: below line for test only
         #self.sendMessage(Message(1, ['Data1'], 'IMINT', 'CAOC', 9))

@@ -255,8 +255,32 @@ class LogicalProcess(SharedMemoryClient):
         self.executeIO(gvt)
         
     def releaseResources(self, gvt):
-        # delete items in state/output queues prior to GVT
+        # delete items in state/history/output queues prior to GVT
         print 'LP %d releasing memory resources prior to GVT' % (self.LPID)
+        # outputQueue
+        print 'outputQueue length before reclaim: %d' % (len(self.outputQueue))
+        temp = {}
+        for msgID, antimessage in self.outputQueue:
+            if antimessage.timestamp >= gvt:
+                temp[msgID] = antimessage
+        self.outputQueue = temp
+        print 'outputQueue length after reclaim: %d' % (len(self.outputQueue))
+        # stateQueue
+        temp = {}
+        print 'stateQueue length before reclaim: %d' % (len(self.stateQueue))
+        for timestamp, state in self.stateQueue:
+            if timestamp >= gvt:
+                temp[timestamp] = state
+        self.stateQueue = temp
+        print 'stateQueue length after reclaim: %d' % (len(self.stateQueue))
+        # message history
+        temp = []
+        print 'inputMsgHistory length before reclaim: %d' % (len(self.inputMsgHistory))
+        for msg in self.inputMsgHistory:
+            if msg.timestamp >= gvt:
+                temp.append(msg)
+        self.inputMsgHistory = temp  
+        print 'inputMsgHistory length after reclaim: %d' % (len(self.inputMsgHistory))
     
     def executeIO(self, gvt):
         # commit IO operations for times prior to GVT

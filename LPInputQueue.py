@@ -82,7 +82,10 @@ class LPInputQueue():
     
     def calculateLocalTMin(self):
         self.localTMin = self.localTime
-        print 'LPInputQueue.calculateLocalTMin()'
+        if self.LPID is None:
+            print 'Controller calculateLocalTMin()'
+        else:
+            print 'LP %d calculateLocalTMin()' % (self.LPID)
         print 'Local Time = %d' % (self.localTime)
         for msg in self.q:
             print 'msg.timestamp = %d' % (msg.timestamp)

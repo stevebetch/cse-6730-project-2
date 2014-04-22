@@ -22,7 +22,7 @@ class GVTWaitForThread(Thread):
             print 'sent to: %d' % (numMsgsSentToThisLP)
             print 'received by: %d' % (self.parent.gvtData.counts[self.LPID])         
             print 'LP %d: Waiting for all white messages sent to this LP to be received' % (self.LPID)
-            time.sleep(0)
+            time.sleep(2)
         self.parent and self.parent.onGVTThreadFinished(LPIDs, self.controlMsg)
         
 class GVTControlMessageData():
