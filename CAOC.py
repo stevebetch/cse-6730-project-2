@@ -95,9 +95,9 @@ class CAOC (LogicalProcess):
                 # If the queue is empty and there is an idle drone, send it the incoming target assignment
                 for i in range(len(self.drones)):
                     if self.drones[i][0]=="Idle":
-                        newTgtMsg=Message(2,targetData,self.id,i,self.localTime)
+                        newTgtMsg=Message(2,targetData,self.id,i+2,self.localTime) # drone ids start at 2
                         self.sendMessage(newTgtMsg)
-                        print "sent message to idle drone:",i
+                        print "sent message to idle drone:",i+2
                         break
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
                 else:
@@ -123,7 +123,7 @@ class CAOC (LogicalProcess):
                     print('CAOC Added target to priority queue')
                 # If the queue is empty and there are idle drones, send the nearest drone the incoming target assignment   
                 else:
-                    newTgtMsg=Message(2,targetData,self.id,indexCloseDrone,self.localTime)
+                    newTgtMsg=Message(2,targetData,self.id,indexCloseDrone+2,self.localTime) # drone ids start at 2
                     self.sendMessage(newTgtMsg)
             elif self.heuristic==3:
                 # Adjust tgt priority be intel value/goal track time if the tgt has no track attempts
@@ -147,7 +147,7 @@ class CAOC (LogicalProcess):
                     print('CAOC Added target to priority queue')
                 # If the queue is empty and there are idle drones, send the nearest drone the incoming target assignment   
                 else:
-                    newTgtMsg=Message(2,targetData,self.id,indexCloseDrone,self.localTime)
+                    newTgtMsg=Message(2,targetData,self.id,indexCloseDrone+2,self.localTime) # drone ids start at 2
                     self.sendMessage(newTgtMsg)                
         # If the queue is not empty (implying all drones are busy), put the target assignment in the queue in order
         else:
@@ -184,11 +184,11 @@ class CAOC (LogicalProcess):
             self.addTarget(msg.data[1])
         elif msg.msgType==3:
             # Update drone status list
-            self.drones[msg.data[0]]=[msg.data[1],msg.data[2]]
+            self.drones[msg.data[0]-2]=[msg.data[1],msg.data[2]] # drone ids start at 2
             # Check which target assignment heruristic is in use
             if self.heuristic==1:
                 # If the drone is idle and there are target assignments in the queue, assign that drone a target
-                if (self.drones[msg.data[0]][1]=="Idle") and (len(self.priorityQueue)!=0):
+                if (self.drones[msg.data[0]-2][1]=="Idle") and (len(self.priorityQueue)!=0): # drone ids start at 2
                     newTgtData=self.priorityQueue.pop()
                     newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
                     self.sendMessage(newTgtMsg)
