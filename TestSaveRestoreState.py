@@ -15,6 +15,7 @@ from state import *
 def main():
     print 'Start'
     
+    random.seed(1)
     mapX=300
     mapY=300
     numStreets=50

@@ -20,21 +20,32 @@ PYRO_HOST = ''
 PYRO_PORT = 12778
 
 
-def createNewDrone(uid, droneType,heuristic):
+# Files using random numbers
+# Each file uses a different seed, seedNum + x, so they all have different streams
+# Each run of a replication uses the same set of seeds for common random numbers
+# Each replication uses a new set of seeds
+# Data.seedNum takes values 0,100,200,... up to the number of replications
+# HMINT: seedNum + 1
+# IMINT: seedNum + 2
+# Map: seedNum + 3
+# Drone: seedNum + 4,5,6,...,3+n where n is number of drones
+# Note - nodes.py and Target.py both use random numbers too, but they are built in classes that already have seeds
+
+def createNewDrone(uid, droneType,heuristic,seedNum):
     print('Creating new drone of type ' + droneType)
-    droneref = Drone(uid, droneType,heuristic)
+    droneref = Drone(uid, droneType,heuristic,seedNum)
     droneref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     return droneref
     
-def initIMINT(heuristic):
-    imintref = IMINT(heuristic)
+def initIMINT(heuristic,seedNum):
+    imintref = IMINT(heuristic,seedNum)
     imintref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     print('IMINT initialized')
     return imintref
 
 def initCAOC(randNodes,Data):
     caocref = CAOC(Data.numDrones,Data.heuristic)
-    hmint = HMINT(Data.numTargets, Data.seedNum, randNodes)
+    hmint = HMINT(Data.numTargets, randNodes, Data.seedNum+1)
     caocref.setHMINT(hmint)
     hmint.setCAOC(caocref)
     caocref.setConnectionParams(PYRO_HOST, PYRO_PORT)
@@ -71,7 +82,7 @@ def main(Data):
     print "Using IP address:", PYRO_HOST
     
     # Urban network/map
-    Map = GenMap(Data.mapX,Data.mapY)
+    Map = GenMap(Data.mapX,Data.mapY,Data.seedNum+3)
     Map.map(Data.numStreets,Data.Nuisance)
     randNodes=[]
     for i in range(Data.numTargets):
@@ -90,7 +101,7 @@ def main(Data):
     ns.register("inputqueue.caoc", caocInQ_uri)    
     
     # Create IMINT, will be separate process started by Controller
-    imint = initIMINT(Data.heuristic)
+    imint = initIMINT(Data.heuristic,Data.seedNum+2)
     imintInQ = LPInputQueue()
     imintInQ.setLocalTime(0)
     imintInQ.setLPID(imint.LPID)
@@ -110,7 +121,7 @@ def main(Data):
     drones = []
     for i in range(Data.numDrones):
         dronename = i
-        drone = createNewDrone(dronename, Data.typeOfDrone,Data.heuristic)
+        drone = createNewDrone(dronename, Data.typeOfDrone,Data.heuristic,Data.seedNum+i+4)
         drones.append(drone)
         controller.addDrone(drone)
         droneInQs.addDroneInputQueue(dronename)

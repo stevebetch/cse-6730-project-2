@@ -23,9 +23,10 @@ class IMINT (LogicalProcess):
     # Input: heuristicNum=1,2, or 3 (naive, local, or timer heuristic)
     # Output: Initializes IMINT logical process
     # Description: Intialization of parameters that control assignment data collection and re-work decisions 
-    def __init__(self,heuristicNum):
+    def __init__(self,heuristicNum,seedNum):
         LogicalProcess.__init__(self)
         self.id = 'IMINT'
+        random.seed(seedNum)
         self.heuristic=heuristicNum
         self.high=30
         self.low=10

@@ -1,1 +1,1 @@
-cmd /K C:/Python27/python -Wignore -m Pyro4.naming -n Jane-Desktop
+cmd /K C:/Python27/python -Wignore -m Pyro4.naming -n Lenovo

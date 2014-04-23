@@ -18,7 +18,7 @@ class HMINT:
     # Input: numTargets=total number of targets that might need to be targeted, seedNum=seed for this sim replication
     # Output: Initializes HMINT class object
     # Description: Intialization of parameters that control target generation    
-    def __init__(self, numTargets,seedNum,randNodes):       
+    def __init__(self, numTargets, randNodes, seedNum):       
         running = 'false'
         self.numTargets = numTargets
         self.count = 0
