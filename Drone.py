@@ -16,9 +16,8 @@ class Drone (LogicalProcess):
     #id - unique id of drone
     #droneType - descriptive
 
-    def __init__(self, uid, droneType,heuristic,seedNum):
+    def __init__(self, uid, droneType,heuristic):
         self.uid = uid
-        random.seed(seedNum)
         self.heuristic=heuristic
         LogicalProcess.__init__(self)
         self.droneType = droneType

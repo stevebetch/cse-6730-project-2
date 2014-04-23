@@ -30,22 +30,23 @@ PYRO_PORT = 12778
 # Map: seedNum + 3
 # Drone: seedNum + 4,5,6,...,3+n where n is number of drones
 # Note - nodes.py and Target.py both use random numbers too, but they are built in classes that already have seeds
+# Debugging random seed setting: Map.init, Target.movement
 
-def createNewDrone(uid, droneType,heuristic,seedNum):
+def createNewDrone(uid, droneType,heuristic):
     print('Creating new drone of type ' + droneType)
-    droneref = Drone(uid, droneType,heuristic,seedNum)
+    droneref = Drone(uid, droneType,heuristic)
     droneref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     return droneref
     
-def initIMINT(heuristic,seedNum):
-    imintref = IMINT(heuristic,seedNum)
+def initIMINT(heuristic):
+    imintref = IMINT(heuristic)
     imintref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     print('IMINT initialized')
     return imintref
 
 def initCAOC(randNodes,Data):
     caocref = CAOC(Data.numDrones,Data.heuristic)
-    hmint = HMINT(Data.numTargets, randNodes, Data.seedNum+1)
+    hmint = HMINT(Data.numTargets, randNodes)
     caocref.setHMINT(hmint)
     hmint.setCAOC(caocref)
     caocref.setConnectionParams(PYRO_HOST, PYRO_PORT)
@@ -76,13 +77,14 @@ def main(Data):
     #
     print 'Starting run'
     
+    random.seed(Data.seedNum)
     #print "Using Nuisance mean of:", Nuisance
     
     PYRO_HOST=get_local_ip_address()
     print "Using IP address:", PYRO_HOST
     
     # Urban network/map
-    Map = GenMap(Data.mapX,Data.mapY,Data.seedNum+3)
+    Map = GenMap(Data.mapX,Data.mapY)
     Map.map(Data.numStreets,Data.Nuisance)
     randNodes=[]
     for i in range(Data.numTargets):
@@ -101,7 +103,7 @@ def main(Data):
     ns.register("inputqueue.caoc", caocInQ_uri)    
     
     # Create IMINT, will be separate process started by Controller
-    imint = initIMINT(Data.heuristic,Data.seedNum+2)
+    imint = initIMINT(Data.heuristic)
     imintInQ = LPInputQueue()
     imintInQ.setLocalTime(0)
     imintInQ.setLPID(imint.LPID)
@@ -121,7 +123,7 @@ def main(Data):
     drones = []
     for i in range(Data.numDrones):
         dronename = i
-        drone = createNewDrone(dronename, Data.typeOfDrone,Data.heuristic,Data.seedNum+i+4)
+        drone = createNewDrone(dronename, Data.typeOfDrone,Data.heuristic)
         drones.append(drone)
         controller.addDrone(drone)
         droneInQs.addDroneInputQueue(dronename)

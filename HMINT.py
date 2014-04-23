@@ -9,23 +9,20 @@ class HMINT:
     # caoc: instance of CAOC
     # running: false or true to describe if HMINT is currently generating targets
     # numTargets: Total number of targets to be created
-    # seedNum: seed for random number generator for this sim replication
     # count: number of targets created
     # msgTimestamp: timestamp of next target assignment to be sent to CAOC for prioritization
     # mapNodes: number of nodes in the map
     
     # Initialize HMINT
-    # Input: numTargets=total number of targets that might need to be targeted, seedNum=seed for this sim replication
+    # Input: numTargets=total number of targets that might need to be targeted, randNodes is a vector of nodes from the map
     # Output: Initializes HMINT class object
     # Description: Intialization of parameters that control target generation    
-    def __init__(self, numTargets, randNodes, seedNum):       
+    def __init__(self, numTargets, randNodes):       
         running = 'false'
         self.numTargets = numTargets
         self.count = 0
         self.msgTimestamp = 0
         self.randNodes = randNodes
-        self.randSeed = seedNum
-        random.seed(seedNum)
     
     # Set CAOC
     # Input: None
@@ -42,10 +39,10 @@ class HMINT:
     #    Tgt Intel Value: Real number from a [10,100,80] triangular distribution
     #    Tgt Intel Priority: Initialized to Tgt Intel Value
     #    Tgt Type: "Vehicle" or "Pedestrian" with equal likelihood
-    #    Tgt Stealth: Real number from a [0.5,1,0.8] or [1,2,1.5] triangular distribution (based on tgt type)
-    #    Tgt Speed: Real number from a [0.5,1,0.8] or [1,2,1.5] triangular distribution (based on tgt type)
+    #    Tgt Stealth: Real number from a [0.5,.95,0.8] or [0.1,0.9,0.5] triangular distribution (based on tgt type)
+    #    Tgt Speed: Real number from a [11.11, 19.44, 15.28] triangular or [1.44,0.288] normal distribution (based on tgt type)
     #    Tgt Predicted Location: Node pointer from node vector from DroneSim1 Map object, randomly selected
-    #    Tgt Goal Track Time: Real number from a[10,360,30] triangular distribution
+    #    Tgt Goal Track Time: Real number from a[60,600,300] triangular distribution
     #    Tgt Actual Track Time: Initialized to 0 seconds
     #    Tgt Track Attempts: Initialized to 0 seconds
     #    Msg Timestamp: Real number from a last_msg_time+[1380,4200,2100] triangular distribution in seconds,
@@ -64,10 +61,10 @@ class HMINT:
             tgtStealth=random.triangular(0.1, 0.9, 0.5)
             tgtSpeed=random.normalvariate(1.44, 0.288)#based on project 1 data
         tgtPredLoc=self.randNodes[self.count]
-        tgtGoalTrackTime=random.triangular(10,360,30)
+        tgtGoalTrackTime=random.triangular(60,600,300)
         tgtActualTrackTime=0
         tgtTrackAttempts=0
-        self.msgTimestamp=self.msgTimestamp+random.triangular(23,70,35)
+        self.msgTimestamp=self.msgTimestamp+random.triangular(1380,4200,2100)
         tgtData = [tgtID,tgtIntelValue,tgtIntelPriority,tgtType,tgtStealth,tgtSpeed,tgtPredLoc,tgtGoalTrackTime,tgtActualTrackTime,tgtTrackAttempts]
         tgtMsg=Message(2,tgtData,'CAOC','CAOC',self.msgTimestamp)
         self.caoc.sendMessage(tgtMsg) # will this mess up the anti-message process?

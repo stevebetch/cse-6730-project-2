@@ -65,7 +65,6 @@ class CAOC (LogicalProcess):
         #self.hmint.count=obj.hmint.count
         #self.hmint.msgTimeStamp=obj.hmint.msgTimeStamp
         #self.hmint.randNodes=obj.hmint.randNodes
-        #self.hmint.randSeed=obj.hmint.randSeed
 
     # Set Current Time
     # Input: time

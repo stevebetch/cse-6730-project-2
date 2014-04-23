@@ -9,7 +9,7 @@ from nodes import *
 
 
 class GenMap:
-    def __init__(self,XgridSize,YgridSize,seedNum):
+    def __init__(self,XgridSize,YgridSize):
         self.streetNodes=[] #array containing all of the street nodes
         self.intersectionNodes=[] #array containing all of the intersection nodes
         #self.endNodes=[]
@@ -22,7 +22,6 @@ class GenMap:
         self.Nuisance=0
         
         #random.seed(3) #PUT IN FOR DEBUGGING ONLY!!!
-        random.seed(seedNum)
 
     def map(self, numStreets,Nuisance):
         self.Nuisance=Nuisance
