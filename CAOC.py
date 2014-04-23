@@ -181,7 +181,7 @@ class CAOC (LogicalProcess):
             pass
         elif msg.msgType==2:
             # Start the add target process with the target data of the message
-            self.addTarget(msg.data[1])
+            self.addTarget(msg.data)
         elif msg.msgType==3:
             # Update drone status list
             self.drones[msg.data[0]]=[msg.data[1],msg.data[2]] # drone ids start at 2
