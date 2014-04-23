@@ -21,6 +21,7 @@ class Target:
         self.speed=1 #m/s for default
         self.transitTime=10
         self.loiterbit=1
+        self.timeOnNode=0
         
         self.ID=0
         self.Type='Pedestrian'
