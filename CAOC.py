@@ -30,6 +30,7 @@ class CAOC (LogicalProcess):
         self.drones=[]
         for i in range(numDrones):
             self.drones.insert(i,["Idle",0])
+        self.droneLPID=[]
         self.heuristic=heuristicNum
         self.hmint=[]
     # Call function
@@ -94,9 +95,10 @@ class CAOC (LogicalProcess):
                 # If the queue is empty and there is an idle drone, send it the incoming target assignment
                 for i in range(len(self.drones)):
                     if self.drones[i][0]=="Idle":
-                        newTgtMsg=Message(2,targetData,self.id,i,self.localTime) # drone ids start at 2
+                        print " CAOC Thinks this message is going to:",i+2
+                        newTgtMsg=Message(2,targetData,self.id,self.droneLPID[i],self.localTime) # drone ids start at 2
                         self.sendMessage(newTgtMsg)
-                        print "sent message to idle drone:",i
+                        print "sent message to idle drone:",i+2
                         break
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
                 else:
@@ -122,7 +124,7 @@ class CAOC (LogicalProcess):
                     print('CAOC Added target to priority queue')
                 # If the queue is empty and there are idle drones, send the nearest drone the incoming target assignment   
                 else:
-                    newTgtMsg=Message(2,targetData,self.id,indexCloseDrone,self.localTime) # drone ids start at 2
+                    newTgtMsg=Message(2,targetData,self.id,indexCloseDrone+2,self.localTime) # drone ids start at 2
                     self.sendMessage(newTgtMsg)
             elif self.heuristic==3:
                 # Adjust tgt priority be intel value/goal track time if the tgt has no track attempts
@@ -146,7 +148,7 @@ class CAOC (LogicalProcess):
                     print('CAOC Added target to priority queue')
                 # If the queue is empty and there are idle drones, send the nearest drone the incoming target assignment   
                 else:
-                    newTgtMsg=Message(2,targetData,self.id,indexCloseDrone,self.localTime) # drone ids start at 0
+                    newTgtMsg=Message(2,targetData,self.id,indexCloseDrone+2,self.localTime) # drone ids start at 0
                     self.sendMessage(newTgtMsg)                
         # If the queue is not empty (implying all drones are busy), put the target assignment in the queue in order
         else:
@@ -238,9 +240,15 @@ class CAOC (LogicalProcess):
         
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
-        LPIDs.extend(self.droneInQs.getLPIDs())
+        a=self.droneInQs.getLPIDs()
+        LPIDs.extend(a)
         
-        self.initGVTCounts(LPIDs)        
+        for i in a:
+            self.droneLPID.append(self.droneInQs.getDroneIDForLPID(i))
+            print "LPID:",self.droneLPID
+        
+        
+        self.initGVTCounts(LPIDs)
         
         #self.hmint.start()
         #self.hmint=HMINT(self.numTargets,slf.seedNum,randNodes)

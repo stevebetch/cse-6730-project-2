@@ -82,17 +82,17 @@ class LPInputQueue():
     
     def calculateLocalTMin(self):
         self.localTMin = self.localTime
-        if self.LPID is None:
-            print 'Controller calculateLocalTMin()'
-        else:
-            print 'LP %d calculateLocalTMin()' % (self.LPID)
-        print 'Local Time = %d' % (self.localTime)
+#        if self.LPID is None:
+#            print 'Controller calculateLocalTMin()'
+#        else:
+#            print 'LP %d calculateLocalTMin()' % (self.LPID)
+#        print 'Local Time = %d' % (self.localTime)
         for msg in self.q:
-            print 'msg.timestamp = %d' % (msg.timestamp)
+#            print 'msg.timestamp = %d' % (msg.timestamp)
             if msg.timestamp >= 0:
                 if msg.timestamp < self.localTMin:
                         self.localTMin = msg.timestamp
-        print 'tMin = %d' % (self.localTMin)
+#        print 'tMin = %d' % (self.localTMin)
         return self.localTMin
     
     def insertAtFront(self, msg):

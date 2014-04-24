@@ -85,6 +85,7 @@ class LogicalProcess(SharedMemoryClient):
             # Drone
             d.acquire()
             droneid = msg.recipient
+#            print "Drone ID for message:", droneid
             self.droneInQs.addMessage(droneid, msg) # assumes recipient set to drone's ID in msg
             if msg.color == LPGVTData.WHITE:
                 print 'incrementing count of WHITE messages sent to drone %d' % (droneid)

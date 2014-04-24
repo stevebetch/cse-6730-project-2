@@ -63,7 +63,7 @@ class Drone (LogicalProcess):
     def run(self,mapObj):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         print('Drone process running')
-        
+        print "drone ID", self.uid
         self.saveState()
         
         # Get the message queue objects from Pyro
