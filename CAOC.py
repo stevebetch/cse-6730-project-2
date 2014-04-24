@@ -1,7 +1,7 @@
 import sys, time
+from LogicalProcess import *
 from HMINT import *
 from multiprocessing import Queue, Lock
-from LogicalProcess import *
 from Message import *
 from nodes import *
 from Map import *
@@ -13,7 +13,6 @@ class CAOC (LogicalProcess):
 
     # Instance Variable List
     # id: Unique ID for this object
-    # hmint: HMINT component supplying target info
     # priorityQueue: priority queue of available targets
     # controller: the simulation executive
     # drones: list of existing drones, with their status data
@@ -25,14 +24,14 @@ class CAOC (LogicalProcess):
     # Description: Intialization of parameters that control target prioritization and drone-target assignments   
     def __init__(self, numDrones, heuristicNum):
         LogicalProcess.__init__(self)
-        self.id = 'CAOC'
+        self.id = LogicalProcess.CAOC_ID
         self.priorityQueue = []
         self.drones=[]
         for i in range(numDrones):
             self.drones.insert(i,["Idle",0])
-        self.droneLPID=[]
         self.heuristic=heuristicNum
         self.hmint=[]
+	
     # Call function
     def __call__(self):
         self.run()
@@ -61,7 +60,6 @@ class CAOC (LogicalProcess):
         self.priorityQueue=obj.priorityQueue
         self.drones=obj.drones
         self.heuristic=obj.heuristic
-        self.hmint=obj.hmint
         #self.hmint.numTargets=obj.hmint.numTargets
         #self.hmint.count=obj.hmint.count
         #self.hmint.msgTimeStamp=obj.hmint.msgTimeStamp
@@ -73,13 +71,6 @@ class CAOC (LogicalProcess):
     # Description: Changes current time in input queue to determine which messages to take out of the queue  
     def setInputQueueCurrentTime(self, time):
         self.inputQueue.setCurrentTime(time)
-
-    # Set HMINT
-    # Input: HMINT object
-    # Output: Links HMINT object to CAOC
-    # Description: Allows CAOC to access required info from HMINT   
-    def setHMINT(self, hmint):
-        self.hmint = hmint
 
     # Add Target
     # Input: Target Data data structure from Message data structure (see Message.py for documentation)
@@ -95,10 +86,9 @@ class CAOC (LogicalProcess):
                 # If the queue is empty and there is an idle drone, send it the incoming target assignment
                 for i in range(len(self.drones)):
                     if self.drones[i][0]=="Idle":
-                        print " CAOC Thinks this message is going to:",i+2
-                        newTgtMsg=Message(2,targetData,self.id,self.droneLPID[i],self.localTime) # drone ids start at 2
+                        newTgtMsg=Message(2,targetData,self.id,i,self.localTime) # drone ids start at 2
                         self.sendMessage(newTgtMsg)
-                        print "sent message to idle drone:",i+2
+                        print "sent message to idle drone:",i
                         break
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
                 else:
@@ -124,7 +114,7 @@ class CAOC (LogicalProcess):
                     print('CAOC Added target to priority queue')
                 # If the queue is empty and there are idle drones, send the nearest drone the incoming target assignment   
                 else:
-                    newTgtMsg=Message(2,targetData,self.id,indexCloseDrone+2,self.localTime) # drone ids start at 2
+                    newTgtMsg=Message(2,targetData,self.id,indexCloseDrone,self.localTime) # drone ids start at 2
                     self.sendMessage(newTgtMsg)
             elif self.heuristic==3:
                 # Adjust tgt priority be intel value/goal track time if the tgt has no track attempts
@@ -148,7 +138,7 @@ class CAOC (LogicalProcess):
                     print('CAOC Added target to priority queue')
                 # If the queue is empty and there are idle drones, send the nearest drone the incoming target assignment   
                 else:
-                    newTgtMsg=Message(2,targetData,self.id,indexCloseDrone+2,self.localTime) # drone ids start at 0
+                    newTgtMsg=Message(2,targetData,self.id,indexCloseDrone,self.localTime) # drone ids start at 0
                     self.sendMessage(newTgtMsg)                
         # If the queue is not empty (implying all drones are busy), put the target assignment in the queue in order
         else:
@@ -217,10 +207,10 @@ class CAOC (LogicalProcess):
     # Run
     # Input: None
     # Output: Starts associated objects and queues
-    # Description: Save state, start queues, start linked HMINT      
+    # Description: Save state, start queues      
     def run(self):
         
-        print('CAOC/HMINT Running')
+        print('CAOC Running')
 
         # Get the message queue objects from Pyro    
         nameserver = Pyro4.locateNS()
@@ -228,6 +218,10 @@ class CAOC (LogicalProcess):
         
         controllerInQ_uri = nameserver.lookup('inputqueue.controller')
         self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
+	
+        hmintInQ_uri = nameserver.lookup('inputqueue.hmint')
+        self.hmintInQ = Pyro4.Proxy(hmintInQ_uri)
+        LPIDs.append(self.hmintInQ.LPID)	
         
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
         self.inputQueue = Pyro4.Proxy(caocInQ_uri)
@@ -240,36 +234,17 @@ class CAOC (LogicalProcess):
         
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
-        a=self.droneInQs.getLPIDs()
-        LPIDs.extend(a)
+        LPIDs.extend(self.droneInQs.getLPIDs())
         
-        for i in a:
-            self.droneLPID.append(self.droneInQs.getDroneIDForLPID(i))
-            print "LPID:",self.droneLPID
+        self.initGVTCounts(LPIDs)        
         
-        
-        self.initGVTCounts(LPIDs)
-        
-        #self.hmint.start()
-        #self.hmint=HMINT(self.numTargets,slf.seedNum,randNodes)
-        self.saveState()
-        for i in range(self.hmint.numTargets):
-            self.hmint.generateNextTarget()
-            print "New target added from HMINT"
-        
-        ## Mark: Test code can be removed
-#        t=[1,85,85,"Vehicle",0.8,1.2,[3,10],30,0,0]
-#        u=[2,95,95,"Vehicle",0.8,1.2,[3,10],30,0,0]
-#        self.priorityQueue=[t]
-#        self.addTarget(u)
-        print 'CAOC Priority Queue: ', self.priorityQueue
-#        print "lenghth of input queue:", len(self.inputQueue.q)
+        self.saveState()	        
 
         # Event loop
         while True:
             time.sleep(2)
             msg = self.getNextMessage()
-            print 'CAOC iteration. Local time',self.localTime
+            print 'CAOC iteration. Local time', self.localTime
 #            print 'CAOC Priority Queue: '
 #            print self.priorityQueue
             if msg:

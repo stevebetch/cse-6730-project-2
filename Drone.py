@@ -63,15 +63,18 @@ class Drone (LogicalProcess):
     def run(self,mapObj):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         print('Drone process running')
-        print "drone ID", self.uid
         self.saveState()
-        
+       
         # Get the message queue objects from Pyro
         nameserver = Pyro4.locateNS()
         LPIDs = []
         
         controllerInQ_uri = nameserver.lookup('inputqueue.controller')
         self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
+        
+        hmintInQ_uri = nameserver.lookup('inputqueue.hmint')
+        self.hmintInQ = Pyro4.Proxy(hmintInQ_uri)
+        LPIDs.append(self.hmintInQ.LPID)        
         
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
         self.caocInQ = Pyro4.Proxy(caocInQ_uri)     
@@ -95,14 +98,19 @@ class Drone (LogicalProcess):
         self.setJokerBingo()
         
         # Event loop iteration
-        while True:
-            time.sleep(2)
-            print 'Drone %d event loop iteration' % (self.uid)
-            msg = self.getNextMessage()
-            if msg:
-                self.handleMessage(msg)
-                break
-            sys.stdout.flush()
+        #count = 10
+        #while True:
+            #time.sleep(2)
+            #print 'Drone %d event loop iteration' % (self.uid)
+            #msg = self.getNextMessage()
+            #if msg:
+                #self.handleMessage(msg)
+                #break
+            #sys.stdout.flush()
+            #data = [1,2,3,4,5,6,7,8,9,1,2,3,4]
+            #self.sendMessage(Message(2, data, self.uid, 'IMINT', count))
+            #self.sendMessage(Message(2, data, self.uid, 'CAOC', count))
+            #count += 70
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         # Begin at entry node. aka, only pass drone the entry node!!!
         
@@ -130,7 +138,7 @@ class Drone (LogicalProcess):
                         self.searchdwell=0
             
                 else: # joker flag set.
-                    if(not(detectBool)):
+                    if(not(self.detectBool)):
                         #dont have an active detection. RTB.
                         self.ReturnToBase()
                     else: # detection flag set. We have a target in active track.
@@ -333,6 +341,7 @@ class Drone (LogicalProcess):
        # 
     
     def subclassHandleMessage(self, msg):
+
         if(msg.msgType==2): # New target
             # tgtData = [tgtID 0,tgtIntelValue 1,tgtIntelPriority 2,tgtType 3,tgtStealth 4,tgtSpeed 5,tgtPredLoc 6,tgtGoalTrackTime 7,tgtActualTrackTime 8,tgtTrackAttempts 9]
             print
@@ -352,7 +361,7 @@ class Drone (LogicalProcess):
             tgt.trackAttempts=Data[9]
             
             
-            self.Target=tgt
+            self.target=tgt
         elif(msg.msgType==1): # Need to fill this out still....
             pass
      
@@ -605,22 +614,24 @@ class Drone (LogicalProcess):
         while(1): #Wait for a new message to come in
             try:
                 msg=self.getNextMessage() # Gets a new target
-                a=msg.Type
-                
-                break
-                print "Valid Message passed to drone"
+
+                if not(msg is None):
+                    print "Valid Message passed to drone"
+                    msg.printData(1)
+                    sys.stdout.flush()
+                    break
             except:
                 pass
                 
-        self.HandleMessage(msg)
+        self.handleMessage(msg)
         print "New target aquired"
         sendMes=Message(3,'Busy',self.uid,'CAOC',self.currentNode)
         self.sendMessage(sendMes)
         timedif=(self.LocalSimTime-self.localTime)
         if(timedif<=0):#message is in the future
             self.updateTime(timedif*-1)
-        else: #message arrived in the past, but we have done work since receiving it.
-            self.setLocalTime(self.LocalSimTime)
+        #else: #message arrived in the past, but we have done work since receiving it.
+            #self.setLocalTime(self.LocalSimTime)
 
 
 

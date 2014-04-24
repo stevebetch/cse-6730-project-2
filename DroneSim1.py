@@ -44,13 +44,16 @@ def initIMINT(heuristic):
     print('IMINT initialized')
     return imintref
 
-def initCAOC(randNodes,Data):
+def initHMINT(randNodes,Data):
+    hmintref = HMINT(Data.numTargets, randNodes)
+    hmintref.setConnectionParams(PYRO_HOST, PYRO_PORT)
+    print('HMINT initialized')
+    return hmintref
+
+def initCAOC(Data):
     caocref = CAOC(Data.numDrones,Data.heuristic)
-    hmint = HMINT(Data.numTargets, randNodes)
-    caocref.setHMINT(hmint)
-    hmint.setCAOC(caocref)
     caocref.setConnectionParams(PYRO_HOST, PYRO_PORT)
-    print('HMINT/CAOC initialized')
+    print('CAOC initialized')
     return caocref
 
 def get_local_ip_address():
@@ -92,10 +95,18 @@ def main(Data):
     
     # Create PYRO remote object daemon
     daemon = Pyro4.Daemon(host=PYRO_HOST, port=PYRO_PORT)
-    ns = Pyro4.locateNS()    
+    ns = Pyro4.locateNS()
     
-    # Create CAOC/HMINT, will be separate process started by Controller
-    caoc = initCAOC(randNodes,Data)
+    # Create HMINT, will be separate process started by Controller
+    hmint = initHMINT(randNodes,Data)
+    hmintInQ = LPInputQueue()
+    hmintInQ.setLocalTime(0)
+    hmintInQ.setLPID(hmint.LPID)
+    hmintInQ_uri = daemon.register(hmintInQ)
+    ns.register("inputqueue.hmint", hmintInQ_uri)        
+    
+    # Create CAOC, will be separate process started by Controller
+    caoc = initCAOC(Data)
     caocInQ = LPInputQueue()
     caocInQ.setLocalTime(0)
     caocInQ.setLPID(caoc.LPID)
@@ -111,7 +122,7 @@ def main(Data):
     ns.register("inputqueue.imint", imintInQ_uri)    
     
     # Create Simulation Controller
-    controller = DroneSimController(caoc, imint)
+    controller = DroneSimController(hmint, caoc, imint)
     controller.setConnectionParams(PYRO_HOST, PYRO_PORT)
     controllerInQ = LPInputQueue()
     controllerInQ.setLocalTime(0)
@@ -131,31 +142,32 @@ def main(Data):
     droneInQs_uri = daemon.register(droneInQs)
     ns.register("inputqueue.drones", droneInQs_uri)    
 
-    #creating semaphore
-#a=threading.Semaphore(numDrones)
-
-
-
     # Start Controller process, which starts everything else
     pController = Process(group=None, target=controller, name='Drone Sim Controller Process')
     print 'starting controller'
     pController.start()
     
     # Drones
+    print 'starting drones'
     pDrones = []
     for i in range(0, len(drones)):
-        # a.acquire()
         pDrone = Process(group=None, target=drones[i], name='drone'+str(drones[i].uid), args=(Map.MapEntryPt,)) 
         pDrones.append(pDrone)
-        #a.release()
-        pDrone.start()    
+        pDrone.start()  
+        print i, pDrone.is_alive()
     
+    # HMINT
+    print 'starting hmint'
+    pHMINT = Process(group=None, target=hmint, name='HMINT Process')
+    pHMINT.start()   
     
-    # HMINT/CAOC
-    pCAOC = Process(group=None, target=caoc, name='HMINT/CAOC Process')
+    # CAOC
+    print 'starting caoc'
+    pCAOC = Process(group=None, target=caoc, name='CAOC Process')
     pCAOC.start()        
 
     # IMINT
+    print 'starting imint'
     pIMINT = Process(group=None, target=imint, name='IMINT Process')
     pIMINT.start()
     

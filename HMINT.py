@@ -1,13 +1,13 @@
 import sys
 from CAOC import *
+from LogicalProcess import *
 from Target import *
 import random
-class HMINT:
+
+class HMINT (LogicalProcess):
     "Human intelligence"
     
     # Instance Variable List
-    # caoc: instance of CAOC
-    # running: false or true to describe if HMINT is currently generating targets
     # numTargets: Total number of targets to be created
     # count: number of targets created
     # msgTimestamp: timestamp of next target assignment to be sent to CAOC for prioritization
@@ -17,19 +17,23 @@ class HMINT:
     # Input: numTargets=total number of targets that might need to be targeted, randNodes is a vector of nodes from the map
     # Output: Initializes HMINT class object
     # Description: Intialization of parameters that control target generation    
-    def __init__(self, numTargets, randNodes):       
-        running = 'false'
+    def __init__(self, numTargets, randNodes):  
+        LogicalProcess.__init__(self)
+        self.id = LogicalProcess.HMINT_ID        
         self.numTargets = numTargets
         self.count = 0
         self.msgTimestamp = 0
         self.randNodes = randNodes
-    
-    # Set CAOC
-    # Input: None
-    # Output: None
-    # Description: Identifies CAOC (part of local logical process)
-    def setCAOC(self, caoc):
-        self.caoc = caoc
+        
+    # Call function
+    def __call__(self):
+        self.run()
+        
+    def saveState(self):
+        print 'Saving current HMINT state'
+
+    def restoreState(self,timestamp):
+        print 'Restoring HMINT state'
     
     # Generate Target
     # Input: None
@@ -66,24 +70,45 @@ class HMINT:
         tgtTrackAttempts=0
         self.msgTimestamp=self.msgTimestamp+random.triangular(1380,4200,2100)
         tgtData = [tgtID,tgtIntelValue,tgtIntelPriority,tgtType,tgtStealth,tgtSpeed,tgtPredLoc,tgtGoalTrackTime,tgtActualTrackTime,tgtTrackAttempts]
-        tgtMsg=Message(2,tgtData,'CAOC','CAOC',self.msgTimestamp)
-        self.caoc.sendMessage(tgtMsg) # will this mess up the anti-message process?
+        tgtMsg=Message(2,tgtData,LogicalProcess.HMINT_ID,LogicalProcess.CAOC_ID,self.msgTimestamp)
+        self.sendMessage(tgtMsg)
         self.count = self.count + 1
     
-    # Start
+    # run
     # Input: None
     # Output: Generates and adds all required targets to CAOC input queue
     # Description: Changes running status to true, generates targets
-    def start(self):
-        self.running = 'true'
+    def run(self):
+        
+        print('HMINT Running')
+        
+        # Get the message queue objects from Pyro    
+        nameserver = Pyro4.locateNS()
+        LPIDs = []
+        
+        controllerInQ_uri = nameserver.lookup('inputqueue.controller')
+        self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
+        
+        hmintInQ_uri = nameserver.lookup('inputqueue.hmint')
+        self.inputQueue = Pyro4.Proxy(hmintInQ_uri)
+        self.hmintInQ = None
+        LPIDs.append(self.inputQueue.LPID)        
+        
+        caocInQ_uri = nameserver.lookup('inputqueue.caoc')
+        self.caocInQ = Pyro4.Proxy(caocInQ_uri)
+        LPIDs.append(self.inputQueue.LPID)        
+        
+        imintInQ_uri = nameserver.lookup('inputqueue.imint')
+        self.imintInQ = Pyro4.Proxy(imintInQ_uri)
+        LPIDs.append(self.imintInQ.LPID)
+        
+        droneInQs_uri = nameserver.lookup('inputqueue.drones')
+        self.droneInQs = Pyro4.Proxy(droneInQs_uri)
+        LPIDs.extend(self.droneInQs.getLPIDs()) 
+        
+        self.initGVTCounts(LPIDs) 
+            
         while self.count < self.numTargets:
             # generate targets and add to CAOC input queue
+            time.sleep(0.1)
             self.generateNextTarget()
-        self.stop()
-
-    # Stop
-    # Input: None
-    # Output: None
-    # Description: Changes running status to false  
-    def stop(self):
-        self.running = 'false'

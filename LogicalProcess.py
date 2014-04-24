@@ -2,6 +2,7 @@ import sys
 from Message import *
 from SharedMemoryClient import *
 from GVT import *
+from GlobalControlProcess import *
 from DroneInputQueueContainer import *
 import threading
 
@@ -9,11 +10,15 @@ a = threading.Lock()
 b=threading.Lock()
 c=threading.Lock()
 d=threading.Lock()
+e = threading.Lock()
 
 class LogicalProcess(SharedMemoryClient):
     # Implements Time Warp Local Control Mechanism
 
     nextLPID = 0
+    CAOC_ID = 'CAOC'
+    HMINT_ID = 'HMINT'
+    IMINT_ID = 'IMINT'
     
     # Get next Logical Process ID Function
     # Description: Provide unique ids for new logical processes
@@ -47,6 +52,7 @@ class LogicalProcess(SharedMemoryClient):
         
     def sendMessage(self, msg):
         
+        msg.printData(1)
         msg.color = self.gvtData.color            
             
         if (msg.isAntiMessage()):
@@ -54,21 +60,23 @@ class LogicalProcess(SharedMemoryClient):
         else:
             print 'sending message with timestamp %s' % (msg.timestamp)
             
-        if (msg.recipient == 'CAOC'):
-            a.acquire()
-            if (msg.sender == 'CAOC' or msg.sender == 'HMINT'):
-                self.inputQueue.addMessage(msg)
+        if (msg.recipient == LogicalProcess.HMINT_ID):
+            e.acquire()
+            self.hmintInQ.addMessage(msg)
+            if msg.color == LPGVTData.WHITE:                
+                self.gvtData.counts[self.hmintInQ.getLPID()] += 1
             else:
-                self.caocInQ.addMessage(msg)
-            if msg.color == LPGVTData.WHITE:
-                if (msg.sender == 'CAOC' or msg.sender == 'HMINT'):
-                    self.gvtData.counts[self.inputQueue.getLPID()] += 1
-                else:
-                    self.gvtData.counts[self.caocInQ.getLPID()] += 1
+                self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
+            e.release()        
+        elif (msg.recipient == LogicalProcess.CAOC_ID):
+            a.acquire()
+            self.caocInQ.addMessage(msg)
+            if msg.color == LPGVTData.WHITE:                
+                self.gvtData.counts[self.caocInQ.getLPID()] += 1
             else:
                 self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
             a.release()
-        elif (msg.recipient == 'IMINT'):
+        elif (msg.recipient == LogicalProcess.IMINT_ID):
             b.acquire()
             self.imintInQ.addMessage(msg)
             if msg.color == LPGVTData.WHITE:
@@ -76,7 +84,7 @@ class LogicalProcess(SharedMemoryClient):
             else:
                 self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
             b.release()
-        elif (msg.recipient == 'Controller'):
+        elif (msg.recipient == GlobalControlProcess.CONTROLLER_ID):
             c.acquire()
             self.controllerInQ.addMessage(msg)
             c.release()
@@ -146,7 +154,10 @@ class LogicalProcess(SharedMemoryClient):
         
     def getNextLPInTokenRing(self, lpids):
         print self.LPID
-        if (not (self.caocInQ is None) and self.caocInQ.getLPID() == self.LPID + 1):
+        if (not (self.hmintInQ is None) and self.hmintInQ.getLPID() == self.LPID + 1):
+            print 'next LP is HMINT'
+            self.nextLPInTokenRingInQ = self.hmintInQ        
+        elif (not (self.caocInQ is None) and self.caocInQ.getLPID() == self.LPID + 1):
             print 'next LP is CAOC'
             self.nextLPInTokenRingInQ = self.caocInQ
         elif (not (self.imintInQ is None) and self.imintInQ.getLPID() == self.LPID + 1):
@@ -173,7 +184,6 @@ class LogicalProcess(SharedMemoryClient):
     
     def onGVTThreadFinished(self, lpids, msg):
         self.gvtData.initCounts(lpids)
-        self.calculateLocalTMin()
         if not(self.gvtData.tMin is None):
             msg.data.tMin = min(msg.data.tMin, self.gvtData.tMin)
         self.forwardGVTControlMessage(msg)
@@ -205,6 +215,10 @@ class LogicalProcess(SharedMemoryClient):
                 print 'LP %d recvd WHITE msg, rcvd count was %d' % (self.LPID, self.gvtData.counts[self.LPID])
                 self.gvtData.counts[self.LPID] -= 1
                 print 'LP %d recvd WHITE msg, rcvd count is now %d' % (self.LPID, self.gvtData.counts[self.LPID])
+                if self.inputQueue is None:
+                    print 'Number of WHITE msgs left in queue: %d' % (self.droneInQs.numWhiteMessages(self.uid))
+                else:
+                    print 'Number of WHITE msgs left in queue: %d' % (self.inputQueue.numWhiteMessages())
                 self.gvtData.dump()
             if msg.timestamp < self.localTime:
                 self.rollback(msg)
@@ -226,8 +240,9 @@ class LogicalProcess(SharedMemoryClient):
 
         # get smallest timestamp message
         if q.hasMessages():
+            print 'LP %d queue has messages' % (self.LPID)
+            sys.stdout.flush()
             msg = q.getNextMessage()
-        self.gvtData.tMin = q.calculateLocalTMin()
             
         # if a drone, save modified input queue back into DroneInputQueueContainer shared object    
         if self.inputQueue is None:

@@ -29,6 +29,13 @@ class LPInputQueue():
     def setLocalTime(self, time):
         self.localTime = time
         
+    def numWhiteMessages(self):
+        count = 0
+        for msg in self.q:
+            if msg.color == LPGVTData.WHITE:
+                count += 1
+        return count
+        
     def justPut(self, msg):
         if msg.timestamp < self.localTMin:
             self.localTMin = msg.timestamp
@@ -38,9 +45,7 @@ class LPInputQueue():
         self.insertAtBack(msg)
         
     def remove(self, msg):
-        self.q.remove(msg)
-        if msg.timestamp == self.localTMin:
-            self.calculateLocalTMin()        
+        self.q.remove(msg)        
         
     def getNextMessage(self):
         
@@ -75,9 +80,7 @@ class LPInputQueue():
             self.q.remove(removeMsg)
             
         if not(msg is None):
-            self.q.remove(msg)
-            if msg.timestamp == self.localTMin:
-                self.calculateLocalTMin()                      
+            self.q.remove(msg)                    
         return msg
     
     def calculateLocalTMin(self):

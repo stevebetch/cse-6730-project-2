@@ -25,7 +25,7 @@ class IMINT (LogicalProcess):
     # Description: Intialization of parameters that control assignment data collection and re-work decisions 
     def __init__(self,heuristicNum):
         LogicalProcess.__init__(self)
-        self.id = 'IMINT'
+        self.id = LogicalProcess.IMINT_ID
         self.heuristic=heuristicNum
         self.high=30
         self.low=10
@@ -132,6 +132,10 @@ class IMINT (LogicalProcess):
         
         controllerInQ_uri = nameserver.lookup('inputqueue.controller')
         self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
+        
+        hmintInQ_uri = nameserver.lookup('inputqueue.hmint')
+        self.hmintInQ = Pyro4.Proxy(hmintInQ_uri)
+        LPIDs.append(self.hmintInQ.LPID)        
         
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
         self.caocInQ = Pyro4.Proxy(caocInQ_uri)     

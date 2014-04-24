@@ -2,6 +2,7 @@ import sys,time
 from Drone import *
 from GlobalControlProcess import *
 from GVT import *
+from HMINT import *
 from multiprocessing import Process
 import Pyro4
 from DroneSim1 import *
@@ -18,13 +19,15 @@ class DroneSimController(GlobalControlProcess):
     #gvt - Global Virtual Time
 
 
-    def __init__(self, caoc, imint):
+    def __init__(self, hmint, caoc, imint):
         GlobalControlProcess.__init__(self)
+        self.id = GlobalControlProcess.CONTROLLER_ID
         self.caoc = caoc
+        self.hmint = hmint
         self.imint = imint
         self.drones = []
         self.gvt = 0
-        self.gvtTokenRing = [self.imint.LPID, self.caoc.LPID]
+        self.gvtTokenRing = [self.hmint.LPID, self.caoc.LPID, self.imint.LPID]
 
     def __call__(self):
         self.run()
@@ -47,6 +50,9 @@ class DroneSimController(GlobalControlProcess):
         controllerInQ_uri = nameserver.lookup('inputqueue.controller')
         self.inputQueue = Pyro4.Proxy(controllerInQ_uri)
         
+        hmintInQ_uri = nameserver.lookup('inputqueue.hmint')
+        self.hmintInQ = Pyro4.Proxy(hmintInQ_uri)        
+        
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
         self.caocInQ = Pyro4.Proxy(caocInQ_uri)
         
@@ -63,6 +69,7 @@ class DroneSimController(GlobalControlProcess):
         #self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 4))
         #self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 5))
         #self.inputQueue.addMessage(Message(1, 'Data', 'Controller', 'Controller', 3))
+        #self.droneInQs.addMessage(0, Message(2, 'Data', 'Controller', 0, 3))
          
         while True:
             
@@ -70,7 +77,7 @@ class DroneSimController(GlobalControlProcess):
             
             # GVT: Trigger round for cut C1 (CAOC is first LP in token ring)
             print 'Controller sending cut C1 token to first LP'
-            self.caocInQ.addMessage(Message(1, GVTControlMessageData(self.gvtTokenRing), 'Controller', 'CAOC', -1))
+            self.hmintInQ.addMessage(Message(1, GVTControlMessageData(self.gvtTokenRing), GlobalControlProcess.CONTROLLER_ID, LogicalProcess.HMINT_ID, -1))
             msg = None
             print 'Controller waiting for cut C1 token'
             sys.stdout.flush()            
@@ -94,12 +101,12 @@ class DroneSimController(GlobalControlProcess):
                 print 'Controller sending GVT value to first LP'
                 sys.stdout.flush()
                 gvt = min(msg.data.tMin, msg.data.tRed)
-                self.caocInQ.addMessage(Message(1, GVTValue(gvt), 'Controller', 'IMINT', -1))                  
+                self.hmintInQ.addMessage(Message(1, GVTValue(gvt), GlobalControlProcess.CONTROLLER_ID, LogicalProcess.HMINT_ID, -1))                  
             else:
                 # GVT: Trigger round for cut C2
                 print 'Controller sending cut C2 token to first LP'
                 sys.stdout.flush()
-                self.caocInQ.addMessage(msg)
+                self.hmintInQ.addMessage(msg)
                 print 'Controller waiting for cut C2 token'
                 sys.stdout.flush()                
                 while True:
@@ -120,7 +127,7 @@ class DroneSimController(GlobalControlProcess):
                 sys.stdout.flush()
                 gvt = min(msg.data.tMin, msg.data.tRed)
                 print 'GVT value is %d' % (gvt)
-                self.caocInQ.addMessage(Message(1, GVTValue(gvt), 'Controller', 'IMINT', -1))                 
+                self.hmintInQ.addMessage(Message(1, GVTValue(gvt), GlobalControlProcess.CONTROLLER_ID, LogicalProcess.HMINT_ID, -1))                 
                 sys.stdout.flush()                
             break
 

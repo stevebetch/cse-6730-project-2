@@ -30,6 +30,9 @@ class DroneInputQueueContainer:
     def getLPID(self, droneid):
         return self.queues[droneid].LPID
     
+    def numWhiteMessages(self, droneid):
+        return self.queues[droneid].numWhiteMessages()
+    
     def getDroneIDForLPID(self, lpid):
         for droneid, q in self.queues.items():
             if q.getLPID() == lpid:
