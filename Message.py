@@ -52,7 +52,7 @@ class Message:
         self.timestamp = timestamp
         self.color = None
         
-    def __eq__(self, other): 
+    def __eq__(self, other): # Stephan: What does this do??
         return self.__dict__ == other.__dict__   
     
     def clone(self):

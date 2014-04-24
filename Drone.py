@@ -29,7 +29,7 @@ class Drone (LogicalProcess):
         self.jokerflag=0
 
         self.Bingo=0 #time until we have to leave the ma        self.DistEntry=0.0 #distance from the entry node
-
+        self.DistEntry=0
         self.FlightSpeed=random.randint(46,54)#Random flight speed of the drone based on loiter and top speed, m/s
         self.DroneLegs=41760 #11.6hrs = 41760s max endurance, 5.8hrs = 20880s median endurance
 
@@ -603,17 +603,24 @@ class Drone (LogicalProcess):
     def getNewTgt(self):
        # self.setLocalTime(self.LocalSimTime)
         while(1): #Wait for a new message to come in
-            msg=self.getNextMessage() # Gets a new target
-            if(not(msg==None)):
-                self.HandleMessage(msg)
-                print "New target aquired"
-                sendMes=Message(3,'Busy',self.uid,'CAOC',self.currentNode)
-                self.sendMessage(sendMes)
-                timedif=(self.LocalSimTime-self.localTime)
-                if(timedif<=0):#message is in the future
-                    self.updateTime(timedif*-1)
-                else: #message arrived in the past, but we have done work since receiving it.
-                    self.setLocalTime(self.LocalSimTime)
+            try:
+                msg=self.getNextMessage() # Gets a new target
+                a=msg.Type
+                
                 break
+                print "Valid Message passed to drone"
+            except:
+                pass
+                
+        self.HandleMessage(msg)
+        print "New target aquired"
+        sendMes=Message(3,'Busy',self.uid,'CAOC',self.currentNode)
+        self.sendMessage(sendMes)
+        timedif=(self.LocalSimTime-self.localTime)
+        if(timedif<=0):#message is in the future
+            self.updateTime(timedif*-1)
+        else: #message arrived in the past, but we have done work since receiving it.
+            self.setLocalTime(self.LocalSimTime)
+
 
 
