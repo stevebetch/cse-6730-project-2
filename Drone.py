@@ -542,21 +542,22 @@ class Drone (LogicalProcess):
 
 
 
-    def restoreState(self,timeStamp):
-        #Get the old state:
-        temp=[]
-        for i in self.stateQueue:
-            if(i.LocalSimTime<=timeStamp):
-                #incase the time stamp is not exactly the correct one. Find the closest, previous state save
-                temp=i
-#                print i.LocalSimTime
-        self.Restore(i)
+    def restoreState(self,timestamp):
+        print 'restoring to last Drone state stored <= %d' % (timestamp)
+        index=0
+        for i in range(len(self.stateQueue)-1,-1,-1):
+            if(timestamp>=self.stateQueue[i].LocalSimTime):
+                index=i
+                break
+            else:
+                self.stateQueue.pop(i)
+        self.restore(self.stateQueue[index])    
 
 
 
 
 
-    def Restore(self,obj):
+    def restore(self,obj):
     #restore drone to old state.
         self.uid = obj.uid
         self.droneType = obj.droneType

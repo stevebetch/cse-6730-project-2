@@ -44,6 +44,11 @@ def main():
     imintInQ = LPInputQueue()
     print 'IMINT total value: ' + str(imint.totalValue)
     
+    drone=Drone(0,0,1)
+    droneInQ=LPInputQueue()
+    
+    lp=[hmint,caoc,imint,drone]
+    
     print '---Generate Messages---'
     m2Data=[0,80,80,'Vehicle',1,1,randNodes[0],30,0,0]
     m2=Message(2,m2Data,'CAOC','IMINT',0)
@@ -51,67 +56,40 @@ def main():
     m3=Message(3,m3Data,'IMINT','CAOC',1)    
     
     print '---Save and Restore State---'
-    hmint.localTime=0
-    caoc.localTime=0
-    imint.localTime=0
-    hmint.saveState()
-    caoc.saveState()
-    imint.saveState()    
-    hmint.localTime=3
-    caoc.localTime=3
-    imint.localTime=3    
-    print 'HMINT Local Time: ' + str(hmint.localTime)
-    print 'CAOC Local Time: ' + str(caoc.localTime)
-    print 'IMINT Local Time: ' + str(imint.localTime)
-    hmint.saveState()
-    caoc.saveState()
-    imint.saveState()
-    hmint.localTime=7
-    caoc.localTime=7
-    imint.localTime=7      
-    hmint.saveState()   
-    caoc.saveState()
-    imint.saveState()
-    hmint.localTime=12
-    caoc.localTime=12
-    imint.localTime=12      
-    hmint.saveState()   
-    caoc.saveState()
-    imint.saveState()        
-    print 'HMINT state queue: ' + str(hmint.stateQueue)    
-    print 'CAOC state queue: ' + str(caoc.stateQueue)    
-    print 'IMINT state queue: ' + str(imint.stateQueue)
-
-    print 'HMINT state queue length: ' + str(len(hmint.stateQueue))
-    print 'HMINT state queue[0]: ' + str(hmint.stateQueue[0])
-    print 'CAOC state queue length: ' + str(len(caoc.stateQueue))
-    print 'CAOC state queue[0]: ' + str(caoc.stateQueue[0])
-    print 'IMINT state queue length: ' + str(len(imint.stateQueue))
-    print 'IMINT state queue[0]: ' + str(imint.stateQueue[0])
-    print 'IMINT state queue[0].localTime: ' + str(imint.stateQueue[0].localTime)
-
-    hmint.restoreState(7)
-    caoc.restoreState(2)
-    imint.restoreState(13)
-
-    print 'HMINT state queue: ' + str(hmint.stateQueue)   
-    print 'CAOC state queue: ' + str(caoc.stateQueue)    
-    print 'IMINT state queue: ' + str(imint.stateQueue)
-    print 'HMINT Local Time: ' + str(hmint.localTime)
-    print 'CAOC Local Time: ' + str(caoc.localTime)
-    print 'IMINT Local Time: ' + str(imint.localTime)    
     
+    for i in lp:
+        i.localTime=0
+        drone.LocalSimTime=0
+        i.saveState()
+        i.localTime=3
+        drone.LocalSimTime=3
+        i.saveState()
+        i.localTime=7
+        drone.LocalSimTime=7
+        i.saveState()
+        i.localTime=12
+        drone.LocalSimTime=12
+        i.saveState()
+        print str(i.LPID) + ' state queue: ' + str(i.stateQueue)
+        print str(i.LPID) + ' state queue length: ' + str(len(i.stateQueue))
     
-    hmint.localTime=13
-    caoc.localTime=13
-    imint.localTime=13     
-    hmint.saveState()   
-    caoc.saveState()
-    imint.saveState()        
+
+    for i in drone.stateQueue:
+        print 'Drone LocalSimTime: ' + str(i.LocalSimTime)
     
-    print 'HMINT state queue: ' + str(hmint.stateQueue)   
-    print 'CAOC state queue: ' + str(caoc.stateQueue)    
-    print 'IMINT state queue: ' + str(imint.stateQueue)    
+    hmint.restoreState(6)
+    caoc.restoreState(6)
+    imint.restoreState(6)
+    drone.restoreState(6)
+
+    for i in lp:
+        print str(i.LPID) + ' state queue: ' + str(i.stateQueue)
+        print str(i.LPID) + ' local time: ' + str(i.localTime)
+        print 'Drone actual local time: ' + str(drone.LocalSimTime)
+        i.localTime=13
+        i.saveState()
+        print str(i.LPID) + ' state queue: ' + str(i.stateQueue)        
+    
     
     print 'End'
 
