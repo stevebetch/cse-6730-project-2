@@ -51,6 +51,12 @@ def main():
     m3=Message(3,m3Data,'IMINT','CAOC',1)    
     
     print '---Save and Restore State---'
+    hmint.localTime=0
+    caoc.localTime=0
+    imint.localTime=0
+    hmint.saveState()
+    caoc.saveState()
+    imint.saveState()    
     hmint.localTime=3
     caoc.localTime=3
     imint.localTime=3    
@@ -95,6 +101,17 @@ def main():
     print 'CAOC Local Time: ' + str(caoc.localTime)
     print 'IMINT Local Time: ' + str(imint.localTime)    
     
+    
+    hmint.localTime=13
+    caoc.localTime=13
+    imint.localTime=13     
+    hmint.saveState()   
+    caoc.saveState()
+    imint.saveState()        
+    
+    print 'HMINT state queue: ' + str(hmint.stateQueue)   
+    print 'CAOC state queue: ' + str(caoc.stateQueue)    
+    print 'IMINT state queue: ' + str(imint.stateQueue)    
     
     print 'End'
 

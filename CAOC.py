@@ -51,6 +51,8 @@ class CAOC (LogicalProcess):
             if(timestamp>=self.stateQueue[i].key):
                 index=i
                 break
+            else:
+                self.stateQueue.pop(i)	    
         self.restore(self.stateQueue[index])
 
     def restore(self,obj):
