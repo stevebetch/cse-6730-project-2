@@ -652,7 +652,7 @@ class Drone (LogicalProcess):
                 
         self.handleMessage(msg)
         print "New target aquired"
-        sendMes=Message(3,'Busy',self.uid,'CAOC',self.currentNode)
+        sendMes=Message(3,[self.uid,'Busy',self.currentNode],self.uid,'CAOC',self.localTime) # not sure which time to use here
         self.sendMessage(sendMes)
         timedif=(self.LocalSimTime-self.localTime)
         if(timedif<=0):#message is in the future

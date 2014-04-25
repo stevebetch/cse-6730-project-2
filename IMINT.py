@@ -99,6 +99,8 @@ class IMINT (LogicalProcess):
                     #    In the current implementation we allow IMINT to clear out it's backlog of unprocessed images at the sim end time
                     self.totalValue+=msg.data[1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
                     self.targetsTracked+=1
+                    print 'Total Value: ' + str(self.totalValue)
+                    print 'Total Targets Tracked: ' + str(self.targetsTracked)                    
             elif self.heuristic==3 or self.heuristic==2:
                 if msg.data[8]-msg.data[7]<0:
                     # if goal track time has not been achieved, adjsut priority and send updated tgt assignment to CAOC after processing time
