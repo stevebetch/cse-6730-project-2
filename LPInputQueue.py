@@ -37,8 +37,6 @@ class LPInputQueue():
         return count
         
     def justPut(self, msg):
-        if msg.timestamp < self.localTMin:
-            self.localTMin = msg.timestamp
         self.q.insert(0, msg)
         
     def addMessage(self, msg):
@@ -64,8 +62,8 @@ class LPInputQueue():
                 msg = currMsg            
             elif currMsg.isAntiMessage():
                 if currMsg.timestamp <= self.localTime:
-                    # corresponding message was already processed, need to process this
-                    # antimessage, which should trigger rollback
+                    # need to process this
+                    # antimessage, which may trigger rollback
                     smallestTimestamp = currMsg.timestamp
                     msg = currMsg
                 else:
@@ -113,14 +111,14 @@ class LPInputQueue():
                 if (m.id == msg.id) and (not m.isAntiMessage()):
                     match = m
             if match:
-                print 'Found match for anti-message, annihilating both'
+                print 'Found match for anti-message, both are ANNIHILATED!'
                 self.q.remove(match)
                 return            
             # matching message already processed or not yet received
             if msg.timestamp <= self.localTime:
                 # message already processed
                 self.insertAtFront(msg) # will trigger rollback
-                print 'Matching message for anti-message has already been processed'
+                print 'Received anti-message in the past'
             else:
                 # message not yet received
                 self.q.insert(0, msg) #inserts at end of input queue 
@@ -135,7 +133,7 @@ class LPInputQueue():
                     if (m.id == msg.id):
                         match = m
             if match:
-                print 'Anti-message for message found, annihilate both'
+                print 'Anti-message for message found, both are ANNIHILATED!'
                 self.q.remove(m)
                 return        
             # check if time is before currTime, if so then do rollback

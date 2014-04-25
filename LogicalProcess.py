@@ -19,6 +19,7 @@ class LogicalProcess(SharedMemoryClient):
     CAOC_ID = 'CAOC'
     HMINT_ID = 'HMINT'
     IMINT_ID = 'IMINT'
+    STUBLP_ID = 'STUBLP'
     
     # Get next Logical Process ID Function
     # Description: Provide unique ids for new logical processes
@@ -67,7 +68,13 @@ class LogicalProcess(SharedMemoryClient):
                 self.gvtData.counts[self.hmintInQ.getLPID()] += 1
             else:
                 self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
-            e.release()        
+            e.release()
+        elif (msg.recipient == LogicalProcess.STUBLP_ID):
+            self.stublpInQ.addMessage(msg)
+            if msg.color == LPGVTData.WHITE:                
+                self.gvtData.counts[self.stublpInQ.getLPID()] += 1
+            else:
+                self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
         elif (msg.recipient == LogicalProcess.CAOC_ID):
             a.acquire()
             self.caocInQ.addMessage(msg)
@@ -121,15 +128,19 @@ class LogicalProcess(SharedMemoryClient):
         # append messages processed after this time to input queue for reprocessing
         reprocessList = []
         for histMsg in self.inputMsgHistory:
+            print 'histMsg'
             if histMsg.timestamp > msg.timestamp:
+                print 'add histMsg to reprocess list'
                 reprocessList.append(histMsg)
-        reprocessList.sort(key=lambda x: x.timestamp, reverse=True)
+
         # if a drone, get local copy of input queue from DroneInputQueueContainer shared object 
         if self.inputQueue is None:
             q = self.droneInQs.getInputQueue(self.uid)
         else:
-            q = self.inputQueue        
+            q = self.inputQueue 
+        print q.getLength()
         q.extend(reprocessList)
+        print q.getLength()
         self.gvtData.tMin = q.calculateLocalTMin()
         if self.inputQueue is None:
             self.droneInQs.setInputQueue(self.uid, q)        
@@ -211,22 +222,37 @@ class LogicalProcess(SharedMemoryClient):
             elif isinstance(msg.data, GVTValue):
                 self.setGVT(msg.data.gvt)
         else:
-            if msg.color == LPGVTData.WHITE:
-                print 'LP %d recvd WHITE msg, rcvd count was %d' % (self.LPID, self.gvtData.counts[self.LPID])
-                self.gvtData.counts[self.LPID] -= 1
-                print 'LP %d recvd WHITE msg, rcvd count is now %d' % (self.LPID, self.gvtData.counts[self.LPID])
+            if msg.isAnti and not(self.matchingMessageAlreadyProcessed(msg)):
+                # return antimessage to queue
                 if self.inputQueue is None:
-                    print 'Number of WHITE msgs left in queue: %d' % (self.droneInQs.numWhiteMessages(self.uid))
+                    q = self.droneInQs.getInputQueue(self.uid)
                 else:
-                    print 'Number of WHITE msgs left in queue: %d' % (self.inputQueue.numWhiteMessages())
-                self.gvtData.dump()
-            if msg.timestamp < self.localTime:
-                self.rollback(msg)
+                    q = self.inputQueue                        
+                q.justPut(msg)
+                if self.inputQueue is None:
+                    self.droneInQs.setInputQueue(self.uid, q)
+            elif msg.isAnti:
+                if msg.timestamp <= self.localTime:
+                    self.rollback(msg)
+                elif msg.timestamp < self.localTime:
+                    self.rollback(msg)
             else:
-                self.saveState() #define getCurrentState() in subclass
-                self.setLocalTime(msg.timestamp)
-                self.inputMsgHistory.append(msg.clone())
-                self.subclassHandleMessage(msg)
+                if msg.timestamp < self.localTime:
+                    self.rollback(msg)                
+                else:
+                    if msg.color == LPGVTData.WHITE:
+                        print 'LP %d recvd WHITE msg, rcvd count was %d' % (self.LPID, self.gvtData.counts[self.LPID])
+                        self.gvtData.counts[self.LPID] -= 1
+                        print 'LP %d recvd WHITE msg, rcvd count is now %d' % (self.LPID, self.gvtData.counts[self.LPID])
+                        if self.inputQueue is None:
+                            print 'Number of WHITE msgs left in queue: %d' % (self.droneInQs.numWhiteMessages(self.uid))
+                        else:
+                            print 'Number of WHITE msgs left in queue: %d' % (self.inputQueue.numWhiteMessages())
+                        self.gvtData.dump()                
+                    self.saveState() #define getCurrentState() in subclass
+                    self.setLocalTime(msg.timestamp)
+                    self.inputMsgHistory.append(msg.clone())
+                    self.subclassHandleMessage(msg)
     
     def getNextMessage(self):
         msg = None
@@ -248,7 +274,13 @@ class LogicalProcess(SharedMemoryClient):
         if self.inputQueue is None:
             self.droneInQs.setInputQueue(self.uid, q)
         
-        return msg        
+        return msg 
+    
+    def matchingMessageAlreadyProcessed(self, msg):
+        for histMsg in self.inputMsgHistory:
+            if histMsg.id == msg.id:
+                return True
+        return False
                 
     def setLocalTime(self, time):
         self.localTime = time

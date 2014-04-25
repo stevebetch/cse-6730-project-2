@@ -122,6 +122,7 @@ def main(Data):
     drones = []
     for i in range(Data.numDrones):
         dronename = i
+        print 'dronename is %s' % dronename
         drone = createNewDrone(dronename, Data.typeOfDrone,Data.heuristic)
         drones.append(drone)
         controller.addDrone(drone)
@@ -130,7 +131,7 @@ def main(Data):
     droneInQs_uri = daemon.register(droneInQs)
     ns.register("inputqueue.drones", droneInQs_uri)    
 
-    # Start Controller process, which starts everything else
+    # Start Controller process
     pController = Process(group=None, target=controller, name='Drone Sim Controller Process')
     print 'starting controller'
     pController.start()

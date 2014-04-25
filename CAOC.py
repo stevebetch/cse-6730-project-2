@@ -30,7 +30,7 @@ class CAOC (LogicalProcess):
         for i in range(numDrones):
             self.drones.insert(i,["Idle",0])
         self.heuristic=heuristicNum
-	
+
     # Call function
     def __call__(self):
         self.run()
@@ -54,9 +54,9 @@ class CAOC (LogicalProcess):
 #            else:
 #                self.stateQueue.pop(i)
         for i in self.stateQueue:
-                if(timestamp<=i.key):
-                    index=i
-                    break
+            if(timestamp<=i.key):
+                index=i
+                break
 
         self.restore(index)
 
@@ -211,35 +211,35 @@ class CAOC (LogicalProcess):
     # Output: Starts associated objects and queues
     # Description: Save state, start queues      
     def run(self):
-        
+
         print('CAOC Running')
 
         # Get the message queue objects from Pyro    
         nameserver = Pyro4.locateNS()
         LPIDs = []
-        
+
         controllerInQ_uri = nameserver.lookup('inputqueue.controller')
         self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
-	
+
         hmintInQ_uri = nameserver.lookup('inputqueue.hmint')
         self.hmintInQ = Pyro4.Proxy(hmintInQ_uri)
         LPIDs.append(self.hmintInQ.LPID)	
-        
+
         caocInQ_uri = nameserver.lookup('inputqueue.caoc')
         self.inputQueue = Pyro4.Proxy(caocInQ_uri)
         self.caocInQ = None
         LPIDs.append(self.inputQueue.LPID)
-        
+
         imintInQ_uri = nameserver.lookup('inputqueue.imint')
         self.imintInQ = Pyro4.Proxy(imintInQ_uri)
         LPIDs.append(self.imintInQ.LPID)
-        
+
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
         LPIDs.extend(self.droneInQs.getLPIDs())
-        
+
         self.initGVTCounts(LPIDs)        
-        
+
         self.saveState()	        
 
         # Event loop
@@ -252,5 +252,4 @@ class CAOC (LogicalProcess):
             if msg:
                 self.handleMessage(msg)
                 msg.printData(1)
-	    sys.stdout.flush()
-
+            sys.stdout.flush()
