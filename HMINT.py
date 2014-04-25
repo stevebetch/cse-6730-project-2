@@ -36,7 +36,7 @@ class HMINT (LogicalProcess):
         self.stateQueue.append(saver)
 
     def restoreState(self,timestamp):
-        print 'restoring to last CAOC state stored <= %d' % (timestamp)
+        print 'restoring to last HMINT state stored <= %d' % (timestamp)
         index=0
         for i in range(len(self.stateQueue)-1,-1,-1):
             if(timestamp>=self.stateQueue[i].key):
