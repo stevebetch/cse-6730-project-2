@@ -26,8 +26,8 @@ def createNewDrone(uid, droneType,heuristic):
     droneref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     return droneref
     
-def initIMINT(heuristic):
-    imintref = IMINT(heuristic)
+def initIMINT(heuristic,numTargets):
+    imintref = IMINT(heuristic,numTargets)
     imintref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     print('IMINT initialized')
     return imintref
@@ -102,7 +102,7 @@ def main(Data):
     ns.register("inputqueue.caoc", caocInQ_uri)    
     
     # Create IMINT, will be separate process started by Controller
-    imint = initIMINT(Data.heuristic)
+    imint = initIMINT(Data.heuristic,Data.numTargets)
     imintInQ = LPInputQueue()
     imintInQ.setLocalTime(0)
     imintInQ.setLPID(imint.LPID)

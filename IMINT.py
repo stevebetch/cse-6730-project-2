@@ -23,7 +23,7 @@ class IMINT (LogicalProcess):
     # Input: heuristicNum=1,2, or 3 (naive, local, or timer heuristic)
     # Output: Initializes IMINT logical process
     # Description: Intialization of parameters that control assignment data collection and re-work decisions 
-    def __init__(self,heuristicNum):
+    def __init__(self,heuristicNum,numTargets):
         LogicalProcess.__init__(self)
         self.id = LogicalProcess.IMINT_ID
         self.heuristic=heuristicNum
@@ -33,6 +33,7 @@ class IMINT (LogicalProcess):
         self.priorityAdjust=0.5
         self.totalValue=0
         self.targetsTracked=0
+        self.numTargets=numTargets
 
     # Call function
     def __call__(self):
@@ -155,7 +156,7 @@ class IMINT (LogicalProcess):
         self.initGVTCounts(LPIDs)
 
         ## Event loop iteration
-        while True:
+        while self.targetsTracked<self.numTargets :
             print 'IMINT loop iteration'
             msg = self.getNextMessage()
             #print msg
@@ -166,4 +167,8 @@ class IMINT (LogicalProcess):
             
             time.sleep(2)
             sys.stdout.flush()
+
+        Pyro4.core.Daemon.close()
+
+
 

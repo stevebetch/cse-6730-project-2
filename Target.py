@@ -17,7 +17,7 @@ class Target:
         self.intelPriority=1
         
         self.ObsTime=90 # set the default time for sucessful tracking at 90sec,
-        self.goalTime=0
+        self.goalTime=100
         self.speed=1 #m/s for default
         self.transitTime=10
         self.loiterbit=1

@@ -132,35 +132,39 @@ class Drone (LogicalProcess):
                 
                 
          # Check fuel before anything else!!
-                if(not(self.jokerflag)): #joker not set yet. can search for targets
-                    if(not(self.detectBool)): #dont have a detection
-                        self.search()
-                        self.detection()
-                        self.searchdwell+=self.searchTime
-                    
-                    else: #we have a detection! woooo
-                        self.detection()
-                        self.searchdwell=0
-            
-                else: # joker flag set.
-                    if(not(self.detectBool)):
-                        #dont have an active detection. RTB.
-                        self.ReturnToBase()
-                    else: # detection flag set. We have a target in active track.
-                        if(self.Bingo>0): #we still have fuel!
-                        # We have fuel and can still start tracking.
-                            self.detection()
-                        else:
-                            self.ReturnToBase()
                 if(not(self.target==42)):
-                    if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
-                        self.SendIMINT()
-                        self.removeTgt()
+                    if(not(self.jokerflag)): #joker not set yet. can search for targets
+                        if(not(self.detectBool)): #dont have a detection
+                            self.search()
+                            self.detection()
+                            self.searchdwell+=self.searchTime
+                        
+                        else: #we have a detection! woooo
+                            self.detection()
+                            self.searchdwell=0
+                
+                    else: # joker flag set.
+                        if(not(self.detectBool)):
+                            #dont have an active detection. RTB.
+                            self.ReturnToBase()
+                        else: # detection flag set. We have a target in active track.
+                            if(self.Bingo>0): #we still have fuel!
+                            # We have fuel and can still start tracking.
+                                self.detection()
+                            else:
+                                self.ReturnToBase()
+                    if(not(self.target==42)):
+                        if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
+                            self.SendIMINT()
+                            self.removeTgt()
     
     ################################################
     
         elif(self.heuristic==2): # Local Heuristic
             while(1):
+                
+                if(self.Bingo<0):
+                    self.ReturnToBase()
                 
                 if(self.target==42): #NO TARGET IN QUEUE
                     self.getNewTgt()
@@ -205,7 +209,8 @@ class Drone (LogicalProcess):
 
         else: # Impatient Heuristic
             while(1):
-                
+                if(self.Bingo<0):
+                    self.ReturnToBase()
                 if(self.target==42): #NO TARGET IN QUEUE
                     self.getNewTgt()
                     self.saveState()
@@ -404,11 +409,13 @@ class Drone (LogicalProcess):
     def detection(self):
         # Begin by seeing if we already have a track
         if(self.detectBool==1): #we have a track!
+            print "Have a track!"
+            print self.TarTime
             # Check to see if we are on the same node as the target.
             if(self.xpos!=self.target.node.xpos or self.ypos!=self.target.node.ypos): # tracking, but not looking at the right node
                 self.updateCurNode(self.target.node)
                 #We are on a new node. Need to roll the dice to see if we keep a track.
-            if(self.probTest(self.currentNode.Trackprob)): #if we maintain track
+            if(self.probTest(self.currentNode.prob)): #if we maintain track
                 self.detectBool=1 #reaffirming the value
                 self.sNeedBool=0
                 self.TarTime+=self.searchTime
@@ -420,7 +427,7 @@ class Drone (LogicalProcess):
             if(self.xpos!=self.target.node.xpos or self.ypos!=self.target.node.ypos):
                 self.detectBool=0 #we arnt even looking at the right node!
                 self.sNeedBool=1
-            elif(self.probTest(self.currentNode.Trackprob)): #looking at the right node, have a detection!
+            elif(self.probTest(self.currentNode.prob)): #looking at the right node, have a detection!
                 self.detectBool=1 #reaffirming the value
                 self.sNeedBool=0
                 self.TarTime+=self.searchTime
@@ -438,10 +445,11 @@ class Drone (LogicalProcess):
 
 
     def search(self): # this function needs a lot of work. How are we actually doing the search method?!?
+        
         if(self.xpos!=self.target.node.xpos or self.ypos!=self.target.node.ypos): # we know we arnt looking at the right node.
             #Assume our intel came with a direction of movement and speed
             choice=random.random()
-            if(choice>=.2): #80% chance we choose the correct direction. Assuming Intel keeps us updated and is usually right
+            if(choice>=.02): #80% chance we choose the correct direction. Assuming Intel keeps us updated and is usually right
                 if(self.currentNode.nodeType==0): #curent node is a street
                     if(self.target.node.xpos>self.xpos):
                         self.updateCurNode(self.currentNode.nextNode)
@@ -516,7 +524,7 @@ class Drone (LogicalProcess):
             self.resetMaintenanceTimer()
             self.updateTime(10800) #3 hrs for MTTR based on DoD study
         self.setJokerBingo()
-        self.updateCurNode(self.EntNode)
+        self.c(self.EntNode)
 
 
 
@@ -524,9 +532,7 @@ class Drone (LogicalProcess):
 
     def flyTotgt(self,tgtx,tgty):
     # code to move the drone from the current location to the target's intel location. assuming the intel location is within 1 node of actual.
-        distTgt=math.sqrt((self.xpos-tgtx)**2 +(self.ypos-tgty)**2) #distance to the intel location x,y
-        TOT=int(distTgt/self.FlightSpeed)
-        self.updateTime(TOT)
+        self.updateCurNode(self.target.node)
 
 
 
@@ -608,10 +614,11 @@ class Drone (LogicalProcess):
 
     def SendIMINT(self):
         #update the target
-        self.target.ActTractTime+=self.TarTime
+        self.target.ActTracTime+=self.TarTime
         self.target.trackAttempts+=1
-        
-        sendMsg=Message(2,self.target,self.uid,'IMINT',self.LocalSimTime)
+        tgtData=[self.target.ID,self.target.intelVal,self.target.intelPriority,self.target.Type,self.target.Stealth,self.target.speed,self.target.node,self.target.goalTime,self.target.ActTracTime,self.target.trackAttempts]
+        print "Target Data:", tgtData
+        sendMsg=Message(2,tgtData,self.uid,'IMINT',self.LocalSimTime)
         self.sendMessage(sendMsg)
         self.removeTgt()
         self.setLocalTime(self.LocalSimTime)
@@ -650,6 +657,7 @@ class Drone (LogicalProcess):
         timedif=(self.LocalSimTime-self.localTime)
         if(timedif<=0):#message is in the future
             self.updateTime(timedif*-1)
+        self.updateCurNode(self.target.node)
         #else: #message arrived in the past, but we have done work since receiving it.
             #self.setLocalTime(self.LocalSimTime)
 
