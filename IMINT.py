@@ -58,9 +58,9 @@ class IMINT (LogicalProcess):
             if(timestamp>=self.stateQueue[i].key):
                 index=i
                 break
-        self.Restore(self.stateQueue[index])
+        self.restore(self.stateQueue[index])
         
-    def Restore(self,obj):
+    def restore(self,obj):
         self.key=obj.localTime
         self.id=obj.id
         self.heuristic=obj.heuristic

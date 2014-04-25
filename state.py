@@ -50,9 +50,13 @@ class CAOCState():
                 self.priorityQueue=obj.priorityQueue
                 self.drones=obj.drones
                 self.heuristic=obj.heuristic
-                self.hmint=obj.hmint
-#                self.hmint.numTargets=obj.hmint.numTargets
-#                self.hmint.count=obj.hmint.count
-#                self.hmint.msgTimestamp=obj.hmint.msgTimestamp
-#                self.hmint.randNodes=obj.hmint.randNodes
 
+class HMINTState():
+        def __init__(self,obj):
+                self.key=obj.localTime
+                self.localTime=obj.localTime
+                self.id = obj.id
+                self.numTargets = obj.numTargets
+                self.count = obj.count
+                self.msgTimestamp = obj.msgTimestamp
+                self.randNodes = obj.randNodes

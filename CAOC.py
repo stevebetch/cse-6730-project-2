@@ -30,7 +30,6 @@ class CAOC (LogicalProcess):
         for i in range(numDrones):
             self.drones.insert(i,["Idle",0])
         self.heuristic=heuristicNum
-        self.hmint=[]
 	
     # Call function
     def __call__(self):
@@ -39,7 +38,7 @@ class CAOC (LogicalProcess):
     # Save State
     # Input: None
     # Output: Saves current state of CAOC logical process
-    # Description: Saves all parameters needed to describe state of LP, including HMINT state variables
+    # Description: Saves all parameters needed to describe state of LP
     def saveState(self):
         print 'Saving current CAOC state'
         saver=CAOCState(self)
@@ -52,18 +51,14 @@ class CAOC (LogicalProcess):
             if(timestamp>=self.stateQueue[i].key):
                 index=i
                 break
-        self.Restore(self.stateQueue[index])
+        self.restore(self.stateQueue[index])
 
-    def Restore(self,obj):
+    def restore(self,obj):
         self.localTime=obj.localTime
         self.id=obj.id
         self.priorityQueue=obj.priorityQueue
         self.drones=obj.drones
         self.heuristic=obj.heuristic
-        #self.hmint.numTargets=obj.hmint.numTargets
-        #self.hmint.count=obj.hmint.count
-        #self.hmint.msgTimeStamp=obj.hmint.msgTimeStamp
-        #self.hmint.randNodes=obj.hmint.randNodes
 
     # Set Current Time
     # Input: time

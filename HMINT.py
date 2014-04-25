@@ -3,6 +3,7 @@ from CAOC import *
 from LogicalProcess import *
 from Target import *
 import random
+from state import HMINTState
 
 class HMINT (LogicalProcess):
     "Human intelligence"
@@ -28,12 +29,28 @@ class HMINT (LogicalProcess):
     # Call function
     def __call__(self):
         self.run()
-        
+
     def saveState(self):
         print 'Saving current HMINT state'
+        saver=HMINTState(self)
+        self.stateQueue.append(saver)
 
     def restoreState(self,timestamp):
-        print 'Restoring HMINT state'
+        print 'restoring to last CAOC state stored <= %d' % (timestamp)
+        index=0
+        for i in range(len(self.stateQueue)-1,-1,-1):
+            if(timestamp>=self.stateQueue[i].key):
+                index=i
+                break
+        self.restore(self.stateQueue[index])    
+
+    def restore(self,obj):
+        self.id = obj.id
+        self.localTime=obj.localTime
+        self.numTargets = obj.numTargets
+        self.count = obj.count
+        self.msgTimestamp = obj.msgTimestamp
+        self.randNodes = obj.randNodes     
     
     # Generate Target
     # Input: None
@@ -77,7 +94,7 @@ class HMINT (LogicalProcess):
     # run
     # Input: None
     # Output: Generates and adds all required targets to CAOC input queue
-    # Description: Changes running status to true, generates targets
+    # Description: Changes running status to true, generates target messages
     def run(self):
         
         print('HMINT Running')

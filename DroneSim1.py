@@ -20,18 +20,6 @@ PYRO_HOST = ''
 PYRO_PORT = 12778
 
 
-# Files using random numbers
-# Each file uses a different seed, seedNum + x, so they all have different streams
-# Each run of a replication uses the same set of seeds for common random numbers
-# Each replication uses a new set of seeds
-# Data.seedNum takes values 0,100,200,... up to the number of replications
-# HMINT: seedNum + 1
-# IMINT: seedNum + 2
-# Map: seedNum + 3
-# Drone: seedNum + 4,5,6,...,3+n where n is number of drones
-# Note - nodes.py and Target.py both use random numbers too, but they are built in classes that already have seeds
-# Debugging random seed setting: Map.init, Target.movement
-
 def createNewDrone(uid, droneType,heuristic):
     print('Creating new drone of type ' + droneType)
     droneref = Drone(uid, droneType,heuristic)
