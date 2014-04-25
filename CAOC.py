@@ -46,14 +46,19 @@ class CAOC (LogicalProcess):
 
     def restoreState(self,timestamp):
         print "restoring to last CAOC state stored <=",timestamp
-        index=0
-        for i in range(len(self.stateQueue)-1,-1,-1):
-            if(timestamp>=self.stateQueue[i].key):
-                index=i
-                break
-            else:
-                self.stateQueue.pop(i)	    
-        self.restore(self.stateQueue[index])
+#        index=0
+#        for i in range(len(self.stateQueue)-1,-1,-1):
+#            if(timestamp>=self.stateQueue[i].key):
+#                index=i
+#                break
+#            else:
+#                self.stateQueue.pop(i)
+        for i in self.stateQueue:
+                if(timestamp<=i.key):
+                    index=i
+                    break
+
+        self.restore(index)
 
     def restore(self,obj):
         self.localTime=obj.localTime
