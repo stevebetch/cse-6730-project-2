@@ -46,7 +46,7 @@ class Drone (LogicalProcess):
         self.sNeedBool=1 #boolian to determine if we need to activate the search logic.
         self.timeOnNode=0 #how long have we been on the current node?
         self.nodeTime=0 #how long should it take the target to traverse the node?
-        self.searchTime=60 #It takes 20 seconds to search the area.
+        self.searchTime=10 #It takes 20 seconds to search the area.
         self.searchdwell=0
         self.TarTime=0
         self.startNode=[]
@@ -449,7 +449,7 @@ class Drone (LogicalProcess):
         if(self.xpos!=self.target.node.xpos or self.ypos!=self.target.node.ypos): # we know we arnt looking at the right node.
             #Assume our intel came with a direction of movement and speed
             choice=random.random()
-            if(choice>=.02): #80% chance we choose the correct direction. Assuming Intel keeps us updated and is usually right
+            if(choice>=.2): #80% chance we choose the correct direction. Assuming Intel keeps us updated and is usually right
                 if(self.currentNode.nodeType==0): #curent node is a street
                     if(self.target.node.xpos>self.xpos):
                         self.updateCurNode(self.currentNode.nextNode)
@@ -480,7 +480,7 @@ class Drone (LogicalProcess):
                         self.updateCurNode(self.currentNode.prevNode)
                     # Only need flight time here. We will have to be more elegant when actually tracking.
                     else:
-                        self.updateCurNode(self.currentNode.NextNode)
+                        self.updateCurNode(self.currentNode.nextNode)
                 elif(self.currentNode.nodeType==1): # an intersection.
                     for i in self.currentNode.Nodes:
                         if(self.currentNode.ypos==i.ypos):
