@@ -7,6 +7,7 @@ from state import *
 import random
 from Message import *
 from Target import *
+import copy
 
 import Pyro4
 
@@ -35,7 +36,8 @@ class Drone (LogicalProcess):
 
         self.xpos=0 #current x location
         self.ypos=0 #current y location
-
+        self.entryX=0
+        self.entryY=0
         self.EntNode=[]
         self.currentNode=[]
 
@@ -120,6 +122,9 @@ class Drone (LogicalProcess):
         if(self.heuristic==1): #Naive heuristic
             while(1):
                 
+                if(self.Bingo<0):
+                    self.ReturnToBase()
+                
                 print self.target
                 if(self.target==42): #NO TARGET IN QUEUE
                     self.getNewTgt()
@@ -147,10 +152,10 @@ class Drone (LogicalProcess):
                             self.detection()
                         else:
                             self.ReturnToBase()
-            
-                if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
-                    self.SendIMINT()
-                    self.removeTgt()
+                if(not(self.target==42)):
+                    if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
+                        self.SendIMINT()
+                        self.removeTgt()
     
     ################################################
     
@@ -275,8 +280,8 @@ class Drone (LogicalProcess):
                     self.timeOnNode=self.timeOnNode-self.target.transitTime
 
         print "\nNew Joker:", self.Joker, "New Bingo:",self.Bingo
-        if(self.Bingo<=0): # Reached bingo. need to RTB.
-            self.ReturnToBase()
+#        if(self.Bingo<=0): # Reached bingo. need to RTB.
+#            self.ReturnToBase()
 
 
 
@@ -307,16 +312,22 @@ class Drone (LogicalProcess):
 
 
     def setEntry(self,obj):
-        self.EntryNode=obj
-        #print "Map entry at:" , self.EntryNode.xpos,",",self.EntryNode.ypos
-
+        self.EntNode=copy.deepcopy(obj)
+        print "\n Drone set Map entry at:" , self.EntNode.xpos,",",self.EntNode.ypos
+        print ""
+        self.entryX=self.EntNode.xpos
+        self.entryY=self.EntNode.ypos
 
 
 
 
     def updateCurNode(self,obj):
         oldnode=self.currentNode
+        flightTime=0
         self.currentNode=obj #may not be needed, but may be expanded later if needed.
+        if(self.currentNode==2): #entry node. need to get it on the map.
+            self.currentNode=self.currentNode.nextNode
+        
         self.xpos=self.currentNode.xpos
         self.ypos=self.currentNode.ypos
         if(self.currentNode.nodeType==0):
@@ -492,7 +503,12 @@ class Drone (LogicalProcess):
         if(not(self.target==42)):
             self.ReturnTgt()
         self.removeTgt()
-        self.DistEntry=math.sqrt((self.xpos-self.EntNode.xpos)**2 +(self.ypos-self.EntNode.ypos)**2)
+        print "xpos:",self.xpos
+        print "ypos:",self.ypos
+        print "Entry xpos:",self.entryX
+        print "Entry ypos:",self.entryY
+        sys.stdout.flush()
+        self.DistEntry=math.sqrt((self.xpos-self.entryX)**2 +(self.ypos-self.entryY)**2)
         timeToentry=int(self.DistEntry/self.FlightSpeed)
         self.updateTime(timeToentry) #update sim time
 
@@ -574,10 +590,13 @@ class Drone (LogicalProcess):
 
     def ReturnTgt(self):
         #update the target
-        self.target.ActTractTime+=self.TarTime
+        self.target.ActTracTime+=self.TarTime
         self.target.trackAttempts+=1
         
-        retTgt=Message(2,self.target,self.uid,'IMINT',self.LocalSimTime) #create message
+        # tgtData = [tgtID 0,tgtIntelValue 1,tgtIntelPriority 2,tgtType 3,tgtStealth 4,tgtSpeed 5,tgtPredLoc 6,tgtGoalTrackTime 7,tgtActualTrackTime 8,tgtTrackAttempts 9]
+        tgtData=[self.target.ID,self.target.intelVal,self.target.intelPriority,self.target.Type,self.target.Stealth,self.target.speed,self.target.node,self.target.goalTime,self.target.ActTracTime,self.target.trackAttempts]
+        print "Target Data:", tgtData
+        retTgt=Message(2,tgtData,self.uid,'IMINT',self.LocalSimTime) #create message
         self.sendMessage(retTgt)   # sends message
         self.removeTgt()
         self.setLocalTime(self.LocalSimTime)

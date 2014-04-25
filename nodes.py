@@ -88,8 +88,8 @@ class EndNode: #this node is a terminator node for the outskirts of the map. it 
         self.nextNode=obj
         self.prevNode=obj
         self.nodeType=3
-        self.xpos=-999
-        self.ypos=-999
+        self.xpos=0
+        self.ypos=0
         self.prob=random.triangular(mid-.1,mid+.1,mid) #Nuisance value
     #        self.Trackprob=random.triangular(mid-.1,mid+.1,mid)
 
