@@ -53,7 +53,7 @@ class LogicalProcess(SharedMemoryClient):
         
     def sendMessage(self, msg):
         
-        msg.printData(1)
+        #msg.printData(1)
         msg.color = self.gvtData.color            
             
         if (msg.isAntiMessage()):
@@ -150,6 +150,7 @@ class LogicalProcess(SharedMemoryClient):
             self.handleMessage(msg)  
             
     def forwardGVTControlMessage(self, msg):
+        self.calculateLocalTMin()
         msg.data.tMin = min(msg.data.tMin, self.gvtData.tMin)
         msg.data.tRed = min(msg.data.tRed, self.gvtData.tRed)
         # send to next LP in ring
@@ -250,6 +251,7 @@ class LogicalProcess(SharedMemoryClient):
                             print 'Number of WHITE msgs left in queue: %d' % (self.inputQueue.numWhiteMessages())
                         self.gvtData.dump()                
                     self.saveState() #define getCurrentState() in subclass
+                    print 'lp %d setting local time to %d' % (self.LPID, msg.timestamp)
                     self.setLocalTime(msg.timestamp)
                     self.inputMsgHistory.append(msg.clone())
                     self.subclassHandleMessage(msg)
@@ -308,7 +310,7 @@ class LogicalProcess(SharedMemoryClient):
         # outputQueue
         print 'outputQueue length before reclaim: %d' % (len(self.outputQueue))
         temp = {}
-        for msgID, antimessage in self.outputQueue:
+        for msgID, antimessage in self.outputQueue.items():
             if antimessage.timestamp >= gvt:
                 temp[msgID] = antimessage
         self.outputQueue = temp

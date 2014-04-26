@@ -632,7 +632,7 @@ class Drone (LogicalProcess):
         retTgt=Message(2,tgtData,self.uid,'IMINT',self.LocalSimTime) #create message
         self.sendMessage(retTgt)   # sends message
         self.removeTgt()
-        self.setLocalTime(self.LocalSimTime)
+        #self.setLocalTime(self.LocalSimTime)
 
 
 
@@ -658,7 +658,7 @@ class Drone (LogicalProcess):
         sendMes=Message(3,data,self.uid,'CAOC',self.LocalSimTime)
 #        sendMes.printData(1)
         self.sendMessage(sendMes)
-        self.setLocalTime(self.LocalSimTime)
+        #self.setLocalTime(self.LocalSimTime)
 
 
 

@@ -83,13 +83,26 @@ class ProducerClient():
         #stublpInQ.addMessage(msg3) 
         
         #Test 9 - Rollback caused by anti-message
-        msg3 = Message(2, ['Data3'], 'Test Message Generator', LogicalProcess.STUBLP_ID, 3)
-        msg7 = Message(2, ['Data7'], 'Test Message Generator', LogicalProcess.STUBLP_ID, 7)
-        am3 = msg3.getAntiMessage()
-        stublpInQ.addMessage(msg3)        
-        stublpInQ.addMessage(msg7)
-        time.sleep(5)
-        stublpInQ.addMessage(am3)           
+        #msg3 = Message(2, ['Data3'], 'Test Message Generator', LogicalProcess.STUBLP_ID, 3)
+        #msg7 = Message(2, ['Data7'], 'Test Message Generator', LogicalProcess.STUBLP_ID, 7)
+        #am3 = msg3.getAntiMessage()
+        #stublpInQ.addMessage(msg3)        
+        #stublpInQ.addMessage(msg7)
+        #time.sleep(5)
+        #stublpInQ.addMessage(am3) 
+        
+        #
+        # GVT Tests
+        #
+        
+        # Test 1: No messages
+        # (don't need any messages for this test!)
+        
+        # Test 2: 3 messages to same drone (edit StubLP)
+        # GVT will be 0
+        
+        # Test 3: 3 messages to drone, 1 to stub LP
+        # GVT should be 3
 
 PYRO_HOST = '192.168.0.3'
 PYRO_PORT = 12778
@@ -112,8 +125,11 @@ def main():
     ns = Pyro4.locateNS() 
     
     # Create input queue instance to share
+    stublp = StubLP()
+    stublp.setConnectionParams(PYRO_HOST, PYRO_PORT)    
     stublpInQ = LPInputQueue()
     stublpInQ.setLocalTime(0)
+    stublpInQ.setLPID(stublp.LPID)
     uri = daemon.register(stublpInQ)
     ns.register('inputqueue.stublp', uri)   
     
@@ -123,8 +139,6 @@ def main():
     pPc1.start() 
     
     # Consumer Client (StubLP)
-    stublp = StubLP()
-    stublp.setConnectionParams(PYRO_HOST, PYRO_PORT)
     pStubLP = Process(group=None, target=stublp, name='StubLP Process')
     pStubLP.start()
     
@@ -134,12 +148,7 @@ def main():
     controllerInQ = LPInputQueue()
     controllerInQ.setLocalTime(0)
     controllerInQ_uri = daemon.register(controllerInQ)
-    ns.register("inputqueue.stubcontroller", controllerInQ_uri)   
-    
-    # Start Controller process
-    pController = Process(group=None, target=controller, name='Stub Controller Process')
-    print 'starting controller'
-    pController.start()        
+    ns.register("inputqueue.stubcontroller", controllerInQ_uri)          
     
     # Stub drones
     # Create drone entities, each will be separate process started by Controller
@@ -155,6 +164,11 @@ def main():
     droneInQs.setLPIDs(drones)
     droneInQs_uri = daemon.register(droneInQs)
     ns.register("inputqueue.stubdrones", droneInQs_uri)  
+    
+    # Start Controller process
+    pController = Process(group=None, target=controller, name='Stub Controller Process')
+    print 'starting controller'
+    pController.start()     
     
     # Drones
     print 'starting drones'

@@ -19,6 +19,7 @@ class StubController(GlobalControlProcess):
         self.drones = []
         self.stublp = stublp
         self.gvtTokenRing = [self.stublp.LPID]
+        print 'init: gvtTokenRing:',self.gvtTokenRing
         self.gvt = 0
 
     def __call__(self):
@@ -27,6 +28,7 @@ class StubController(GlobalControlProcess):
     def addDrone(self, drone):
         self.drones.append(drone)
         self.gvtTokenRing.append(drone.LPID)
+        print 'addDrone: gvtTokenRing:',self.gvtTokenRing
 
     def run(self):
 
@@ -54,6 +56,7 @@ class StubController(GlobalControlProcess):
             
             # GVT: Trigger round for cut C1 (Stup LP is first LP in token ring)
             print 'Controller sending cut C1 token to first LP'
+            print self.gvtTokenRing
             self.stublpInQ.addMessage(Message(1, GVTControlMessageData(self.gvtTokenRing), GlobalControlProcess.CONTROLLER_ID, LogicalProcess.STUBLP_ID, -1))
             msg = None
             print 'Controller waiting for cut C1 token'

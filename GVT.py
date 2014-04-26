@@ -18,7 +18,7 @@ class GVTWaitForThread(Thread):
         for i, j in self.controlMsg.data.counts.items():
             LPIDs.append(i)
         numMsgsSentToThisLP = self.controlMsg.data.counts[self.LPID]
-        while self.parent.gvtData.counts[self.LPID] < numMsgsSentToThisLP:
+        while self.parent.gvtData.counts[self.LPID] + numMsgsSentToThisLP > 0:
             print 'sent to: %d' % (numMsgsSentToThisLP)
             print 'received by: %d' % (self.parent.gvtData.counts[self.LPID])         
             print 'LP %d: Waiting for all white messages sent to this LP to be received' % (self.LPID)
