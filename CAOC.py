@@ -1,4 +1,5 @@
 import sys, time
+from math import *
 from LogicalProcess import *
 from HMINT import *
 from multiprocessing import Queue, Lock
@@ -103,10 +104,11 @@ class CAOC (LogicalProcess):
                 tgtY=targetData[6].ypos #y coord
                 indexCloseDrone=0
                 minDist=999999 #arbitrarily large cut-off
+                print self.drones
                 for i in range(len(self.drones)):
                     droneX=self.drones[i][1].xpos
                     droneY=self.drones[i][1].ypos
-                    dist=sqrt((tgtX-droneX)^2+(tgtY-droneY)^2)
+                    dist=sqrt((tgtX-droneX)**2+(tgtY-droneY)**2)
                     if dist<minDist and self.drones[i][0]=="Idle":
                         minDist=dist
                         indexCloseDrone=i   
@@ -130,7 +132,7 @@ class CAOC (LogicalProcess):
                 for i in range(len(self.drones)):
                     droneX=self.drones[i][1].xpos
                     droneY=self.drones[i][1].ypos
-                    dist=sqrt((tgtX-droneX)^2+(tgtY-droneY)^2)
+                    dist=sqrt((tgtX-droneX)**2+(tgtY-droneY)**2)
                     if dist<minDist and self.drones[i][0]=="Idle":
                         minDist=dist
                         indexCloseDrone=i   
@@ -198,7 +200,7 @@ class CAOC (LogicalProcess):
                     for i in range(len(self.priorityQueue)):
                         tgtX=self.prioirityQueue[i][6].xpos #x coord
                         tgtY=self.prioirityQueue[i][6].ypos #y coord                        
-                        dist=sqrt((tgtX-droneX)^2+(tgtY-droneY)^2)
+                        dist=sqrt((tgtX-droneX)**2+(tgtY-droneY)**2)
                         if dist<minDist:
                             minDist=dist
                             indexCloseTgt=i   

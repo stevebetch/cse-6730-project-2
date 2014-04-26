@@ -104,7 +104,7 @@ class IMINT (LogicalProcess):
             elif self.heuristic==3 or self.heuristic==2:
                 if msg.data[8]-msg.data[7]<0:
                     # if goal track time has not been achieved, adjsut priority and send updated tgt assignment to CAOC after processing time
-                    newTgtData=[targetData[0],targetData[1],self.priorityAdjust*targetData[2],targetData[3],targetData[4],targetData[5],targetData[6],targetData[7],targetData[8],targetData[9]]
+                    newTgtData=[msg.data[0],msg.data[1],self.priorityAdjust*msg.data[2],msg.data[3],msg.data[4],msg.data[5],msg.data[6],msg.data[7],msg.data[8],msg.data[9]]
                     newTgtMsg=Message(2,newTgtData,self.id,'CAOC',self.localTime+random.triangular(self.high,self.low,self.mode))
                     self.sendMessage(newTgtMsg)
                 else:

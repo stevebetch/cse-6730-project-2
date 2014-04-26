@@ -50,8 +50,9 @@ class Drone (LogicalProcess):
         self.searchdwell=0
         self.TarTime=0
         self.startNode=[]
-            
+    
         self.droneRadLim= 50 # The search radius is only 50 m
+    
     
     def __call__(self, mapObj):
         self.run(mapObj)
@@ -98,6 +99,9 @@ class Drone (LogicalProcess):
         self.currentNode=mapObj #the only time we directly set the current node.
         self.LocalSimTime=self.localTime
         self.setJokerBingo()
+        
+        initMes=Message(3,[self.uid,'Idle',self.currentNode],self.uid,'CAOC',self.localTime)
+        self.sendMessage(initMes)        
         
         # Event loop iteration
         #count = 10
@@ -193,14 +197,12 @@ class Drone (LogicalProcess):
                         else:
                             self.ReturnToBase()
 
-                droneRad=math.sqrt((self.xpos-self.node.xpos)**2+(self.ypos-self.node.ypos)**2)
+                droneRad=math.sqrt((self.xpos-mapObj.xpos)**2+(self.ypos-mapObj.ypos)**2)
                                     
                 if(droneRad>self.droneRadLim): # searched for the target within the local area
                     self.SendIMINT()
                     self.removeTgt()
-                
-                
-                if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
+                elif(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
                     self.SendIMINT()
                     self.removeTgt()
                    
