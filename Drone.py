@@ -209,9 +209,7 @@ class Drone (LogicalProcess):
                 if(droneRad>self.droneRadLim): # searched for the target within the local area
                     self.SendIMINT()
 #                    self.removeTgt()
-
-                
-                if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
+                elif(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
                     self.SendIMINT()
 #                    self.removeTgt()
 
@@ -253,9 +251,7 @@ class Drone (LogicalProcess):
                 if(self.searchdwell>=5*self.searchTime): # searched for the target 5 times Why 5? Why not!
                     self.ReturnTgt()
 #                    self.removeTgt()
-
-                
-                if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
+                elif(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
                     self.SendIMINT()
 #                    self.removeTgt()
 
