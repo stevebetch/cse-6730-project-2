@@ -44,6 +44,12 @@ def initCAOC(Data):
     print('CAOC initialized')
     return caocref
 
+def Loop():
+    loopref = Loops()
+    loopref.setConnectionParams(PYRO_HOST, PYRO_PORT)
+    print('Loopref initialized')
+    return loopref
+
 def get_local_ip_address():
     ipaddr = ''
     try:
@@ -131,6 +137,11 @@ def main(Data):
     droneInQs_uri = daemon.register(droneInQs)
     ns.register("inputqueue.drones", droneInQs_uri)    
 
+    #Shared loop controler
+    loopInQs=Loops()
+    loopInQs_uri = daemon.register(loopInQs)
+    ns.register("inL.loop", loopInQs_uri)
+
     # Start Controller process
     pController = Process(group=None, target=controller, name='Drone Sim Controller Process')
     print 'starting controller'
@@ -171,3 +182,7 @@ def main(Data):
 #
 #if __name__ == '__main__':
  #   main()
+
+class Loops:
+    def __init__(self):
+        self.control=1

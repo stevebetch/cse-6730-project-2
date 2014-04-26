@@ -66,7 +66,7 @@ class CAOC (LogicalProcess):
     
         self.restore(index)
         self.stateQueue=a
-        self.stateQueue.pop(len(self.stateQueue)-1)
+#        self.stateQueue.pop(len(self.stateQueue)-1)
 
     def restore(self,obj):
         self.localTime=obj.localTime
@@ -249,6 +249,9 @@ class CAOC (LogicalProcess):
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
         LPIDs.extend(self.droneInQs.getLPIDs())
+        
+        loopInQs_uri = nameserver.lookup('inL.loop')
+        self.Loopcont = Pyro4.Proxy(loopInQs_uri)
 
         self.initGVTCounts(LPIDs)        
 
@@ -256,7 +259,7 @@ class CAOC (LogicalProcess):
 
         # Event loop
         count=0
-        while True:
+        while (self.Loopcont.control):
             count+=1
 #            time.sleep(.05)
             msg = self.getNextMessage()

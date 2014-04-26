@@ -155,6 +155,9 @@ class IMINT (LogicalProcess):
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
         LPIDs.extend(self.droneInQs.getLPIDs())
         
+        loopInQs_uri = nameserver.lookup('inL.loop')
+        self.Loopcont = Pyro4.Proxy(loopInQs_uri)
+        
         self.initGVTCounts(LPIDs)
 
         ## Event loop iteration
@@ -171,7 +174,7 @@ class IMINT (LogicalProcess):
             time.sleep(.5)
             sys.stdout.flush()
 
-        Pyro4.core.Daemon.close()
+        self.Loopcont.control=0
 
 
 

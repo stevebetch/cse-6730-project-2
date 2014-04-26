@@ -90,6 +90,9 @@ class Drone (LogicalProcess):
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
         LPIDs.extend(self.droneInQs.getLPIDs())
+
+        loopInQs_uri = nameserver.lookup('inL.loop')
+        self.Loopcont = Pyro4.Proxy(loopInQs_uri)
         
         self.initGVTCounts(LPIDs)  
     
@@ -124,14 +127,18 @@ class Drone (LogicalProcess):
 #        self.removeTgt() #Starts the logic to get a new target
 
         if(self.heuristic==1): #Naive heuristic
-            while(1):
+            while(self.Loopcont.control):
                 
                 if(self.Bingo<0):
                     self.ReturnToBase()
                 
                 print self.target
                 if(self.target==42): #NO TARGET IN QUEUE
-                    self.getNewTgt()
+                    try:
+                        self.getNewTgt()
+                    except:
+                        if(self.Loopcont.control==0):
+                            break
                 
                 
                 
@@ -554,15 +561,34 @@ class Drone (LogicalProcess):
 
     def restoreState(self,timestamp):
         print 'restoring to last Drone state stored <= %d' % (timestamp)
-        index=0
-        for i in range(len(self.stateQueue)-1,-1,-1):
-            if(timestamp>=self.stateQueue[i].LocalSimTime):
+#        index=0
+#        for i in range(len(self.stateQueue)-1,-1,-1):
+#            if(timestamp>=self.stateQueue[i].LocalSimTime):
+#                index=i
+#                break
+#            else:
+#                self.stateQueue.pop(i)
+#        self.restore(self.stateQueue[index])    
+#            print "restoring to last CAOC state stored <=",timestamp
+        #        index=0
+        #        for i in range(len(self.stateQueue)-1,-1,-1):
+        #            if(timestamp>=self.stateQueue[i].key):
+        #                index=i
+        #                break
+        #            else:
+        #                self.stateQueue.pop(i)
+#        print "Queue times:"
+#        for i in self.stateQueue:
+#            print i.key
+        a=[]
+        for i in self.stateQueue:
+            if(timestamp>=i.key):
+#                print "Key:",i.key
                 index=i
-                break
-            else:
-                self.stateQueue.pop(i)
-        self.restore(self.stateQueue[index])    
-
+                a.append(i)
+        
+        self.restore(index)
+        self.stateQueue=a
 
 
 
@@ -653,21 +679,27 @@ class Drone (LogicalProcess):
                     print "Valid Message passed to drone! Message Type:",msg.msgType
                     msg.printData(1)
                     sys.stdout.flush()
-                    if(msg.msgType==2):
-                        break
+#                    if(msg.msgType==2):
+                    break
             except:
                 pass
             if(count%5000==0):
                 print "Drone is in the getNewTgt loop. Count=:",count
-                
+            if(self.Loopcont.control==0):
+                print "ENDING THE SIM!!!!!"
+                break
+    
         self.handleMessage(msg)
-        print "New target aquired"
-        sendMes=Message(3,[self.uid,'Busy',self.currentNode],self.uid,'CAOC',self.localTime) # not sure which time to use here
-        self.sendMessage(sendMes)
+        if(msg.msgType==2):
+            print "New target aquired"
+            sendMes=Message(3,[self.uid,'Busy',self.currentNode],self.uid,'CAOC',self.localTime) # not sure which time to use here
+            self.sendMessage(sendMes)
         timedif=(self.LocalSimTime-self.localTime)
         if(timedif<=0):#message is in the future
             self.updateTime(timedif*-1)
         self.updateCurNode(self.target.node)
+        if(self.Loopcont.control==0):
+                return
         #else: #message arrived in the past, but we have done work since receiving it.
             #self.setLocalTime(self.LocalSimTime)
 
