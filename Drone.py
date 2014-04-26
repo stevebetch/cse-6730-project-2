@@ -160,8 +160,8 @@ class Drone (LogicalProcess):
                     if(not(self.target==42)):
                         if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
                             self.SendIMINT()
-                            self.removeTgt()
-    
+#                            self.removeTgt()
+
     ################################################
     
         elif(self.heuristic==2): # Local Heuristic
@@ -201,11 +201,13 @@ class Drone (LogicalProcess):
                                     
                 if(droneRad>self.droneRadLim): # searched for the target within the local area
                     self.SendIMINT()
-                    self.removeTgt()
-                elif(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
+#                    self.removeTgt()
+
+                
+                if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
                     self.SendIMINT()
-                    self.removeTgt()
-                   
+#                    self.removeTgt()
+
 
 ################################################
 
@@ -243,12 +245,12 @@ class Drone (LogicalProcess):
                                 
                 if(self.searchdwell>=5*self.searchTime): # searched for the target 5 times Why 5? Why not!
                     self.ReturnTgt()
-                    self.removeTgt()
-                
+#                    self.removeTgt()
+
                 
                 if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
                     self.SendIMINT()
-                    self.removeTgt()
+#                    self.removeTgt()
 
                 
 
@@ -512,7 +514,7 @@ class Drone (LogicalProcess):
     # need to delete target, return it to the queue.
         if(not(self.target==42)):
             self.ReturnTgt()
-        self.removeTgt()
+#        self.removeTgt()
         print "xpos:",self.xpos
         print "ypos:",self.ypos
         print "Entry xpos:",self.entryX
@@ -526,7 +528,7 @@ class Drone (LogicalProcess):
             self.resetMaintenanceTimer()
             self.updateTime(10800) #3 hrs for MTTR based on DoD study
         self.setJokerBingo()
-        self.c(self.EntNode)
+        self.updateCurNode(self.EntNode)
 
 
 
@@ -615,16 +617,17 @@ class Drone (LogicalProcess):
 
 
     def SendIMINT(self):
-        #update the target
-        self.target.ActTracTime+=self.TarTime
-        self.target.trackAttempts+=1
-        tgtData=[self.target.ID,self.target.intelVal,self.target.intelPriority,self.target.Type,self.target.Stealth,self.target.speed,self.target.node,self.target.goalTime,self.target.ActTracTime,self.target.trackAttempts]
-        print "Target Data:", tgtData
-        sendMsg=Message(2,tgtData,self.uid,'IMINT',self.LocalSimTime)
-        self.sendMessage(sendMsg)
-        self.removeTgt()
-        self.setLocalTime(self.LocalSimTime)
-
+        self.ReturnTgt()
+#        #update the target
+#        self.target.ActTracTime+=self.TarTime
+#        self.target.trackAttempts+=1
+#        tgtData=[self.target.ID,self.target.intelVal,self.target.intelPriority,self.target.Type,self.target.Stealth,self.target.speed,self.target.node,self.target.goalTime,self.target.ActTracTime,self.target.trackAttempts]
+#        print "Target Data:", tgtData
+#        sendMsg=Message(2,tgtData,self.uid,'IMINT',self.LocalSimTime)
+#        self.sendMessage(sendMsg)
+#        self.removeTgt()
+#        self.setLocalTime(self.LocalSimTime)
+#
 
 
     def removeTgt(self):
@@ -640,17 +643,22 @@ class Drone (LogicalProcess):
 
     def getNewTgt(self):
        # self.setLocalTime(self.LocalSimTime)
+        count=0
         while(1): #Wait for a new message to come in
+            count+=1
             try:
                 msg=self.getNextMessage() # Gets a new target
 
                 if not(msg is None):
-                    print "Valid Message passed to drone"
+                    print "Valid Message passed to drone! Message Type:",msg.msgType
                     msg.printData(1)
                     sys.stdout.flush()
-                    break
+                    if(msg.msgType==2):
+                        break
             except:
                 pass
+            if(count%5000==0):
+                print "Drone is in the getNewTgt loop. Count=:",count
                 
         self.handleMessage(msg)
         print "New target aquired"

@@ -54,12 +54,19 @@ class CAOC (LogicalProcess):
 #                break
 #            else:
 #                self.stateQueue.pop(i)
+        print "Queue times:"
         for i in self.stateQueue:
-            if(timestamp<=i.key):
+            print i.key
+        a=[]
+        for i in self.stateQueue:
+            if(timestamp>=i.key):
+                print "Key:",i.key
                 index=i
-                break
-
+                a.append(i)
+    
         self.restore(index)
+        self.stateQueue=a
+        self.stateQueue.pop(len(self.stateQueue)-1)
 
     def restore(self,obj):
         self.localTime=obj.localTime
@@ -183,15 +190,17 @@ class CAOC (LogicalProcess):
             # Check which target assignment heruristic is in use
             if self.heuristic==1:
                 # If the drone is idle and there are target assignments in the queue, assign that drone a target
-                if (self.drones[msg.data[0]][1]=="Idle") and (len(self.priorityQueue)!=0): # drone ids start at 2
+                if (self.drones[msg.data[0]][0]=="Idle") and (len(self.priorityQueue)!=0): # drone ids start at 2
                     newTgtData=self.priorityQueue.pop()
                     newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
                     self.sendMessage(newTgtMsg)
-                    newTgtData.printData()
+#                    newTgtMsg.printData()
+                    self.drones[msg.data[0]][0]=="Busy"
+        
             # Check which target assignment heruristic is in use
             elif self.heuristic==2 or self.heuristic==3:
                 # If the drone is idle and there are target assignments in the queue, assign that drone the nearest target
-                if (self.drones[msg.data[0]][1]=="Idle") and (len(self.priorityQueue)!=0):
+                if (self.drones[msg.data[0]][0]=="Idle") and (len(self.priorityQueue)!=0):
                     droneLocation=self.drones[msg.data[0]][1] #x,y coords
                     droneX=self.drones[msg.data[0]][1].xpos
                     droneY=self.drones[msg.data[0]][1].ypos                  
@@ -206,7 +215,8 @@ class CAOC (LogicalProcess):
                             indexCloseTgt=i   
                     newTgtData=self.priorityQueue.pop(indexCloseTgt)
                     newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
-                    self.sendMessage(newTgtMsg) 
+                    self.sendMessage(newTgtMsg)
+                    self.drones[msg.data[0]][0]=="Busy"
 
     # Run
     # Input: None
@@ -242,13 +252,18 @@ class CAOC (LogicalProcess):
 
         self.initGVTCounts(LPIDs)        
 
-        self.saveState()	        
+#        self.saveState()
 
         # Event loop
+        count=0
         while True:
-            time.sleep(2)
+            count+=1
+#            time.sleep(.05)
             msg = self.getNextMessage()
-            print 'CAOC iteration. Local time', self.localTime
+            if(count%5000==0):
+                print 'CAOC iteration. Local time', self.localTime
+                for i in self.drones:
+                    print "Drone status: ",i[0]
 #            print 'CAOC Priority Queue: '
 #            print self.priorityQueue
             if msg:

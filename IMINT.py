@@ -160,6 +160,7 @@ class IMINT (LogicalProcess):
         ## Event loop iteration
         while self.targetsTracked<self.numTargets :
             print 'IMINT loop iteration'
+            print "Imint has tracked", self.targetsTracked,"Targets.",self.numTargets-self.targetsTracked,"Targets to go."
             msg = self.getNextMessage()
             #print msg
             if msg:
@@ -167,7 +168,7 @@ class IMINT (LogicalProcess):
                 if msg.msgType==2:
                     print "IMINT passed a traget"
             
-            time.sleep(2)
+            time.sleep(.5)
             sys.stdout.flush()
 
         Pyro4.core.Daemon.close()
