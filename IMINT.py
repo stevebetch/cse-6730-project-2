@@ -89,7 +89,7 @@ class IMINT (LogicalProcess):
             # check hueristic number
             if self.heuristic==1:
                 # if goal track time has not been achieved, send updated tgt assignment to CAOC after processing time
-                if msg.data[8]-msg.data[7]<0:
+                if (msg.data[8]/msg.data[7])>random.random():
                     # send message to CAOC process
                     newTgtData=msg.data
                     newTgtMsg=Message(2,newTgtData,self.id,'CAOC',self.localTime+random.triangular(self.high,self.low,self.mode))
@@ -102,7 +102,7 @@ class IMINT (LogicalProcess):
                     print 'Total Value: ' + str(self.totalValue)
                     print 'Total Targets Tracked: ' + str(self.targetsTracked)                    
             elif self.heuristic==3 or self.heuristic==2:
-                if msg.data[8]-msg.data[7]<0:
+                if (msg.data[8]/msg.data[7])>random.random():
                     # if goal track time has not been achieved, adjsut priority and send updated tgt assignment to CAOC after processing time
                     newTgtData=[msg.data[0],msg.data[1],self.priorityAdjust*msg.data[2],msg.data[3],msg.data[4],msg.data[5],msg.data[6],msg.data[7],msg.data[8],msg.data[9]]
                     newTgtMsg=Message(2,newTgtData,self.id,'CAOC',self.localTime+random.triangular(self.high,self.low,self.mode))
