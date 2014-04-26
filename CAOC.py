@@ -95,10 +95,11 @@ class CAOC (LogicalProcess):
             if self.heuristic==1:
                 # If the queue is empty and there is an idle drone, send it the incoming target assignment
                 for i in range(len(self.drones)):
-                    if self.drones[i][0]=="Idle":
+                    if self.drones[i][0]=='Idle':
                         newTgtMsg=Message(2,targetData,self.id,i,self.localTime) # drone ids start at 2
                         self.sendMessage(newTgtMsg)
-                        print "sent message to idle drone:",i
+                        self.drones[i][0]='Busy'
+                        print 'sent message to idle drone:',i
                         break
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
                 else:
@@ -127,6 +128,7 @@ class CAOC (LogicalProcess):
                 else:
                     newTgtMsg=Message(2,targetData,self.id,indexCloseDrone,self.localTime) # drone ids start at 2
                     self.sendMessage(newTgtMsg)
+                    self.drones[indexCloseDrone][0]='Busy'
             elif self.heuristic==3:
                 # Adjust tgt priority be intel value/goal track time if the tgt has no track attempts
                 if targetData[9]==0:
@@ -150,7 +152,8 @@ class CAOC (LogicalProcess):
                 # If the queue is empty and there are idle drones, send the nearest drone the incoming target assignment   
                 else:
                     newTgtMsg=Message(2,targetData,self.id,indexCloseDrone,self.localTime) # drone ids start at 0
-                    self.sendMessage(newTgtMsg)                
+                    self.sendMessage(newTgtMsg)
+                    self.drones[indexCloseDrone][0]='Busy'
         # If the queue is not empty (implying all drones are busy), put the target assignment in the queue in order
         else:
             for i in range(len(self.priorityQueue)):
@@ -194,8 +197,8 @@ class CAOC (LogicalProcess):
                     newTgtData=self.priorityQueue.pop()
                     newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
                     self.sendMessage(newTgtMsg)
-#                    newTgtMsg.printData()
-                    self.drones[msg.data[0]][0]=="Busy"
+                    #newTgtMsg.printData()
+                    self.drones[msg.data[0]][0]="Busy"
         
             # Check which target assignment heruristic is in use
             elif self.heuristic==2 or self.heuristic==3:

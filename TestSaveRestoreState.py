@@ -14,7 +14,7 @@ from state import *
 
 def main():
     print 'Start'
-    
+ 
     random.seed(1)
     mapX=300
     mapY=300
@@ -40,14 +40,14 @@ def main():
     caoc=CAOC(numDrones,heuristic)
     caocInQ = LPInputQueue()    
     
-    imint=IMINT(heuristic)
+    imint=IMINT(heuristic,numTargets)
     imintInQ = LPInputQueue()
     print 'IMINT total value: ' + str(imint.totalValue)
     
     drone=Drone(0,0,1)
     droneInQ=LPInputQueue()
     
-    lp=[hmint,caoc,imint,drone]
+    lp=[hmint,caoc,imint]
     
     print '---Generate Messages---'
     m2Data=[0,80,80,'Vehicle',1,1,randNodes[0],30,0,0]
@@ -74,8 +74,8 @@ def main():
         print str(i.LPID) + ' state queue length: ' + str(len(i.stateQueue))
     
 
-    for i in drone.stateQueue:
-        print 'Drone LocalSimTime: ' + str(i.LocalSimTime)
+    #for i in drone.stateQueue:
+        #print 'Drone LocalSimTime: ' + str(i.LocalSimTime)
     
     hmint.restoreState(6)
     caoc.restoreState(6)
