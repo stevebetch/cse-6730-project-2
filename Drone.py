@@ -248,7 +248,7 @@ class Drone (LogicalProcess):
                             self.ReturnToBase()
                                 
                                 
-                if(self.searchdwell>=5*self.searchTime): # searched for the target 5 times Why 5? Why not!
+                if(self.searchdwell>=10*self.searchTime*(self.target.intelVal/100)): # searched for the target 10*percentMaxValue (i.e. 1 to 10 times)
                     self.ReturnTgt()
 #                    self.removeTgt()
                 elif(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
