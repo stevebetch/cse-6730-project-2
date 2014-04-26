@@ -8,6 +8,13 @@ class LPInputQueue():
         self.localTMin = 0
         self.LPID = None
         
+    def dump(self):
+        if len(self.q) == 0:
+            print 'Empty'
+        else:
+            for i in self.q:
+                i.printData(1)
+        
     def setLPID(self, lpid):
         self.LPID = lpid
         

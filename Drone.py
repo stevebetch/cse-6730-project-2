@@ -367,7 +367,6 @@ class Drone (LogicalProcess):
 
         if(msg.msgType==2): # New target
             # tgtData = [tgtID 0,tgtIntelValue 1,tgtIntelPriority 2,tgtType 3,tgtStealth 4,tgtSpeed 5,tgtPredLoc 6,tgtGoalTrackTime 7,tgtActualTrackTime 8,tgtTrackAttempts 9]
-            print
             Data=msg.data
             msg.printData(1)
             

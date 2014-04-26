@@ -54,15 +54,16 @@ class CAOC (LogicalProcess):
 #                break
 #            else:
 #                self.stateQueue.pop(i)
-        print "Queue times:"
+        print "StateQueue times:"
         for i in self.stateQueue:
             print i.key
         a=[]
         for i in self.stateQueue:
             if(timestamp>=i.key):
-                print "Key:",i.key
+                ts = i.key
                 index=i
                 a.append(i)
+        print "Restoring state to timestamp:",ts
     
         self.restore(index)
         self.stateQueue=a

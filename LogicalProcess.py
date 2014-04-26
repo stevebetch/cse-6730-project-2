@@ -128,9 +128,8 @@ class LogicalProcess(SharedMemoryClient):
         # append messages processed after this time to input queue for reprocessing
         reprocessList = []
         for histMsg in self.inputMsgHistory:
-            print 'histMsg'
             if histMsg.timestamp > msg.timestamp:
-                print 'add histMsg to reprocess list'
+                print 'add histMsg with timestamp %d to reprocess list' % histMsg.timestamp
                 reprocessList.append(histMsg)
 
         # if a drone, get local copy of input queue from DroneInputQueueContainer shared object 
@@ -202,7 +201,20 @@ class LogicalProcess(SharedMemoryClient):
         print 'LP %d: GVT thread (cut C2) callback executed' % (self.LPID)
     
     def handleMessage(self, msg):
+        print ''
         print 'LP %d handleMessage' % (self.LPID)
+        print 'Current message:'
+        msg.printData(1)
+        print ''
+        print 'Messages remaining in queue:'
+        
+        if self.inputQueue is None:
+            q = self.droneInQs.getInputQueue(self.uid)
+        else:
+            q = self.inputQueue
+        q.dump()
+        print ''
+
         if msg.msgType == 1:
             if isinstance(msg.data, GVTControlMessageData):
                 print 'LP %d received GVT control message' % (self.LPID)
