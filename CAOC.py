@@ -86,7 +86,7 @@ class CAOC (LogicalProcess):
     # Add Target
     # Input: Target Data data structure from Message data structure (see Message.py for documentation)
     # Output: Adds target to priority queue or assigns target to drone
-    # Description: Regardless of heuristic, if all the drones are busy, the target is added to the queue in prioirity order
+    # Description: Regardless of heuristic, if all the drones are busy, the target is added to the queue in priority order
     #    Naive heuristic: if the queue is empty and there are idle drones, the target is assigned to the lowest-id drone
     #    Local and Timer heuristics: if the queue is empty and there are idles drones, the target is assigned to the closest drone
     def addTarget(self, targetData):
@@ -211,8 +211,8 @@ class CAOC (LogicalProcess):
                     indexCloseTgt=0
                     minDist=999999
                     for i in range(len(self.priorityQueue)):
-                        tgtX=self.prioirityQueue[i][6].xpos #x coord
-                        tgtY=self.prioirityQueue[i][6].ypos #y coord                        
+                        tgtX=self.priorityQueue[i][6].xpos #x coord
+                        tgtY=self.priorityQueue[i][6].ypos #y coord                        
                         dist=sqrt((tgtX-droneX)**2+(tgtY-droneY)**2)
                         if dist<minDist:
                             minDist=dist
