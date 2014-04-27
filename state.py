@@ -3,7 +3,7 @@ class DRONEState():
      def __init__(self, obj):
             self.uid = obj.uid
             self.droneType = obj.droneType
-            self.key=obj.localTime
+            
             self.localTime = obj.localTime
 
             self.LocalSimTime=obj.LocalSimTime #current simulation time for the drone
@@ -59,7 +59,9 @@ class HMINTState():
                 self.id = obj.id
                 self.numTargets = obj.numTargets
                 self.count = obj.count
-                self.msgTimestamp = obj.msgTimestamp
+                self.currTargetTimestamp = obj.currTargetTimestamp
+                self.targets = obj.targets
+                self.targetTimestamps = obj.targetTimestamps
                 self.randNodes = obj.randNodes
                 
 class StubState():
