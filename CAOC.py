@@ -399,8 +399,11 @@ class CAOC (LogicalProcess):
                     self.drones[indexCloseDrone][0]='Busy'
         # If the queue is not empty (implying all drones are busy), put the target assignment in the queue in order
         else:
-            for i in range(len(self.priorityQueue)):
-                if targetData[2]<self.priorityQueue[i][2]:
-                    self.priorityQueue.insert(i,targetData)
-                    break
+            if targetData[2]>=self.priorityQueue[len(self.priorityQueue)-1][2]:
+                self.priorityQueue.append(targetData)
+            else:
+                for i in range(len(self.priorityQueue)):
+                    if targetData[2]<self.priorityQueue[i][2]:
+                        self.priorityQueue.insert(i,targetData)
+                        break
             print('CAOC Added target to priority queue')
