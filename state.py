@@ -1,9 +1,10 @@
 
 class DRONEState(): 
-        def __init__(self, obj):
+     def __init__(self, obj):
             self.uid = obj.uid
-    #        LogicalProcess.__init__(self)
             self.droneType = obj.droneType
+            
+            self.localTime = obj.localTime
 
             self.LocalSimTime=obj.LocalSimTime #current simulation time for the drone
 
@@ -60,3 +61,7 @@ class HMINTState():
                 self.count = obj.count
                 self.msgTimestamp = obj.msgTimestamp
                 self.randNodes = obj.randNodes
+                
+class StubState():
+     def __init__(self, time):
+          self.localTime = time

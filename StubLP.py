@@ -1,7 +1,7 @@
 import sys, time
 import Pyro4
 from LogicalProcess import *
-from state import IMINTState
+from state import StubState
 from multiprocessing import Queue, Lock
 from Message import *
 
@@ -15,7 +15,8 @@ class StubLP (LogicalProcess):
         self.run()
     
     def saveState(self):
-        print 'Saving current StubLP state'     
+        print 'Saving current StubLP state'
+        self.stateQueue.append(StubState(self.localTime))
        
     def restoreState(self, timestamp):
         print 'restoring to last StubLP state stored <= %d' % (timestamp)

@@ -137,10 +137,7 @@ class LogicalProcess(SharedMemoryClient):
             q = self.droneInQs.getInputQueue(self.uid)
         else:
             q = self.inputQueue 
-        print q.getLength()
         q.extend(reprocessList)
-        print q.getLength()
-        self.gvtData.tMin = q.calculateLocalTMin()
         if self.inputQueue is None:
             self.droneInQs.setInputQueue(self.uid, q)        
         
@@ -162,6 +159,17 @@ class LogicalProcess(SharedMemoryClient):
         except:
             print 'Forwarding GVT control message to drone %d' % (self.nextDroneID)
             self.nextLPInTokenRingInQ.addMessage(self.nextDroneID, msg)
+            
+    def forwardGVTValueMessage(self, msg):
+        if self.nextLPInTokenRingInQ is None:
+            self.getNextLPInTokenRing(msg.data.LPIDs)
+        
+        try:           
+            self.nextLPInTokenRingInQ.addMessage(msg)
+            print 'Forwarding GVT value message to next LP'
+        except:
+            print 'Forwarding GVT value message to drone %d' % (self.nextDroneID)
+            self.nextLPInTokenRingInQ.addMessage(self.nextDroneID, msg)        
         
     def getNextLPInTokenRing(self, lpids):
         print self.LPID
@@ -204,7 +212,7 @@ class LogicalProcess(SharedMemoryClient):
         print ''
         print 'LP %d handleMessage' % (self.LPID)
         print 'Current message:'
-        msg.printData(1)
+        msg.printData(0)
         print ''
         print 'Messages remaining in queue:'
         
@@ -234,6 +242,7 @@ class LogicalProcess(SharedMemoryClient):
                     print 'Continuing after starting GVT C2 cut thread...'
             elif isinstance(msg.data, GVTValue):
                 self.setGVT(msg.data.gvt)
+                self.forwardGVTValueMessage(msg)
         else:
             if msg.isAnti and not(self.matchingMessageAlreadyProcessed(msg)):
                 # return antimessage to queue
@@ -328,11 +337,11 @@ class LogicalProcess(SharedMemoryClient):
         self.outputQueue = temp
         print 'outputQueue length after reclaim: %d' % (len(self.outputQueue))
         # stateQueue
-        temp = {}
+        temp = []
         print 'stateQueue length before reclaim: %d' % (len(self.stateQueue))
-        for timestamp, state in self.stateQueue:
-            if timestamp >= gvt:
-                temp[timestamp] = state
+        for i in self.stateQueue:
+            if i.localTime >= gvt:
+                temp.append(i)
         self.stateQueue = temp
         print 'stateQueue length after reclaim: %d' % (len(self.stateQueue))
         # message history

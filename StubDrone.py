@@ -73,6 +73,7 @@ class StubDrone (LogicalProcess):
 
     def saveState(self):
         print 'drone %d saving state' % self.uid
+        self.stateQueue.append(StubState(self.localTime))
 
     def restoreState(self,timestamp):
         print 'drone %d restoring to last state stored <= %d' % (self.uid, timestamp)

@@ -13,7 +13,7 @@ class LPInputQueue():
             print 'Empty'
         else:
             for i in self.q:
-                i.printData(1)
+                i.printData(0)
         
     def setLPID(self, lpid):
         self.LPID = lpid

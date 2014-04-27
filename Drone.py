@@ -546,8 +546,8 @@ class Drone (LogicalProcess):
 
     def saveState(self):
         saver=DRONEState(self)
+        print 'Drone %d saving state for timestamp %d' % (self.uid, saver.localTime)
         self.stateQueue.append(saver)
-#        print self.LocalSimTime
 
 
 

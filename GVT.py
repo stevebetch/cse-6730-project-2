@@ -29,8 +29,8 @@ class GVTControlMessageData():
     'Data content for GVT Control Message'
     
     def __init__(self, lpids):
-        self.tMin = 0
-        self.tRed = 0
+        self.tMin = LPGVTData.INF
+        self.tRed = LPGVTData.INF
         self.counts = {}
         for i in range(len(lpids)):
             self.counts[i] = 0
