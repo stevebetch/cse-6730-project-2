@@ -61,6 +61,9 @@ class DroneSimController(GlobalControlProcess):
         
         droneInQs_uri = nameserver.lookup('inputqueue.drones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
+
+        loopInQs_uri = nameserver.lookup('inL.loop')
+        self.Loopcont = Pyro4.Proxy(loopInQs_uri)
         
         # Mark: Test code can be commented out
         #self.imintInQ.addMessage(Message(1, 'Data', 'Controller', 'IMINT', 5))
@@ -71,9 +74,9 @@ class DroneSimController(GlobalControlProcess):
         #self.inputQueue.addMessage(Message(1, 'Data', 'Controller', 'Controller', 3))
         #self.droneInQs.addMessage(0, Message(2, 'Data', 'Controller', 0, 3))
          
-        while True:
+        while (self.Loopcont.getCon()==1):
             
-            time.sleep(10)
+            time.sleep(5)
             
             # GVT: Trigger round for cut C1 (CAOC is first LP in token ring)
             print 'Controller sending cut C1 token to first LP'
@@ -82,12 +85,15 @@ class DroneSimController(GlobalControlProcess):
             print 'Controller waiting for cut C1 token'
             sys.stdout.flush()            
             while True:
+                if(self.Loopcont.getCon()==0):
+                    break
                 time.sleep(0)
                 msg = self.inputQueue.getNextMessage()
                 if not(msg is None):
                     if isinstance(msg.data, GVTControlMessageData):
                         break
-            
+            if(self.Loopcont.getCon()==0):
+                break
             print 'Controller received GVT control token back from LPs (Cut C1)'
             sys.stdout.flush()
         
@@ -110,12 +116,15 @@ class DroneSimController(GlobalControlProcess):
                 print 'Controller waiting for cut C2 token'
                 sys.stdout.flush()                
                 while True:
+                    if(self.Loopcont.getCon()==0):
+                        break
                     time.sleep(0)                    
                     msg = self.inputQueue.getNextMessage()
                     if not(msg is None):
                         if isinstance(msg.data, GVTControlMessageData):
                             break
-                
+                if(self.Loopcont.getCon()==0):
+                    break
                 print 'Controller received GVT control token back from LPs (Cut C2)'
                 count = 0
                 for i in msg.data.counts:

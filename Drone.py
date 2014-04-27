@@ -102,10 +102,10 @@ class Drone (LogicalProcess):
         self.currentNode=mapObj #the only time we directly set the current node.
         self.LocalSimTime=self.localTime
         self.setJokerBingo()
-        
-        initMes=Message(3,[self.uid,'Idle',self.currentNode],self.uid,'CAOC',self.localTime)
-        self.sendMessage(initMes)        
-        
+#        
+#        initMes=Message(3,[self.uid,'Idle',self.currentNode],self.uid,'CAOC',self.localTime)
+#        self.sendMessage(initMes)        
+
         # Event loop iteration
         #count = 10
         #while True:
@@ -127,7 +127,7 @@ class Drone (LogicalProcess):
 #        self.removeTgt() #Starts the logic to get a new target
 
         if(self.heuristic==1): #Naive heuristic
-            while(self.Loopcont.control):
+            while(self.Loopcont.getCon()):
                 
                 if(self.Bingo<0):
                     self.ReturnToBase()
@@ -137,7 +137,7 @@ class Drone (LogicalProcess):
                     try:
                         self.getNewTgt()
                     except:
-                        if(self.Loopcont.control==0):
+                        if(self.Loopcont.getCon()==0):
                             break
                 
                 
@@ -255,7 +255,8 @@ class Drone (LogicalProcess):
                     self.SendIMINT()
 #                    self.removeTgt()
 
-                
+        self.reset()
+        
 
 
     def setTarget(self,obj):
@@ -653,10 +654,7 @@ class Drone (LogicalProcess):
 
     def removeTgt(self):
         self.target=42
-        data=[self.uid,'Idle',self.currentNode]
-        sendMes=Message(3,data,self.uid,'CAOC',self.LocalSimTime)
-#        sendMes.printData(1)
-        self.sendMessage(sendMes)
+    
         #self.setLocalTime(self.LocalSimTime)
 
 
@@ -664,6 +662,10 @@ class Drone (LogicalProcess):
 
     def getNewTgt(self):
        # self.setLocalTime(self.LocalSimTime)
+        data=[self.uid,'Idle',self.currentNode]
+        sendMes=Message(3,data,self.uid,'CAOC',self.LocalSimTime)
+       #        sendMes.printData(1)
+        self.sendMessage(sendMes)
         count=0
         while(1): #Wait for a new message to come in
             count+=1
@@ -680,7 +682,7 @@ class Drone (LogicalProcess):
                 pass
             if(count%5000==0):
                 print "Drone is in the getNewTgt loop. Count=:",count
-            if(self.Loopcont.control==0):
+            if(self.Loopcont.getCon()==0):
                 print "ENDING THE SIM!!!!!"
                 break
     
@@ -691,7 +693,7 @@ class Drone (LogicalProcess):
         if(timedif<=0):#message is in the future
             self.updateTime(timedif*-1)
         self.updateCurNode(self.target.node)
-        if(self.Loopcont.control==0):
+        if(self.Loopcont.getCon()==0):
                 return
         #else: #message arrived in the past, but we have done work since receiving it.
             #self.setLocalTime(self.LocalSimTime)

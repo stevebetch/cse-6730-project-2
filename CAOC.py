@@ -29,7 +29,7 @@ class CAOC (LogicalProcess):
         self.priorityQueue = []
         self.drones=[]
         for i in range(numDrones):
-            self.drones.insert(i,["Idle",0])
+            self.drones.insert(i,["Busy",0])
         self.heuristic=heuristicNum
 
     # Call function
@@ -265,13 +265,13 @@ class CAOC (LogicalProcess):
         loopInQs_uri = nameserver.lookup('inL.loop')
         self.Loopcont = Pyro4.Proxy(loopInQs_uri)
 
-        self.initGVTCounts(LPIDs)        
-
+        self.initGVTCounts(LPIDs)
+        print "Output contol value:",self.Loopcont.getCon()
 #        self.saveState()
 
         # Event loop
         count=0
-        while (self.Loopcont.control):
+        while (self.Loopcont.getCon()):
             count+=1
 #            time.sleep(.05)
             msg = self.getNextMessage()

@@ -5,15 +5,23 @@ import csv
 
 def ProgRunner ():
 
+#initialize
+    PYRO_HOST=get_local_ip_address()
+    print "Using IP address:", PYRO_HOST
+#    daemon = Pyro4.Daemon(host=PYRO_HOST, port=PYRO_PORT)
+    ns = Pyro4.locateNS()
+
 # parameters (later get from file)
+
     with open('Control.csv', 'rU') as file:
         reader=csv.reader(file)
         reader.next() #kill off the header row
         
         for row in reader:
+            daemon = Pyro4.Daemon(host=PYRO_HOST)
             DataArgs=Data()
             DataArgs.fillRow(row)
-            Simulation=main(DataArgs)
+            Simulation=main(DataArgs,daemon,ns)
 
 
 class Data:

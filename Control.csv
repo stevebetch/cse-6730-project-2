@@ -1,1 +1,1 @@
-Number of Drones,Type of drone,number of Targets,number of streets,seed number,mapx,mapy,heuristic,Nuisance2,"""DroneType1""",3,50,3,300,300,1,0.8
+Number of Drones,Type of drone,number of Targets,number of streets,seed number,mapx,mapy,heuristic,Nuisance1,"""DroneType1""",1,50,3,300,300,1,0.81,"""DroneType1""",3,50,3,300,300,2,0.81,"""DroneType1""",3,50,3,300,300,3,0.8

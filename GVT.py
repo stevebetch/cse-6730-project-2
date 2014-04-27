@@ -84,7 +84,15 @@ class LPGVTData:
         for i in self.counts:
             print 'self.counts[%d] = %d' % (i,self.counts[i])
         print 'self.gvt = %d' % (self.gvt)
-        
+
+
+    def reset(self):
+        self.tMin = 0 # smallest timestamp of any unprocessed message in inputqueue
+        self.tRed = 0 # smallest timestamp of any red message (sent between cut C1 and C2)
+        self.color = LPGVTData.WHITE
+        self.gvt = 0
+        self.counts = []
+
 class GVTValue:
     
     def __init__(self, gvt):

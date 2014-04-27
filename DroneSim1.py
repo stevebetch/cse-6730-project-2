@@ -11,7 +11,7 @@ from DroneInputQueueContainer import *
 import socket
 import threading
 
-
+ll = threading.Lock()
 
 #
 # Function definitions
@@ -66,7 +66,7 @@ def get_local_ip_address():
 # Main method
 #
 
-def main(Data):
+def main(Data,daemon,ns):
 
     
     #
@@ -77,9 +77,9 @@ def main(Data):
     random.seed(Data.seedNum)
     #print "Using Nuisance mean of:", Nuisance
     
-    PYRO_HOST=get_local_ip_address()
-    print "Using IP address:", PYRO_HOST
-    
+#    PYRO_HOST=get_local_ip_address()
+#    print "Using IP address:", PYRO_HOST
+
     # Urban network/map
     Map = GenMap(Data.mapX,Data.mapY)
     Map.map(Data.numStreets,Data.Nuisance)
@@ -88,15 +88,17 @@ def main(Data):
         randNodes.append(Map.RandNode())
     
     # Create PYRO remote object daemon
-    daemon = Pyro4.Daemon(host=PYRO_HOST, port=PYRO_PORT)
-    ns = Pyro4.locateNS()
-    
+#    daemon = Pyro4.Daemon(host=PYRO_HOST, port=PYRO_PORT)
+#    ns = Pyro4.locateNS()
+
     # Create HMINT, will be separate process started by Controller
     hmint = initHMINT(randNodes,Data)
     hmintInQ = LPInputQueue()
     hmintInQ.setLocalTime(0)
     hmintInQ.setLPID(hmint.LPID)
     hmintInQ_uri = daemon.register(hmintInQ)
+    hmintInQ_uri = daemon.uriFor(hmintInQ)
+    
     ns.register("inputqueue.hmint", hmintInQ_uri)        
     
     # Create CAOC, will be separate process started by Controller
@@ -105,6 +107,7 @@ def main(Data):
     caocInQ.setLocalTime(0)
     caocInQ.setLPID(caoc.LPID)
     caocInQ_uri = daemon.register(caocInQ)
+    caocInQ_uri = daemon.uriFor(caocInQ)
     ns.register("inputqueue.caoc", caocInQ_uri)    
     
     # Create IMINT, will be separate process started by Controller
@@ -113,6 +116,7 @@ def main(Data):
     imintInQ.setLocalTime(0)
     imintInQ.setLPID(imint.LPID)
     imintInQ_uri = daemon.register(imintInQ)
+    imintInQ_uri = daemon.uriFor(imintInQ)
     ns.register("inputqueue.imint", imintInQ_uri)    
     
     # Create Simulation Controller
@@ -121,6 +125,7 @@ def main(Data):
     controllerInQ = LPInputQueue()
     controllerInQ.setLocalTime(0)
     controllerInQ_uri = daemon.register(controllerInQ)
+    controllerInQ_uri = daemon.uriFor(controllerInQ)
     ns.register("inputqueue.controller", controllerInQ_uri)
     
     # Create drone entities, each will be separate process started by Controller
@@ -135,11 +140,13 @@ def main(Data):
         droneInQs.addDroneInputQueue(dronename)
     droneInQs.setLPIDs(drones)
     droneInQs_uri = daemon.register(droneInQs)
+    droneInQs_uri = daemon.uriFor(droneInQs)
     ns.register("inputqueue.drones", droneInQs_uri)    
 
     #Shared loop controler
     loopInQs=Loops()
     loopInQs_uri = daemon.register(loopInQs)
+    loopInQs_uri = daemon.uriFor(loopInQs)
     ns.register("inL.loop", loopInQs_uri)
 
     # Start Controller process
@@ -173,16 +180,64 @@ def main(Data):
     
     # Run shared object requests loop
     print 'starting shared objects request loop'
-    daemon.requestLoop()
+    daemon.requestLoop(loopCondition=lambda:loopInQs.getCon())
+    time.sleep(5)
+#    daemon.close()
+    daemon.unregister("inL.loop")
+    daemon.unregister("inputqueue.drones")
+    daemon.unregister("inputqueue.controller")
+    daemon.unregister("inputqueue.caoc")
+    daemon.unregister("inputqueue.caoc")
+    daemon.unregister("inputqueue.hmint")
+
+    try:
+        del hmint
+        print "Deleted hmint!"
+        del hmintInQ
+        print "Deleted hmintInq!"
+        del caoc
+        print "Deleted caoc!"
+        del caocInQ
+        print "Deleted caocInQ!"
+        del drones
+        print "Deleted drones!"
+        del droneInQs
+        print "Deleted dronesInQs!"
+        del imint
+        print "Deleted imint!"
+        del imintInQ
+        print "Deleted imint!"
+        del controller
+        print "Deleted controller!"
+        del controllerInQ
+        print "Deleted controller!"
+#        del loopInQs
+        print "Deleted all variables!"
+
+    except:
+        print "Failed to delete all variables"
 
 
-
-#
+    daemon.close()
+    print "\n\n\n"
 # Start of Execution
 #
 #if __name__ == '__main__':
  #   main()
 
 class Loops:
+    
     def __init__(self):
         self.control=1
+    def getCon(self):
+        return self.control
+    def setCon(self,obj):
+        ll.acquire()
+        self.control=obj
+        ll.release()
+    def loopC(self):
+        if(self.getCon()==1):
+            return True
+        else:
+            return False
+

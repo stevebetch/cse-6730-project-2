@@ -36,7 +36,17 @@ class LogicalProcess(SharedMemoryClient):
     #outputQueue - dictionary of message id (keys) to antimessage (values)
     #localTime - current time logical process is at
     #gvt - last gvt value received from controller
-    
+    def reset(self):
+        LogicalProcess.nextLPID = 0
+        self.stateQueue = []
+        self.inputQueue = None
+        self.outputQueue = {}
+        self.inputMsgHistory = []
+        self.localTime = 0
+        self.gvtData.reset()
+        del self.gvtData
+        self.gvtData = []
+        self.nextLPInTokenRingInQ = None
     
     def __init__(self): 
         self.LPID = self.getNextLPID()     

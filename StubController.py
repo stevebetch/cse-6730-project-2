@@ -49,8 +49,11 @@ class StubController(GlobalControlProcess):
         
         droneInQs_uri = nameserver.lookup('inputqueue.stubdrones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
-         
-        while True:
+        
+        loopInQs_uri = nameserver.lookup('inL.loop')
+        self.Loopcont = Pyro4.Proxy(loopInQs_uri)
+        
+        while (self.Loopcont.getCon()==1):
             
             time.sleep(10)
             
@@ -62,12 +65,15 @@ class StubController(GlobalControlProcess):
             print 'Controller waiting for cut C1 token'
             sys.stdout.flush()            
             while True:
+                if(self.Loopcont.getCon()==0):
+                    break
                 time.sleep(0)
                 msg = self.inputQueue.getNextMessage()
                 if not(msg is None):
                     if isinstance(msg.data, GVTControlMessageData):
                         break
-            
+            if(self.Loopcont.getCon()==0):
+                break
             print 'Controller received GVT control token back from LPs (Cut C1)'
             sys.stdout.flush()
         
@@ -90,12 +96,15 @@ class StubController(GlobalControlProcess):
                 print 'Controller waiting for cut C2 token'
                 sys.stdout.flush()                
                 while True:
+                    if(self.Loopcont.getCon()==0):
+                        break
                     time.sleep(0)                    
                     msg = self.inputQueue.getNextMessage()
                     if not(msg is None):
                         if isinstance(msg.data, GVTControlMessageData):
                             break
-                
+                if(self.Loopcont.getCon()==0):
+                    break
                 print 'Controller received GVT control token back from LPs (Cut C2)'
                 count = 0
                 for i in msg.data.counts:
@@ -110,6 +119,6 @@ class StubController(GlobalControlProcess):
                 self.stublpInQ.addMessage(Message(1, GVTValue(gvt), GlobalControlProcess.CONTROLLER_ID, LogicalProcess.STUBLP_ID, -1))                 
                 sys.stdout.flush()                
             break
-
+        
         print "Time elapsed: ", time.time() - start_time, "s"
 

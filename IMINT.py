@@ -174,7 +174,9 @@ class IMINT (LogicalProcess):
             time.sleep(.5)
             sys.stdout.flush()
 
-        self.Loopcont.control=0
+        self.Loopcont.setCon(0)
+        print "IMINT IS DONE!!!!! FINISHED!!!! WOOOO!!!"
 
-
+        time.sleep(10)
+#        daemon.shutdown()
 
