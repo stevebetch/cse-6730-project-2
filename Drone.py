@@ -109,9 +109,9 @@ class Drone (LogicalProcess):
         self.currentNode=mapObj #the only time we directly set the current node.
         self.LocalSimTime=self.localTime
         self.setJokerBingo()
-#        
-#        initMes=Message(3,[self.uid,'Idle',self.currentNode],self.uid,'CAOC',self.localTime)
-#        self.sendMessage(initMes)        
+#        need to send a message that tells caoc where the drones are. Not ready for a target, therefore, busy.
+        initMes=Message(3,[self.uid,'Busy',self.currentNode],self.uid,'CAOC',self.localTime)
+        self.sendMessage(initMes)
 
         # Event loop iteration
         #count = 10
