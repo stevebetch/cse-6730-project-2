@@ -189,13 +189,13 @@ class CAOC (LogicalProcess):
     def getPriorityQueue(self):
         return self.priorityQueue
     
-    def updateTargets(self):
+    def updateTargets(self, timestamp):
         
         # send request to HMINT for targets available as of self.localTime
-        print 'CAOC: Sending target request for time %d to HMINT' % self.localTime
+        print 'CAOC: Sending target request for time %d to HMINT' % timestamp
         sys.stdout.flush()
-        requestData = TargetRequest(self.localTime)
-        msg = Message(4, requestData, LogicalProcess.CAOC_ID, LogicalProcess.HMINT_ID, self.localTime)
+        requestData = TargetRequest(timestamp)
+        msg = Message(4, requestData, LogicalProcess.CAOC_ID, LogicalProcess.HMINT_ID, timestamp)
         self.sendMessage(msg) 
         
         # wait for response
@@ -251,7 +251,7 @@ class CAOC (LogicalProcess):
         elif msg.msgType==3:
             
             # Call HMINT to update target priority queue to current time
-            self.updateTargets()
+            self.updateTargets(msg.timestamp)
                 
             # Update drone status list
             self.drones[msg.data[0]]=[msg.data[1],msg.data[2]]

@@ -8,6 +8,8 @@ from state import HMINTState
 class HMINT (LogicalProcess):
     "Human intelligence"
     
+    INF = 999999999999
+    
     # Instance Variable List
     # numTargets: Total number of targets to be created
     # count: number of targets created
@@ -109,7 +111,7 @@ class HMINT (LogicalProcess):
         # separate out targets with ts <= passed timestamp value
         sendTimestamps = []
         remainingTimestamps = []
-        minTimestamp = 999999999999
+        minTimestamp = HMINT.INF
         for ts in self.targetTimestamps:
             if ts <= timestamp:
                 sendTimestamps.append(ts)
@@ -123,10 +125,13 @@ class HMINT (LogicalProcess):
         responseData = TargetResponse()
         msgTimestamp = 0
         if len(sendTimestamps) == 0:
-            responseData.addTarget(self.targets[minTimestamp])
-            msgTimestamp = minTimestamp
-            print 'HMINT: No targets found with timestamp < %d, adding target with smallest timestamp response data' % timestamp
-            remainingTimestamps.remove(minTimestamp)
+            if not(minTimestamp == HMINT.INF):
+                responseData.addTarget(self.targets[minTimestamp])
+                msgTimestamp = minTimestamp
+                print 'HMINT: No targets found with timestamp < %d, adding target with smallest timestamp response data' % timestamp
+                remainingTimestamps.remove(minTimestamp)
+            else:
+                print 'HMINT: No targets remaining'
         for ts in sendTimestamps:
             responseData.addTarget(self.targets[ts])
             msgTimestamp = ts
