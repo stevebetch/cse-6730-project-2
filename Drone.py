@@ -25,7 +25,7 @@ class Drone (LogicalProcess):
         LogicalProcess.__init__(self)
         self.droneType = droneType
 
-        self.LocalSimTime=0 #current simulation time for the drone
+        self.LocalSimTime=5 #current simulation time for the drone
 
         self.MaintenanceActionTime=75600 #MTBF 21 hrs based on DoD study, here in seconds
         self.Joker=0 #how much time we have to search
@@ -134,7 +134,7 @@ class Drone (LogicalProcess):
 #        self.removeTgt() #Starts the logic to get a new target
 
         if(self.heuristic==1): #Naive heuristic
-            while(self.Loopcont.getCon()):
+            while(self.Loopcont.getCon()==1):
                 
                 if(self.Bingo<0):
                     self.ReturnToBase()
@@ -179,14 +179,18 @@ class Drone (LogicalProcess):
     ################################################
     
         elif(self.heuristic==2): # Local Heuristic
-            while(1):
+            while(self.Loopcont.getCon()==1):
                 
                 if(self.Bingo<0):
                     self.ReturnToBase()
-                
+                if(debug==1):
+                    print self.target
                 if(self.target==42): #NO TARGET IN QUEUE
-                    self.getNewTgt()
-                    self.saveState()
+                    try:
+                        self.getNewTgt()
+                    except:
+                        if(self.Loopcont.getCon()==0):
+                            break
                 
                 # Check fuel before anything else!!
                 if(not(self.jokerflag)): #joker not set yet. can search for targets
@@ -224,12 +228,17 @@ class Drone (LogicalProcess):
 ################################################
 
         else: # Impatient Heuristic
-            while(1):
+            while(self.Loopcont.getCon()==1):
                 if(self.Bingo<0):
                     self.ReturnToBase()
+                if(debug==1):
+                    print self.target
                 if(self.target==42): #NO TARGET IN QUEUE
-                    self.getNewTgt()
-                    self.saveState()
+                    try:
+                        self.getNewTgt()
+                    except:
+                        if(self.Loopcont.getCon()==0):
+                            break
                 
                 # Check fuel before anything else!!
                 if(not(self.jokerflag)): #joker not set yet. can search for targets
