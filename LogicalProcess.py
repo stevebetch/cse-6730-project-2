@@ -315,6 +315,12 @@ class LogicalProcess(SharedMemoryClient):
                     sys.stdout.flush()
     
     def getNextMessage(self):
+        a.acquire()
+        b.acquire()
+        c.acquire()
+        d.acquire()
+        e.acquire()
+        
         msg = None
         q = None
         
@@ -335,6 +341,11 @@ class LogicalProcess(SharedMemoryClient):
         if self.inputQueue is None:
             self.droneInQs.setInputQueue(self.uid, q)
         
+        a.release()
+        b.release()
+        c.release()
+        d.release()
+        e.release()
         return msg 
     
     def matchingMessageAlreadyProcessed(self, msg):

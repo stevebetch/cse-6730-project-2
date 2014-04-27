@@ -172,7 +172,7 @@ class Drone (LogicalProcess):
                                 self.ReturnToBase()
                     if(not(self.target==42)):
                         if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
-                            self.SendIMINT()
+                            self.ReturnTgt()
 #                            self.removeTgt()
 
     ################################################
@@ -213,10 +213,10 @@ class Drone (LogicalProcess):
                 droneRad=math.sqrt((self.xpos-mapObj.xpos)**2+(self.ypos-mapObj.ypos)**2)
                                     
                 if(droneRad>self.droneRadLim): # searched for the target within the local area
-                    self.SendIMINT()
+                    self.ReturnTgt()
 #                    self.removeTgt()
                 elif(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
-                    self.SendIMINT()
+                    self.ReturnTgt()
 #                    self.removeTgt()
 
 
@@ -258,7 +258,7 @@ class Drone (LogicalProcess):
                     self.ReturnTgt()
 #                    self.removeTgt()
                 elif(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
-                    self.SendIMINT()
+                    self.ReturnTgt()
 #                    self.removeTgt()
 
         self.reset()
@@ -542,6 +542,7 @@ class Drone (LogicalProcess):
             self.updateTime(10800) #3 hrs for MTTR based on DoD study
         self.setJokerBingo()
         self.updateCurNode(self.EntNode)
+        self.removeTgt()
 
 
 
@@ -649,8 +650,8 @@ class Drone (LogicalProcess):
 
 
 
-    def SendIMINT(self):
-        self.ReturnTgt()
+#    def SendIMINT(self):
+#        self.ReturnTgt()
 #        #update the target
 #        self.target.ActTracTime+=self.TarTime
 #        self.target.trackAttempts+=1
@@ -665,7 +666,7 @@ class Drone (LogicalProcess):
 
     def removeTgt(self):
         self.target=42
-    
+        self.TarTime=0
         #self.setLocalTime(self.LocalSimTime)
 
 
@@ -699,7 +700,8 @@ class Drone (LogicalProcess):
                 print "ENDING THE SIM!!!!!"
                 break
     
-            if(count>3000):
+            if(count>5000):
+                updateTime(1) #penalty
                 data=[self.uid,'Idle',self.currentNode]
                 sendMes=Message(3,data,self.uid,'CAOC',self.LocalSimTime)
                 #        sendMes.printData(1)

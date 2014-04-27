@@ -37,7 +37,7 @@ class IMINT (LogicalProcess):
         self.totalValue=0
         self.targetsTracked=0
         self.numTargets=numTargets
-        self.fname= 'Data'+time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())+'.csv'
+        self.fname= 'Data from '+time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())+'.csv'
 
     # Call function
     def __call__(self):
@@ -111,7 +111,7 @@ class IMINT (LogicalProcess):
                     csvLock.acquire()
                     oufile=open(self.fname, "a")
                     c = csv.writer(oufile)
-                    c.writerow([msg.data[0],msg.data[1],self.priorityAdjust*msg.data[2],msg.data[3],msg.data[4],msg.data[5],msg.data[7],msg.data[8],msg.data[9],self.heuristic])
+                    c.writerow([msg.data[0],msg.sender,msg.data[1],msg.data[2],msg.data[3],msg.data[4],msg.data[5],msg.data[7],msg.data[8],msg.data[9],self.heuristic,msg.timestamp])
                     oufile.close()
                     csvLock.release()
             elif self.heuristic==3 or self.heuristic==2:
@@ -131,7 +131,7 @@ class IMINT (LogicalProcess):
                     csvLock.acquire()
                     oufile=open(self.fname, "a")
                     c = csv.writer(oufile)
-                    c.writerow([msg.data[0],msg.data[1],msg.data[2],msg.data[3],msg.data[4],msg.data[5],msg.data[7],msg.data[8],msg.data[9],self.heuristic])
+                    c.writerow([msg.data[0],msg.sender,msg.data[1],msg.data[2],msg.data[3],msg.data[4],msg.data[5],msg.data[7],msg.data[8],msg.data[9],self.heuristic,msg.timestamp])
                     oufile.close()
                     csvLock.release()
                         
@@ -186,15 +186,17 @@ class IMINT (LogicalProcess):
         csvLock.acquire()
         oufile=open(self.fname, "wb")
         c = csv.writer(oufile)
-        c.writerow(["Tgt ID","Tgt Intel Value","Tgt Intel Priority","Tgt Type","Tgt Stealth","Tgt Speed","Tgt Goal Track Time","Tgt Actual Track Time","Tgt Track Attempts","heuristic"])
+        c.writerow(["Tgt ID","DroneId","Tgt Intel Value","Tgt Intel Priority","Tgt Type","Tgt Stealth","Tgt Speed","Tgt Goal Track Time","Tgt Actual Track Time","Tgt Track Attempts","heuristic", "Timestamp"])
         oufile.close()
         csvLock.release()
 
         ## Event loop iteration
+        count=0
         while self.targetsTracked*2<self.numTargets :
-            
-            print 'IMINT loop iteration'
-            print "Imint has tracked", self.targetsTracked,"Targets.",self.numTargets-self.targetsTracked,"Targets to go."
+            count+=1
+            if(count%5000==0):
+                print 'IMINT loop iteration'
+                print "Imint has tracked", self.targetsTracked,"Targets.",self.numTargets-self.targetsTracked,"Targets to go."
             msg = self.getNextMessage()
             #print msg
             if msg:
