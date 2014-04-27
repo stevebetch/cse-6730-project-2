@@ -194,7 +194,7 @@ def main(Data,daemon,ns):
     
     # Run shared object requests loop
     print 'starting shared objects request loop'
-    daemon.requestLoop(loopCondition=lambda:loopInQs.getCon())
+    daemon.requestLoop(loopCondition=lambda:loopInQs.loopC())
     #time.sleep(.5)
 #    daemon.close()
     daemon.unregister("inL.loop")
