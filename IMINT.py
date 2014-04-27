@@ -1,4 +1,4 @@
-import sys, time, csv
+import sys, time, csv,os
 import Pyro4
 from LogicalProcess import *
 from random import *
@@ -38,7 +38,8 @@ class IMINT (LogicalProcess):
         self.targetsTracked=0
         self.numTargets=numTargets
 #        self.fname= 'Data from '+time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())+'.csv'
-        self.fname='DATA_FROM_'+str(time.time())+'.csv'
+        self.fname = os.path.abspath(os.path.join('DATA_FROM_'+str(time.time())+'.csv'))
+#        self.fname='DATA_FROM_'+str(time.time())+'.csv'
 
     # Call function
     def __call__(self):
@@ -182,7 +183,8 @@ class IMINT (LogicalProcess):
         self.Loopcont = Pyro4.Proxy(loopInQs_uri)
         
         self.initGVTCounts(LPIDs)
-        
+        print "Writing out to:",self.fname
+        sys.stdout.flush()
         #setup output
         csvLock.acquire()
         oufile=open(self.fname, "w+")
@@ -190,7 +192,8 @@ class IMINT (LogicalProcess):
         c.writerow(["Tgt ID","DroneId","Tgt Intel Value","Tgt Intel Priority","Tgt Type","Tgt Stealth","Tgt Speed","Tgt Goal Track Time","Tgt Actual Track Time","Tgt Track Attempts","heuristic", "Timestamp"])
         oufile.close()
         csvLock.release()
-
+        
+        
         ## Event loop iteration
         count=0
         while self.targetsTracked*2<self.numTargets :

@@ -52,6 +52,7 @@ class Drone (LogicalProcess):
         self.searchdwell=0
         self.TarTime=0
         self.startNode=[]
+        self.IMINTtgt=None
     
         self.droneRadLim= 50 # The search radius is only 50 m
     
@@ -636,13 +637,7 @@ class Drone (LogicalProcess):
         #update the target
         self.target.ActTracTime+=self.TarTime
         self.target.trackAttempts+=1
-        
         # tgtData = [tgtID 0,tgtIntelValue 1,tgtIntelPriority 2,tgtType 3,tgtStealth 4,tgtSpeed 5,tgtPredLoc 6,tgtGoalTrackTime 7,tgtActualTrackTime 8,tgtTrackAttempts 9]
-        tgtData=[self.target.ID,self.target.intelVal,self.target.intelPriority,self.target.Type,self.target.Stealth,self.target.speed,self.target.node,self.target.goalTime,self.target.ActTracTime,self.target.trackAttempts]
-        if(debug==1):
-            print "Target Data:", tgtData
-        retTgt=Message(2,tgtData,self.uid,'IMINT',self.LocalSimTime) #create message
-        self.sendMessage(retTgt)   # sends message
         self.removeTgt()
         #self.setLocalTime(self.LocalSimTime)
 
@@ -665,6 +660,7 @@ class Drone (LogicalProcess):
 
 
     def removeTgt(self):
+        self.IMINTtgt=self.target
         self.target=42
         self.TarTime=0
         #self.setLocalTime(self.LocalSimTime)
@@ -674,11 +670,19 @@ class Drone (LogicalProcess):
 
     def getNewTgt(self):
        # self.setLocalTime(self.LocalSimTime)
+        if(not(self.IMINTtgt==None)):
+            tgtData=[self.IMINTtgt.ID,self.IMINTtgt.intelVal,self.IMINTtgt.intelPriority,self.IMINTtgt.Type,self.IMINTtgt.Stealth,self.IMINTtgt.speed,self.IMINTtgt.node,self.IMINTtgt.goalTime,self.IMINTtgt.ActTracTime,self.IMINTtgt.trackAttempts]
+            if(debug==1):
+                   print "Target Data:", tgtData
+            retTgt=Message(2,tgtData,self.uid,'IMINT',self.LocalSimTime) #create message
+            self.sendMessage(retTgt)   # sends message
+
         data=[self.uid,'Idle',self.currentNode]
         sendMes=Message(3,data,self.uid,'CAOC',self.LocalSimTime)
        #        sendMes.printData(1)
         self.sendMessage(sendMes)
         count=0
+        
     
         while(1): #Wait for a new message to come in
             count+=1
