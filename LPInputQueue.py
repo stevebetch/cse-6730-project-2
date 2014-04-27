@@ -9,11 +9,12 @@ class LPInputQueue():
         self.LPID = None
         
     def dump(self):
-        if len(self.q) == 0:
-            print 'Empty'
-        else:
-            for i in self.q:
-                i.printData(0)
+        if(debug==1):
+            if len(self.q) == 0:
+                print 'Empty'
+            else:
+                for i in self.q:
+                    i.printData(0)
         
     def setLPID(self, lpid):
         self.LPID = lpid
@@ -118,18 +119,21 @@ class LPInputQueue():
                 if (m.id == msg.id) and (not m.isAntiMessage()):
                     match = m
             if match:
-                print 'Found match for anti-message, both are ANNIHILATED!'
+                if(debug==1):
+                    print 'Found match for anti-message, both are ANNIHILATED!'
                 self.q.remove(match)
                 return            
             # matching message already processed or not yet received
             if msg.timestamp <= self.localTime:
                 # message already processed
                 self.insertAtFront(msg) # will trigger rollback
-                print 'Received anti-message in the past'
+                if(debug==1):
+                    print 'Received anti-message in the past'
             else:
                 # message not yet received
-                self.q.insert(0, msg) #inserts at end of input queue 
-                print 'Matching message for anti-message not yet received'
+                self.q.insert(0, msg) #inserts at end of input queue
+                if(debug==1):
+                    print 'Matching message for anti-message not yet received'
         else:
             # regular message, check if matching anti-message is already in input queue, if so annihalate both
             match = None
@@ -140,16 +144,19 @@ class LPInputQueue():
                     if (m.id == msg.id):
                         match = m
             if match:
-                print 'Anti-message for message found, both are ANNIHILATED!'
+                if(debug==1):
+                    print 'Anti-message for message found, both are ANNIHILATED!'
                 self.q.remove(m)
                 return        
             # check if time is before currTime, if so then do rollback
             if msg.timestamp <= self.localTime:
                 self.insertAtFront(msg) # will trigger rollback
                 if not(isinstance(msg.data, GVTControlMessageData)) and not(isinstance(msg.data, GVTValue)):
+                    
                     print 'Straggler message found, should trigger rollback'
             else:
                 self.q.insert(0, msg) #inserts at end of queue
-                print 'Adding message to queue'
+                if(debug==1):
+                    print 'Adding message to queue'
                         
                 

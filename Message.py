@@ -1,5 +1,7 @@
 import sys
 
+debug=0
+
 class Message:
     
     # For MsgID
@@ -76,33 +78,34 @@ class Message:
     # Output: Prints Message attributes to command line
     def printData(self,x):
         # Primary Message Information
-        print "-------Primary Message Information-------"
-        print "Message Type: " + str(self.msgType)
-        print "Message Sender: " + str(self.sender)
-        print "Message Recipient: " + str(self.recipient)
-        print "Message Timestamp: " + str(self.timestamp)
-        # Complete Message Data
-        # Message data differs by message type
-        if x==1:
-            if self.msgType==1:
-                print "---Sim Control Data---"
-                print "placeholder" # replace placeholder
-            elif self.msgType==2:
-                print "---Target Assignment Data---"
-                print "Tgt ID: " + str(self.data[0])
-                print "Tgt Intel Value: " + str(self.data[1])
-                print "Tgt Intel Priority: " + str(self.data[2])
-                print "Tgt Type: " + str(self.data[3])
-                print "Tgt Stealth: " + str(self.data[4])
-                print "Tgt Speed: " + str(self.data[5])
-                print "Tgt Predicted Location: " + str(self.data[6])
-                print "Tgt Goal Track Time: " + str(self.data[7])
-                print "Tgt Actual Track Time: " + str(self.data[8])
-                print "Tgt Track Attempts: " + str(self.data[9])
-            elif self.msgType==3:
-                print "---Status Data---"
-                print "Drone ID: " + str(self.data[0])
-                print "Drone Busy Status: " + str(self.data[1])
-                print "Drone Location: " + str(self.data[2])
+        if(debug==1):
+            print "-------Primary Message Information-------"
+            print "Message Type: " + str(self.msgType)
+            print "Message Sender: " + str(self.sender)
+            print "Message Recipient: " + str(self.recipient)
+            print "Message Timestamp: " + str(self.timestamp)
+            # Complete Message Data
+            # Message data differs by message type
+            if x==1:
+                if self.msgType==1:
+                    print "---Sim Control Data---"
+                    print "placeholder" # replace placeholder
+                elif self.msgType==2:
+                    print "---Target Assignment Data---"
+                    print "Tgt ID: " + str(self.data[0])
+                    print "Tgt Intel Value: " + str(self.data[1])
+                    print "Tgt Intel Priority: " + str(self.data[2])
+                    print "Tgt Type: " + str(self.data[3])
+                    print "Tgt Stealth: " + str(self.data[4])
+                    print "Tgt Speed: " + str(self.data[5])
+                    print "Tgt Predicted Location: " + str(self.data[6])
+                    print "Tgt Goal Track Time: " + str(self.data[7])
+                    print "Tgt Actual Track Time: " + str(self.data[8])
+                    print "Tgt Track Attempts: " + str(self.data[9])
+                elif self.msgType==3:
+                    print "---Status Data---"
+                    print "Drone ID: " + str(self.data[0])
+                    print "Drone Busy Status: " + str(self.data[1])
+                    print "Drone Location: " + str(self.data[2])
 
 

@@ -65,11 +65,11 @@ class LogicalProcess(SharedMemoryClient):
         
         #msg.printData(1)
         msg.color = self.gvtData.color            
-            
-        if (msg.isAntiMessage()):
-            print 'sending anti-message with timestamp %s' % (msg.timestamp)
-        else:
-            print 'sending message with timestamp %s' % (msg.timestamp)
+        if(debug==1):
+            if (msg.isAntiMessage()):
+                print 'sending anti-message with timestamp %s' % (msg.timestamp)
+            else:
+                print 'sending message with timestamp %s' % (msg.timestamp)
             
         if (msg.recipient == LogicalProcess.HMINT_ID):
             e.acquire()
@@ -110,13 +110,16 @@ class LogicalProcess(SharedMemoryClient):
             # Drone
             d.acquire()
             droneid = msg.recipient
+            
 #            print "Drone ID for message:", droneid
             self.droneInQs.addMessage(droneid, msg) # assumes recipient set to drone's ID in msg
             if msg.color == LPGVTData.WHITE:
-                print 'incrementing count of WHITE messages sent to drone %d' % (droneid)
+                if(debug==1):
+                    print 'incrementing count of WHITE messages sent to drone %d' % (droneid)
                 self.gvtData.counts[self.droneInQs.getLPID(droneid)] += 1
             else:
-                print 'updating tRed value for drone %d' % (droneid)
+                if(debug==1):
+                    print 'updating tRed value for drone %d' % (droneid)
                 self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
             d.release()
         self.saveAntiMessage(msg)
@@ -139,7 +142,8 @@ class LogicalProcess(SharedMemoryClient):
         reprocessList = []
         for histMsg in self.inputMsgHistory:
             if histMsg.timestamp > msg.timestamp:
-                print 'add histMsg with timestamp %d to reprocess list' % histMsg.timestamp
+                if(debug==1):
+                    print 'add histMsg with timestamp %d to reprocess list' % histMsg.timestamp
                 reprocessList.append(histMsg)
 
         # if a drone, get local copy of input queue from DroneInputQueueContainer shared object 
@@ -164,10 +168,12 @@ class LogicalProcess(SharedMemoryClient):
             self.getNextLPInTokenRing(msg.data.LPIDs)
         
         try:
-            print 'Forwarding GVT control message to next LP'
+            if(debug==1):
+                print 'Forwarding GVT control message to next LP'
             self.nextLPInTokenRingInQ.addMessage(msg)
         except:
-            print 'Forwarding GVT control message to drone %d' % (self.nextDroneID)
+            if(debug==1):
+                print 'Forwarding GVT control message to drone %d' % (self.nextDroneID)
             self.nextLPInTokenRingInQ.addMessage(self.nextDroneID, msg)
             
     def forwardGVTValueMessage(self, msg):
@@ -176,21 +182,27 @@ class LogicalProcess(SharedMemoryClient):
         
         try:           
             self.nextLPInTokenRingInQ.addMessage(msg)
-            print 'Forwarding GVT value message to next LP'
+            if(debug==1):
+                print 'Forwarding GVT value message to next LP'
         except:
-            print 'Forwarding GVT value message to drone %d' % (self.nextDroneID)
+            if(debug==1):
+                print 'Forwarding GVT value message to drone %d' % (self.nextDroneID)
             self.nextLPInTokenRingInQ.addMessage(self.nextDroneID, msg)        
         
     def getNextLPInTokenRing(self, lpids):
-        print self.LPID
+        if(debug==1):
+            print self.LPID
         if (not (self.hmintInQ is None) and self.hmintInQ.getLPID() == self.LPID + 1):
-            print 'next LP is HMINT'
+            if(debug==1):
+                print 'next LP is HMINT'
             self.nextLPInTokenRingInQ = self.hmintInQ        
         elif (not (self.caocInQ is None) and self.caocInQ.getLPID() == self.LPID + 1):
-            print 'next LP is CAOC'
+            if(debug==1):
+                print 'next LP is CAOC'
             self.nextLPInTokenRingInQ = self.caocInQ
         elif (not (self.imintInQ is None) and self.imintInQ.getLPID() == self.LPID + 1):
-            print 'next LP is IMINT'
+            if(debug==1):
+                print 'next LP is IMINT'
             self.nextLPInTokenRingInQ = self.imintInQ
         else:
             # Drone or Controller
@@ -198,10 +210,12 @@ class LogicalProcess(SharedMemoryClient):
             self.nextDroneID = self.droneInQs.getDroneIDForLPID(self.LPID + 1)            
             if self.nextDroneID is None:
                 # This is last LP in token ring, will return token back to controller
-                print 'this is last LP in token ring'
+                if(debug==1):
+                    print 'this is last LP in token ring'
                 self.nextLPInTokenRingInQ = self.controllerInQ
             else:
-                print 'next LP is a drone'
+                if(debug==1):
+                    print 'next LP is a drone'
                 
     def calculateLocalTMin(self):
         # if a drone, get local copy of input queue from DroneInputQueueContainer shared object 
@@ -216,28 +230,33 @@ class LogicalProcess(SharedMemoryClient):
         if not(self.gvtData.tMin is None):
             msg.data.tMin = min(msg.data.tMin, self.gvtData.tMin)
         self.forwardGVTControlMessage(msg)
-        print 'LP %d: GVT thread (cut C2) callback executed' % (self.LPID)
+        if(debug==1):
+            print 'LP %d: GVT thread (cut C2) callback executed' % (self.LPID)
     
     def handleMessage(self, msg):
-        print ''
-        print 'LP %d handleMessage' % (self.LPID)
-        print 'Current message:'
-        msg.printData(0)
-        print ''
-        print 'Messages remaining in queue:'
+        if(debug==1):
+            print ''
+            print 'LP %d handleMessage' % (self.LPID)
+            print 'Current message:'
+            msg.printData(0)
+            print ''
+            print 'Messages remaining in queue:'
         
         if self.inputQueue is None:
             q = self.droneInQs.getInputQueue(self.uid)
         else:
             q = self.inputQueue
         q.dump()
-        print ''
+        if(debug==1):
+            print ''
 
         if msg.msgType == 1:
             if isinstance(msg.data, GVTControlMessageData):
-                print 'LP %d received GVT control message' % (self.LPID)
+                if(debug==1):
+                    print 'LP %d received GVT control message' % (self.LPID)
                 if self.gvtData.color == LPGVTData.WHITE:
-                    print 'LP %d cut C1, changing color to Red' % (self.LPID)
+                    if(debug==1):
+                        print 'LP %d cut C1, changing color to Red' % (self.LPID)
                     # Cut C1, change color to red and add local counts of white msgs sent to control msg
                     self.gvtData.tRed = LPGVTData.INF
                     self.gvtData.color = LPGVTData.RED
@@ -247,9 +266,11 @@ class LogicalProcess(SharedMemoryClient):
                     # Create new Thread to wait until num white msgs received by local process == num sent 
                     # to this process by all other processes
                     t = GVTWaitForThread(parent=self, controlMsg=msg)
-                    print 'Starting GVT C2 cut thread in background'
+                    if(debug==1):
+                        print 'Starting GVT C2 cut thread in background'
                     t.start()
-                    print 'Continuing after starting GVT C2 cut thread...'
+                    if(debug==1):
+                        print 'Continuing after starting GVT C2 cut thread...'
             elif isinstance(msg.data, GVTValue):
                 self.setGVT(msg.data.gvt)
                 self.forwardGVTValueMessage(msg)
@@ -273,16 +294,21 @@ class LogicalProcess(SharedMemoryClient):
                     self.rollback(msg)                
                 else:
                     if msg.color == LPGVTData.WHITE:
-                        print 'LP %d recvd WHITE msg, rcvd count was %d' % (self.LPID, self.gvtData.counts[self.LPID])
+                        if(debug==1):
+                            print 'LP %d recvd WHITE msg, rcvd count was %d' % (self.LPID, self.gvtData.counts[self.LPID])
                         self.gvtData.counts[self.LPID] -= 1
-                        print 'LP %d recvd WHITE msg, rcvd count is now %d' % (self.LPID, self.gvtData.counts[self.LPID])
+                        if(debug==1):
+                            print 'LP %d recvd WHITE msg, rcvd count is now %d' % (self.LPID, self.gvtData.counts[self.LPID])
                         if self.inputQueue is None:
-                            print 'Number of WHITE msgs left in queue: %d' % (self.droneInQs.numWhiteMessages(self.uid))
+                            if(debug==1):
+                                print 'Number of WHITE msgs left in queue: %d' % (self.droneInQs.numWhiteMessages(self.uid))
                         else:
-                            print 'Number of WHITE msgs left in queue: %d' % (self.inputQueue.numWhiteMessages())
+                            if(debug==1):
+                                print 'Number of WHITE msgs left in queue: %d' % (self.inputQueue.numWhiteMessages())
                         self.gvtData.dump()                
                     self.saveState() #define getCurrentState() in subclass
-                    print 'lp %d setting local time to %d' % (self.LPID, msg.timestamp)
+                    if(debug==1):
+                        print 'lp %d setting local time to %d' % (self.LPID, msg.timestamp)
                     self.setLocalTime(msg.timestamp)
                     self.inputMsgHistory.append(msg.clone())
                     self.subclassHandleMessage(msg)
@@ -299,8 +325,9 @@ class LogicalProcess(SharedMemoryClient):
 
         # get smallest timestamp message
         if q.hasMessages():
-            print 'LP %d queue has messages' % (self.LPID)
-            sys.stdout.flush()
+            if(debug==1):
+                print 'LP %d queue has messages' % (self.LPID)
+                sys.stdout.flush()
             msg = q.getNextMessage()
             
         # if a drone, save modified input queue back into DroneInputQueueContainer shared object    
@@ -330,40 +357,48 @@ class LogicalProcess(SharedMemoryClient):
         return self.gvtData.tMin
     
     def setGVT(self, gvt):
-        print 'LP %d setting GVT value to %d' % (self.LPID, gvt)
+        if(debug==1):
+            print 'LP %d setting GVT value to %d' % (self.LPID, gvt)
         self.gvt = gvt
         self.releaseResources(gvt)
         self.executeIO(gvt)
         
     def releaseResources(self, gvt):
         # delete items in state/history/output queues prior to GVT
-        print 'LP %d releasing memory resources prior to GVT' % (self.LPID)
+        if(debug==1):
+            print 'LP %d releasing memory resources prior to GVT' % (self.LPID)
         # outputQueue
-        print 'outputQueue length before reclaim: %d' % (len(self.outputQueue))
+            print 'outputQueue length before reclaim: %d' % (len(self.outputQueue))
         temp = {}
         for msgID, antimessage in self.outputQueue.items():
             if antimessage.timestamp >= gvt:
                 temp[msgID] = antimessage
         self.outputQueue = temp
-        print 'outputQueue length after reclaim: %d' % (len(self.outputQueue))
+        if(debug==1):
+            print 'outputQueue length after reclaim: %d' % (len(self.outputQueue))
         # stateQueue
         temp = []
-        print 'stateQueue length before reclaim: %d' % (len(self.stateQueue))
+        if(debug==1):
+            print 'stateQueue length before reclaim: %d' % (len(self.stateQueue))
         for i in self.stateQueue:
             if i.localTime >= gvt:
                 temp.append(i)
         self.stateQueue = temp
-        print 'stateQueue length after reclaim: %d' % (len(self.stateQueue))
+        if(debug==1):
+            print 'stateQueue length after reclaim: %d' % (len(self.stateQueue))
         # message history
         temp = []
-        print 'inputMsgHistory length before reclaim: %d' % (len(self.inputMsgHistory))
+        if(debug==1):
+            print 'inputMsgHistory length before reclaim: %d' % (len(self.inputMsgHistory))
         for msg in self.inputMsgHistory:
             if msg.timestamp >= gvt:
                 temp.append(msg)
-        self.inputMsgHistory = temp  
-        print 'inputMsgHistory length after reclaim: %d' % (len(self.inputMsgHistory))
+        self.inputMsgHistory = temp
+        if(debug==1):
+            print 'inputMsgHistory length after reclaim: %d' % (len(self.inputMsgHistory))
     
     def executeIO(self, gvt):
         # commit IO operations for times prior to GVT
-        print 'LP %d committing I/O prior to GVT' % (self.LPID)
+        if(debug==1):
+            print 'LP %d committing I/O prior to GVT' % (self.LPID)
             

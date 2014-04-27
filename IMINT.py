@@ -1,4 +1,4 @@
-import sys, time
+import sys, time, csv
 import Pyro4
 from LogicalProcess import *
 from random import *
@@ -8,6 +8,9 @@ from multiprocessing import Queue, Lock
 from Message import *
 from nodes import *
 from Map import *
+
+
+csvLock=threading.Lock()
 
 class IMINT (LogicalProcess):
 
@@ -34,6 +37,7 @@ class IMINT (LogicalProcess):
         self.totalValue=0
         self.targetsTracked=0
         self.numTargets=numTargets
+        self.fname= 'Data'+time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())+'.csv'
 
     # Call function
     def __call__(self):
@@ -44,7 +48,8 @@ class IMINT (LogicalProcess):
     # Output: Saves current state of IMINT logical process
     # Description: Saves all parameters needed to describe state of LP
     def saveState(self):
-        print 'Saving current IMINT state'
+        if(debug==1):
+            print 'Saving current IMINT state'
         saver=IMINTState(self)
         self.stateQueue.append(saver)        
     
@@ -53,7 +58,8 @@ class IMINT (LogicalProcess):
     # Output: Restores past state of IMINT logical process
     # Description: Restores all parameters needed to describe state of LP    
     def restoreState(self, timestamp):
-        print 'restoring to last IMINT state stored <= %d' % (timestamp)
+        if(debug==1):
+            print 'restoring to last IMINT state stored <= %d' % (timestamp)
         index=0
         for i in range(len(self.stateQueue)-1,-1,-1):
             if(timestamp>=self.stateQueue[i].key):
@@ -85,7 +91,7 @@ class IMINT (LogicalProcess):
             pass
         elif msg.msgType==2:
             # update target track attempts for target data
-            msg.data[9]+=1
+#            msg.data[9]+=1 # this is done in the drone.
             # check hueristic number
             if self.heuristic==1:
                 # if goal track time has not been achieved, send updated tgt assignment to CAOC after processing time
@@ -99,8 +105,15 @@ class IMINT (LogicalProcess):
                     #    In the current implementation we allow IMINT to clear out it's backlog of unprocessed images at the sim end time
                     self.totalValue+=msg.data[1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
                     self.targetsTracked+=1
-                    print 'Total Value: ' + str(self.totalValue)
-                    print 'Total Targets Tracked: ' + str(self.targetsTracked)                    
+                    if(debug==1):
+                        print 'Total Value: ' + str(self.totalValue)
+                        print 'Total Targets Tracked: ' + str(self.targetsTracked)
+                    csvLock.acquire()
+                    oufile=open(self.fname, "a")
+                    c = csv.writer(oufile)
+                    c.writerow([msg.data[0],msg.data[1],self.priorityAdjust*msg.data[2],msg.data[3],msg.data[4],msg.data[5],msg.data[7],msg.data[8],msg.data[9],self.heuristic])
+                    oufile.close()
+                    csvLock.release()
             elif self.heuristic==3 or self.heuristic==2:
                 if (msg.data[8]/msg.data[7])<random.random():
                     # if goal track time has not been achieved, adjsut priority and send updated tgt assignment to CAOC after processing time
@@ -112,12 +125,21 @@ class IMINT (LogicalProcess):
                     #    In the current implementation we allow IMINT to clear out it's backlog of unprocessed images at the sim end time                    
                     self.totalValue+=msg.data[1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
                     self.targetsTracked+=1
-                    print 'Total Value: ' + str(self.totalValue)
-                    print 'Total Targets Tracked: ' + str(self.targetsTracked)
+                    if(debug==1):
+                        print 'Total Value: ' + str(self.totalValue)
+                        print 'Total Targets Tracked: ' + str(self.targetsTracked)
+                    csvLock.acquire()
+                    oufile=open(self.fname, "a")
+                    c = csv.writer(oufile)
+                    c.writerow([msg.data[0],msg.data[1],msg.data[2],msg.data[3],msg.data[4],msg.data[5],msg.data[7],msg.data[8],msg.data[9],self.heuristic])
+                    oufile.close()
+                    csvLock.release()
+                        
         elif msg.msgType==3:
             # print error message
             print 'IMINT Error: Received Message Type 3 from ' + str(msg.sender) + ' at ' + str(msg.recipient)
-        msg.printData(1)
+        if(debug==1):
+            msg.printData(1)
         # Mark: below line for test only
         #self.sendMessage(Message(1, ['Data1'], 'IMINT', 'CAOC', 9))
 
@@ -159,9 +181,18 @@ class IMINT (LogicalProcess):
         self.Loopcont = Pyro4.Proxy(loopInQs_uri)
         
         self.initGVTCounts(LPIDs)
+        
+        #setup output
+        csvLock.acquire()
+        oufile=open(self.fname, "wb")
+        c = csv.writer(oufile)
+        c.writerow(["Tgt ID","Tgt Intel Value","Tgt Intel Priority","Tgt Type","Tgt Stealth","Tgt Speed","Tgt Goal Track Time","Tgt Actual Track Time","Tgt Track Attempts","heuristic"])
+        oufile.close()
+        csvLock.release()
 
         ## Event loop iteration
-        while self.targetsTracked<self.numTargets :
+        while self.targetsTracked*2<self.numTargets :
+            
             print 'IMINT loop iteration'
             print "Imint has tracked", self.targetsTracked,"Targets.",self.numTargets-self.targetsTracked,"Targets to go."
             msg = self.getNextMessage()
@@ -169,14 +200,17 @@ class IMINT (LogicalProcess):
             if msg:
                 self.handleMessage(msg)
                 if msg.msgType==2:
-                    print "IMINT passed a traget"
+                    if(debug==1):
+                        print "IMINT passed a traget"
             
-            time.sleep(.5)
-            sys.stdout.flush()
+            time.sleep(2)
+            
+            #sys.stdout.flush()
 
         self.Loopcont.setCon(0)
-        print "IMINT IS DONE!!!!! FINISHED!!!! WOOOO!!!"
+        if(debug==1):
+            print "IMINT IS DONE!!!!! FINISHED!!!! WOOOO!!!"
 
-        time.sleep(10)
+        time.sleep(2)
 #        daemon.shutdown()
 

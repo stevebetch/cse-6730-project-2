@@ -11,6 +11,8 @@ import copy
 
 import Pyro4
 
+dLock=threading.Lock()
+
 class Drone (LogicalProcess):
 
     # instance argument list
@@ -65,6 +67,9 @@ class Drone (LogicalProcess):
     
     def run(self,mapObj):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
+        
+        dLock.acquire()
+        
         print('Drone process running')
         self.saveState()
        
@@ -95,7 +100,8 @@ class Drone (LogicalProcess):
         self.Loopcont = Pyro4.Proxy(loopInQs_uri)
         
         self.initGVTCounts(LPIDs)  
-    
+        dLock.release()
+        
         count=0
         
         self.setEntry(mapObj) #MUST PASS THE ENTRY NODE!!! (map.MapEntryPt)
@@ -131,8 +137,8 @@ class Drone (LogicalProcess):
                 
                 if(self.Bingo<0):
                     self.ReturnToBase()
-                
-                print self.target
+                if(debug==1):
+                    print self.target
                 if(self.target==42): #NO TARGET IN QUEUE
                     try:
                         self.getNewTgt()
@@ -291,8 +297,8 @@ class Drone (LogicalProcess):
                 else:
                     self.target.movement()
                     self.timeOnNode=self.timeOnNode-self.target.transitTime
-
-        print "\nNew Joker:", self.Joker, "New Bingo:",self.Bingo
+        if(debug==1):
+            print "\nNew Joker:", self.Joker, "New Bingo:",self.Bingo
 #        if(self.Bingo<=0): # Reached bingo. need to RTB.
 #            self.ReturnToBase()
 
@@ -310,8 +316,8 @@ class Drone (LogicalProcess):
         else: #assuming we have more than 4 hours of flight time. If less than 4 hours, we should be premptively performing maintainance
             self.Joker=self.MaintenanceActionTime - 7200 # 2 hour joker
             self.Bingo=self.MaintenanceActionTime - 3600 # 1 hour bingo
-
-        print "\nJoker set to:", self.Joker, "Bingo set to:",self.Bingo
+        if(debug==1):
+            print "\nJoker set to:", self.Joker, "Bingo set to:",self.Bingo
 
 
 
@@ -326,8 +332,9 @@ class Drone (LogicalProcess):
 
     def setEntry(self,obj):
         self.EntNode=copy.deepcopy(obj)
-        print "\n Drone set Map entry at:" , self.EntNode.xpos,",",self.EntNode.ypos
-        print ""
+        if(debug==1):
+            print "\n Drone set Map entry at:" , self.EntNode.xpos,",",self.EntNode.ypos
+            print ""
         self.entryX=self.EntNode.xpos
         self.entryY=self.EntNode.ypos
 
@@ -369,7 +376,8 @@ class Drone (LogicalProcess):
         if(msg.msgType==2): # New target
             # tgtData = [tgtID 0,tgtIntelValue 1,tgtIntelPriority 2,tgtType 3,tgtStealth 4,tgtSpeed 5,tgtPredLoc 6,tgtGoalTrackTime 7,tgtActualTrackTime 8,tgtTrackAttempts 9]
             Data=msg.data
-            msg.printData(1)
+            if(debug==1):
+                msg.printData(1)
             
             tgt=Target(Data[6])
             tgt.ID=Data[0]
@@ -416,8 +424,9 @@ class Drone (LogicalProcess):
     def detection(self):
         # Begin by seeing if we already have a track
         if(self.detectBool==1): #we have a track!
-            print "Have a track!"
-            print self.TarTime
+            if(debug==1):
+                print "Have a track!"
+                print self.TarTime
             # Check to see if we are on the same node as the target.
             if(self.xpos!=self.target.node.xpos or self.ypos!=self.target.node.ypos): # tracking, but not looking at the right node
                 self.updateCurNode(self.target.node)
@@ -518,11 +527,12 @@ class Drone (LogicalProcess):
         if(not(self.target==42)):
             self.ReturnTgt()
 #        self.removeTgt()
-        print "xpos:",self.xpos
-        print "ypos:",self.ypos
-        print "Entry xpos:",self.entryX
-        print "Entry ypos:",self.entryY
-        sys.stdout.flush()
+        if(debug==1):
+            print "xpos:",self.xpos
+            print "ypos:",self.ypos
+            print "Entry xpos:",self.entryX
+            print "Entry ypos:",self.entryY
+            sys.stdout.flush()
         self.DistEntry=math.sqrt((self.xpos-self.entryX)**2 +(self.ypos-self.entryY)**2)
         timeToentry=int(self.DistEntry/self.FlightSpeed)
         self.updateTime(timeToentry) #update sim time
@@ -628,7 +638,8 @@ class Drone (LogicalProcess):
         
         # tgtData = [tgtID 0,tgtIntelValue 1,tgtIntelPriority 2,tgtType 3,tgtStealth 4,tgtSpeed 5,tgtPredLoc 6,tgtGoalTrackTime 7,tgtActualTrackTime 8,tgtTrackAttempts 9]
         tgtData=[self.target.ID,self.target.intelVal,self.target.intelPriority,self.target.Type,self.target.Stealth,self.target.speed,self.target.node,self.target.goalTime,self.target.ActTracTime,self.target.trackAttempts]
-        print "Target Data:", tgtData
+        if(debug==1):
+            print "Target Data:", tgtData
         retTgt=Message(2,tgtData,self.uid,'IMINT',self.LocalSimTime) #create message
         self.sendMessage(retTgt)   # sends message
         self.removeTgt()
@@ -667,34 +678,45 @@ class Drone (LogicalProcess):
        #        sendMes.printData(1)
         self.sendMessage(sendMes)
         count=0
+    
         while(1): #Wait for a new message to come in
             count+=1
             try:
                 msg=self.getNextMessage() # Gets a new target
 
                 if not(msg is None):
-                    print "Valid Message passed to drone! Message Type:",msg.msgType
-                    msg.printData(1)
-                    sys.stdout.flush()
+#                    print "Valid Message passed to drone! Message Type:",msg.msgType
+                    if(debug==1):
+                        msg.printData(1)
+                        sys.stdout.flush()
 #                    if(msg.msgType==2):
                     break
             except:
                 pass
-            if(count%5000==0):
-                print "Drone is in the getNewTgt loop. Count=:",count
+#            if(count%5000==0):
+#                print "Drone is in the getNewTgt loop. Count=:",count
             if(self.Loopcont.getCon()==0):
                 print "ENDING THE SIM!!!!!"
                 break
     
+            if(count>3000):
+                data=[self.uid,'Idle',self.currentNode]
+                sendMes=Message(3,data,self.uid,'CAOC',self.LocalSimTime)
+                #        sendMes.printData(1)
+                self.sendMessage(sendMes)
+                count=0
+        if(self.Loopcont.getCon()==0):
+            return
+                    
         self.handleMessage(msg)
         if(msg.msgType==2):
             print "New target aquired"
         timedif=(self.LocalSimTime-self.localTime)
         if(timedif<=0):#message is in the future
             self.updateTime(timedif*-1)
-        self.updateCurNode(self.target.node)
-        if(self.Loopcont.getCon()==0):
-                return
+        if(not(self.target==42)):
+            self.updateCurNode(self.target.node)
+
         #else: #message arrived in the past, but we have done work since receiving it.
             #self.setLocalTime(self.LocalSimTime)
 

@@ -41,12 +41,14 @@ class CAOC (LogicalProcess):
     # Output: Saves current state of CAOC logical process
     # Description: Saves all parameters needed to describe state of LP
     def saveState(self):
-        print 'Saving current CAOC state'
+        if(debug==1):
+            print 'Saving current CAOC state'
         saver=CAOCState(self)
         self.stateQueue.append(saver)
 
     def restoreState(self,timestamp):
-        print "restoring to last CAOC state stored <=",timestamp
+        if(debug==1):
+            print "restoring to last CAOC state stored <=",timestamp
 #        index=0
 #        for i in range(len(self.stateQueue)-1,-1,-1):
 #            if(timestamp>=self.stateQueue[i].key):
@@ -54,16 +56,19 @@ class CAOC (LogicalProcess):
 #                break
 #            else:
 #                self.stateQueue.pop(i)
-        print "StateQueue times:"
+        if(debug==1):
+            print "StateQueue times:"
         for i in self.stateQueue:
-            print i.key
+            if(debug==1):
+                print i.key
         a=[]
         for i in self.stateQueue:
             if(timestamp>=i.key):
                 ts = i.key
                 index=i
                 a.append(i)
-        print "Restoring state to timestamp:",ts
+        if(debug==1):
+            print "Restoring state to timestamp:",ts
     
         self.restore(index)
         self.stateQueue=a
@@ -100,12 +105,14 @@ class CAOC (LogicalProcess):
                         newTgtMsg=Message(2,targetData,self.id,i,self.localTime) # drone ids start at 2
                         self.sendMessage(newTgtMsg)
                         self.drones[i][0]='Busy'
-                        print 'sent message to idle drone:',i
+                        if(debug==1):
+                            print 'sent message to idle drone:',i
                         break
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
                 else:
                     self.priorityQueue.insert(0,targetData)
-                    print('CAOC Added target to priority queue')
+                    if(debug==1):
+                        print('CAOC Added target to priority queue')
             # Check which target assignment heruristic is in use
             elif self.heuristic==2:
                 # Determine distance of target from idle drones
@@ -113,7 +120,8 @@ class CAOC (LogicalProcess):
                 tgtY=targetData[6].ypos #y coord
                 indexCloseDrone=0
                 minDist=999999 #arbitrarily large cut-off
-                print self.drones
+                if(debug==1):
+                    print self.drones
                 for i in range(len(self.drones)):
                     droneX=self.drones[i][1].xpos
                     droneY=self.drones[i][1].ypos
@@ -124,7 +132,8 @@ class CAOC (LogicalProcess):
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
                 if minDist==999999:
                     self.priorityQueue.insert(0,targetData)
-                    print('CAOC Added target to priority queue')
+                    if(debug==1):
+                        print('CAOC Added target to priority queue')
                 # If the queue is empty and there are idle drones, send the nearest drone the incoming target assignment   
                 else:
                     newTgtMsg=Message(2,targetData,self.id,indexCloseDrone,self.localTime) # drone ids start at 2
@@ -149,7 +158,8 @@ class CAOC (LogicalProcess):
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
                 if minDist==999999:
                     self.priorityQueue.insert(0,targetData)
-                    print('CAOC Added target to priority queue')
+                    if(debug==1):
+                        print('CAOC Added target to priority queue')
                 # If the queue is empty and there are idle drones, send the nearest drone the incoming target assignment   
                 else:
                     newTgtMsg=Message(2,targetData,self.id,indexCloseDrone,self.localTime) # drone ids start at 0
@@ -169,7 +179,8 @@ class CAOC (LogicalProcess):
                     if targetData[2]<self.priorityQueue[i][2]:
                         self.priorityQueue.insert(i,targetData)
                         break
-            print('CAOC Added target to priority queue')
+            if(debug==1):
+                print('CAOC Added target to priority queue')
 
     # Get Priority Queue
     # Input: None
@@ -266,7 +277,8 @@ class CAOC (LogicalProcess):
         self.Loopcont = Pyro4.Proxy(loopInQs_uri)
 
         self.initGVTCounts(LPIDs)
-        print "Output contol value:",self.Loopcont.getCon()
+        if(debug==1):
+            print "Output contol value:",self.Loopcont.getCon()
 #        self.saveState()
 
         # Event loop
@@ -278,13 +290,14 @@ class CAOC (LogicalProcess):
             if(count%5000==0):
                 print 'CAOC iteration. Local time', self.localTime
                 for i in self.drones:
-                    print "Drone status: ",i[0]
+                    if(debug==1):
+                        print "Drone status: ",i[0]
 #            print 'CAOC Priority Queue: '
 #            print self.priorityQueue
             if msg:
                 self.handleMessage(msg)
                 msg.printData(1)
-            sys.stdout.flush()
+            #sys.stdout.flush()
             
     
     
@@ -308,8 +321,9 @@ class CAOC (LogicalProcess):
                     newTgtData=self.priorityQueue.pop()
                     newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
                     #self.sendMessage(newTgtMsg)
-                    print 'CAOC sending message: '
-                    newTgtMsg.printData(1)
+                    if(debug==1):
+                        print 'CAOC sending message: '
+                        newTgtMsg.printData(1)
                     self.drones[msg.data[0]][0]="Busy"
         
             # Check which target assignment heruristic is in use
@@ -331,8 +345,9 @@ class CAOC (LogicalProcess):
                     newTgtData=self.priorityQueue.pop(indexCloseTgt)
                     newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
                     #self.sendMessage(newTgtMsg)
-                    print 'CAOC sending message: '
-                    newTgtMsg.printData(1)                    
+                    if(debug==1):
+                        print 'CAOC sending message: '
+                        newTgtMsg.printData(1)                    
                     self.drones[msg.data[0]][0]=="Busy"
 
 
@@ -347,8 +362,9 @@ class CAOC (LogicalProcess):
                     if self.drones[i][0]=='Idle':
                         newTgtMsg=Message(2,targetData,self.id,i,self.localTime) 
                         #self.sendMessage(newTgtMsg)
-                        print 'CAOC sending message: '
-                        newTgtMsg.printData(1)                          
+                        if(debug==1):
+                            print 'CAOC sending message: '
+                            newTgtMsg.printData(1)                          
                         self.drones[i][0]='Busy'
                         break
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
@@ -361,7 +377,8 @@ class CAOC (LogicalProcess):
                 tgtY=targetData[6].ypos #y coord
                 indexCloseDrone=0
                 minDist=999999 #arbitrarily large cut-off
-                print self.drones
+                if(debug==1):
+                    print self.drones
                 for i in range(len(self.drones)):
                     droneX=self.drones[i][1].xpos
                     droneY=self.drones[i][1].ypos
@@ -419,4 +436,5 @@ class CAOC (LogicalProcess):
                     if targetData[2]<self.priorityQueue[i][2]:
                         self.priorityQueue.insert(i,targetData)
                         break
-            print('CAOC Added target to priority queue')
+            if(debug==1):
+                print('CAOC Added target to priority queue')

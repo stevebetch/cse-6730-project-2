@@ -3,7 +3,7 @@ class DRONEState():
      def __init__(self, obj):
             self.uid = obj.uid
             self.droneType = obj.droneType
-            
+            self.key=obj.localTime
             self.localTime = obj.localTime
 
             self.LocalSimTime=obj.LocalSimTime #current simulation time for the drone

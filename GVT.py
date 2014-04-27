@@ -1,4 +1,5 @@
 import time
+from Message import *
 from threading import Thread
 
 class GVTWaitForThread(Thread):
@@ -19,9 +20,10 @@ class GVTWaitForThread(Thread):
             LPIDs.append(i)
         numMsgsSentToThisLP = self.controlMsg.data.counts[self.LPID]
         while self.parent.gvtData.counts[self.LPID] + numMsgsSentToThisLP > 0:
-            print 'sent to: %d' % (numMsgsSentToThisLP)
-            print 'received by: %d' % (self.parent.gvtData.counts[self.LPID])         
-            print 'LP %d: Waiting for all white messages sent to this LP to be received' % (self.LPID)
+            if(debug==1):
+                print 'sent to: %d' % (numMsgsSentToThisLP)
+                print 'received by: %d' % (self.parent.gvtData.counts[self.LPID])         
+                print 'LP %d: Waiting for all white messages sent to this LP to be received' % (self.LPID)
             time.sleep(2)
         self.parent and self.parent.onGVTThreadFinished(LPIDs, self.controlMsg)
         
@@ -37,23 +39,25 @@ class GVTControlMessageData():
         self.LPIDs = lpids
             
     def addLocalCounts(self, localCounts, lpid):
-        print 'self.counts'
-        for i in self.counts:
-            print 'self.counts[%d] = %d' % (i,self.counts[i])        
-        print 'localCounts'
-        for i in localCounts:
-            print 'localCounts[%d] = %d' % (i,localCounts[i])         
+        if(debug==1):
+            print 'self.counts'
+            for i in self.counts:
+                print 'self.counts[%d] = %d' % (i,self.counts[i])        
+            print 'localCounts'
+            for i in localCounts:
+                print 'localCounts[%d] = %d' % (i,localCounts[i])         
         for key, value in self.counts.items():
             if (key != lpid):
                 self.counts[key] += localCounts[key]
             
     def dump(self):
-        print 'GVTControlMessageData dump:'
-        print 'self.tMin = %d' % (self.tMin)
-        print 'self.tRed = %d' % (self.tRed)        
-        for i in self.counts:
-            print 'self.counts[%d] = %d' % (i,self.counts[i])  
-            
+        if(debug==1):
+            print 'GVTControlMessageData dump:'
+            print 'self.tMin = %d' % (self.tMin)
+            print 'self.tRed = %d' % (self.tRed)        
+            for i in self.counts:
+                print 'self.counts[%d] = %d' % (i,self.counts[i])  
+
 class LPGVTData:
     "Local GVT data for a logical process"
     
@@ -74,16 +78,17 @@ class LPGVTData:
             self.counts[i] = 0
             
     def dump(self):
-        print 'LPGVTData dump'
-        if self.tMin is None:
-            print 'self.tMin = None'
-        else:
-            print 'self.tMin = %d' % (self.tMin)
-        print 'self.tRed = %d' % (self.tRed)
-        print 'self.color = %s' % (self.color)        
-        for i in self.counts:
-            print 'self.counts[%d] = %d' % (i,self.counts[i])
-        print 'self.gvt = %d' % (self.gvt)
+        if(debug==1):
+            print 'LPGVTData dump'
+            if self.tMin is None:
+                print 'self.tMin = None'
+            else:
+                print 'self.tMin = %d' % (self.tMin)
+            print 'self.tRed = %d' % (self.tRed)
+            print 'self.color = %s' % (self.color)        
+            for i in self.counts:
+                print 'self.counts[%d] = %d' % (i,self.counts[i])
+            print 'self.gvt = %d' % (self.gvt)
 
 
     def reset(self):
