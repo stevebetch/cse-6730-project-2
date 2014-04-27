@@ -54,8 +54,11 @@ class StubController(GlobalControlProcess):
         self.Loopcont = Pyro4.Proxy(loopInQs_uri)
         
         while (self.Loopcont.getCon()==1):
-            
-            time.sleep(10)
+        
+            for i in range(1,11):
+                time.sleep(1)
+                if(self.Loopcont.getCon()==0):
+                    break
             
             # GVT: Trigger round for cut C1 (Stup LP is first LP in token ring)
             print 'Controller sending cut C1 token to first LP'

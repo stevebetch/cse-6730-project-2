@@ -76,7 +76,10 @@ class DroneSimController(GlobalControlProcess):
          
         while (self.Loopcont.getCon()==1):
             
-            time.sleep(5)
+            for i in range(1,11):
+                time.sleep(1)
+                if(self.Loopcont.getCon()==0):
+                    break
             
             # GVT: Trigger round for cut C1 (CAOC is first LP in token ring)
             print 'Controller sending cut C1 token to first LP'

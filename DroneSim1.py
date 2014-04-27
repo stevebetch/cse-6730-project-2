@@ -67,7 +67,7 @@ def get_local_ip_address():
 #
 
 def main(Data,daemon,ns):
-
+    LogicalProcess.nextLPID = 0
     
     #
     # initialization
@@ -181,7 +181,7 @@ def main(Data,daemon,ns):
     # Run shared object requests loop
     print 'starting shared objects request loop'
     daemon.requestLoop(loopCondition=lambda:loopInQs.getCon())
-    time.sleep(5)
+    time.sleep(2)
 #    daemon.close()
     daemon.unregister("inL.loop")
     daemon.unregister("inputqueue.drones")
