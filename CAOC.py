@@ -204,6 +204,8 @@ class CAOC (LogicalProcess):
             print 'CAOC: Waiting for target response from HMINT'
             sys.stdout.flush()
             time.sleep(1)
+            if(self.Loopcont.getCon()==0):
+                break
             msgs = self.inputQueue.getAllMessages()
             for msg in msgs:
                 msg.printData(1)
@@ -217,6 +219,8 @@ class CAOC (LogicalProcess):
                 break
         
         # add targets
+        if(self.Loopcont.getCon()==0):
+            return
         for target in responseData.targetData:
             print 'CAOC: Adding target to priority queue:', target
             self.addTarget(target)        
@@ -252,7 +256,8 @@ class CAOC (LogicalProcess):
             
             # Call HMINT to update target priority queue to current time
             self.updateTargets(msg.timestamp)
-                
+            if(self.Loopcont.getCon()==0):
+                return
             # Update drone status list
             self.drones[msg.data[0]]=[msg.data[1],msg.data[2]]
             # Check which target assignment heruristic is in use

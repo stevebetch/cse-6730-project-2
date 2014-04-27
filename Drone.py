@@ -717,8 +717,8 @@ class Drone (LogicalProcess):
         self.handleMessage(msg)
         if(msg.msgType==2):
             print "New target aquired"
-        timedif=(self.LocalSimTime-self.localTime)
-        if(timedif<=0):#message is in the future
+        timedif=(self.LocalSimTime-msg.timestamp)
+        if(timedif<0):#message is in the future
             self.updateTime(timedif*-1)
         if(not(self.target==42)):
             self.updateCurNode(self.target.node)
