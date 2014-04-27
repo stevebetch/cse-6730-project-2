@@ -34,8 +34,8 @@ def main():
         mapX=50
         mapY=50
         numStreets=10
-        numTargets=6
-        numDrones=1
+        numTargets=9
+        numDrones=3
         heuristic=i+1
         seedNum=1
         Nuisance=0.8    

@@ -309,7 +309,7 @@ class CAOC (LogicalProcess):
                     newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
                     #self.sendMessage(newTgtMsg)
                     print 'CAOC sending message: '
-                    newTgtMsg.printData(0)
+                    newTgtMsg.printData(1)
                     self.drones[msg.data[0]][0]="Busy"
         
             # Check which target assignment heruristic is in use
@@ -332,7 +332,7 @@ class CAOC (LogicalProcess):
                     newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
                     #self.sendMessage(newTgtMsg)
                     print 'CAOC sending message: '
-                    newTgtMsg.printData(0)                    
+                    newTgtMsg.printData(1)                    
                     self.drones[msg.data[0]][0]=="Busy"
 
 
@@ -348,7 +348,7 @@ class CAOC (LogicalProcess):
                         newTgtMsg=Message(2,targetData,self.id,i,self.localTime) 
                         #self.sendMessage(newTgtMsg)
                         print 'CAOC sending message: '
-                        newTgtMsg.printData(0)                          
+                        newTgtMsg.printData(1)                          
                         self.drones[i][0]='Busy'
                         break
                 # If the queue is empty and all drones are busy, put the target assignment in the queue
@@ -377,7 +377,7 @@ class CAOC (LogicalProcess):
                     newTgtMsg=Message(2,targetData,self.id,indexCloseDrone,self.localTime)
                     #self.sendMessage(newTgtMsg)
                     print 'CAOC sending message: '
-                    newTgtMsg.printData(0)                      
+                    newTgtMsg.printData(1)                      
                     self.drones[indexCloseDrone][0]='Busy'
             elif self.heuristic==3:
                 # Adjust tgt priority be intel value/goal track time if the tgt has no track attempts
@@ -403,7 +403,7 @@ class CAOC (LogicalProcess):
                     newTgtMsg=Message(2,targetData,self.id,indexCloseDrone,self.localTime)
                     #self.sendMessage(newTgtMsg)
                     print 'CAOC sending message: '
-                    newTgtMsg.printData(0)                      
+                    newTgtMsg.printData(1)                      
                     self.drones[indexCloseDrone][0]='Busy'
         # If the queue is not empty (implying all drones are busy), put the target assignment in the queue in order
         else:
