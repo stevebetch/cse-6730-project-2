@@ -1,6 +1,6 @@
 import sys
 
-debug=0
+debug=1
 
 class Message:
     
