@@ -188,6 +188,41 @@ class CAOC (LogicalProcess):
     # Description: Access priority queue     
     def getPriorityQueue(self):
         return self.priorityQueue
+    
+    def updateTargets(self):
+        
+        # send request to HMINT for targets available as of self.localTime
+        print 'CAOC: Sending target request for time %d to HMINT' % self.localTime
+        sys.stdout.flush()
+        requestData = TargetRequest(self.localTime)
+        msg = Message(4, requestData, LogicalProcess.CAOC_ID, LogicalProcess.HMINT_ID, self.localTime)
+        self.sendMessage(msg) 
+        
+        # wait for response
+        responseData = None
+        while True:
+            print 'CAOC: Waiting for target response from HMINT'
+            sys.stdout.flush()
+            time.sleep(1)
+            msgs = self.inputQueue.getAllMessages()
+            for msg in msgs:
+                msg.printData(1)
+                if msg.msgType == 5:
+                    print 'CAOC: Received target response for time %d from HMINT' % self.localTime
+                    sys.stdout.flush()
+                    responseData = msg.data
+                    self.inputQueue.removeByID(msg.id)
+                    break
+            if not(responseData is None):
+                break
+        
+        # add targets
+        for target in responseData.targetData:
+            print 'CAOC: Adding target to priority queue:', target
+            self.addTarget(target)        
+            
+        sys.stdout.flush()
+                    
 
     # Handle Message 
     # Input: Message data structure (see Message.py for documentation)
@@ -199,21 +234,31 @@ class CAOC (LogicalProcess):
     #        Naive heuristic: Top priority target is assigned to drone
     #        Local or timer heuristic: Nearest target is assigned to drone (out of priority order)
     def subclassHandleMessage(self, msg):
+        
         # determine message type and process accordingly
 #       ss print "Handling message in CAOC, proirity queue length:", len(self.priorityQueue)
         if msg.msgType==1:
-            # TBD
+            # Control message handled in base class
             pass
-        elif msg.msgType==2:
+        
+        elif msg.msgType==5:
+            print 'CAOC: Received target response from HMINT with %d targets' % len(msg.data.targetData)
+            sys.stdout.flush()
             # Start the add target process with the target data of the message
-            self.addTarget(msg.data)
+            for target in msg.data.targetData:
+                self.addTarget(target)
+                
         elif msg.msgType==3:
+            
+            # Call HMINT to update target priority queue to current time
+            self.updateTargets()
+                
             # Update drone status list
-            self.drones[msg.data[0]]=[msg.data[1],msg.data[2]] # drone ids start at 2
+            self.drones[msg.data[0]]=[msg.data[1],msg.data[2]]
             # Check which target assignment heruristic is in use
             if self.heuristic==1:
                 # If the drone is idle and there are target assignments in the queue, assign that drone a target
-                if (self.drones[msg.data[0]][0]=="Idle") and (len(self.priorityQueue)!=0): # drone ids start at 2
+                if (self.drones[msg.data[0]][0]=="Idle") and (len(self.priorityQueue)!=0):
                     newTgtData=self.priorityQueue.pop()
                     newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
                     self.sendMessage(newTgtMsg)
@@ -436,5 +481,11 @@ class CAOC (LogicalProcess):
                     if targetData[2]<self.priorityQueue[i][2]:
                         self.priorityQueue.insert(i,targetData)
                         break
-            if(debug==1):
-                print('CAOC Added target to priority queue')
+            print('CAOC Added target to priority queue')
+            
+            
+class TargetRequest():
+    
+    def __init__(self, timestamp):
+        self.timestamp = timestamp
+        

@@ -312,6 +312,7 @@ class LogicalProcess(SharedMemoryClient):
                     self.setLocalTime(msg.timestamp)
                     self.inputMsgHistory.append(msg.clone())
                     self.subclassHandleMessage(msg)
+                    sys.stdout.flush()
     
     def getNextMessage(self):
         msg = None

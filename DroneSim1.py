@@ -153,6 +153,25 @@ def main(Data,daemon,ns):
     pController = Process(group=None, target=controller, name='Drone Sim Controller Process')
     print 'starting controller'
     pController.start()
+    while not(pController.is_alive):
+        time.sleep(0.1)
+    print 'Controller process is alive'
+    
+    # HMINT
+    print 'starting hmint'
+    pHMINT = Process(group=None, target=hmint, name='HMINT Process')
+    pHMINT.start()
+    while not(pHMINT.is_alive):
+        time.sleep(0.1) 
+    print 'HMINT process is alive'
+    
+    # CAOC
+    print 'starting caoc'
+    pCAOC = Process(group=None, target=caoc, name='CAOC Process')
+    pCAOC.start()
+    while not(pCAOC.is_alive):
+        time.sleep(0.1) 
+    print 'CAOC process is alive'    
     
     # Drones
     print 'starting drones'
@@ -160,23 +179,18 @@ def main(Data,daemon,ns):
     for i in range(0, len(drones)):
         pDrone = Process(group=None, target=drones[i], name='drone'+str(drones[i].uid), args=(Map.MapEntryPt,)) 
         pDrones.append(pDrone)
-        pDrone.start()  
-        print i, pDrone.is_alive()
-    
-    # HMINT
-    print 'starting hmint'
-    pHMINT = Process(group=None, target=hmint, name='HMINT Process')
-    pHMINT.start()   
-    
-    # CAOC
-    print 'starting caoc'
-    pCAOC = Process(group=None, target=caoc, name='CAOC Process')
-    pCAOC.start()        
+        pDrone.start()
+        while not(pDrone.is_alive):
+            time.sleep(0.1) 
+        print 'Drone %d process is alive'  % drones[i].uid       
 
     # IMINT
     print 'starting imint'
     pIMINT = Process(group=None, target=imint, name='IMINT Process')
     pIMINT.start()
+    while not(pIMINT.is_alive):
+        time.sleep(0.1) 
+    print 'IMINT process is alive'    
     
     # Run shared object requests loop
     print 'starting shared objects request loop'

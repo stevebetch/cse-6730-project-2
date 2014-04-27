@@ -23,7 +23,9 @@ class HMINT (LogicalProcess):
         self.id = LogicalProcess.HMINT_ID        
         self.numTargets = numTargets
         self.count = 0
-        self.msgTimestamp = 0
+        self.currTargetTimestamp = 0
+        self.targetTimestamps = []
+        self.targets = {}
         self.randNodes = randNodes
         
     # Call function
@@ -51,7 +53,7 @@ class HMINT (LogicalProcess):
         self.localTime=obj.localTime
         self.numTargets = obj.numTargets
         self.count = obj.count
-        self.msgTimestamp = obj.msgTimestamp
+        self.currTargetTimestamp = obj.currTargetTimestamp
         self.randNodes = obj.randNodes     
     
     # Generate Target
@@ -87,11 +89,55 @@ class HMINT (LogicalProcess):
         tgtGoalTrackTime=random.triangular(60,600,300)
         tgtActualTrackTime=0
         tgtTrackAttempts=0
-        self.msgTimestamp=self.msgTimestamp+random.triangular(1380,4200,2100)
+        self.currTargetTimestamp=self.currTargetTimestamp+random.triangular(1380,4200,2100)
         tgtData = [tgtID,tgtIntelValue,tgtIntelPriority,tgtType,tgtStealth,tgtSpeed,tgtPredLoc,tgtGoalTrackTime,tgtActualTrackTime,tgtTrackAttempts]
-        tgtMsg=Message(2,tgtData,LogicalProcess.HMINT_ID,LogicalProcess.CAOC_ID,self.msgTimestamp)
-        self.sendMessage(tgtMsg)
+        self.targetTimestamps.append(self.currTargetTimestamp)
+        self.targets[self.currTargetTimestamp] = tgtData
         self.count = self.count + 1
+        
+        
+    def subclassHandleMessage(self, msg):
+        
+        if msg.msgType == 4 and isinstance(msg.data, TargetRequest):
+            timestamp = msg.data.timestamp
+            print 'HMINT: Received target request with timestamp %d' % timestamp
+            self.sendTargets(timestamp)
+        
+        
+    def sendTargets(self, timestamp):
+        
+        # separate out targets with ts <= passed timestamp value
+        sendTimestamps = []
+        remainingTimestamps = []
+        minTimestamp = 999999999999
+        for ts in self.targetTimestamps:
+            if ts <= timestamp:
+                sendTimestamps.append(ts)
+            else:
+                remainingTimestamps.append(ts)
+            if ts < minTimestamp:
+                minTimestamp = ts
+                
+        # send target message with targets in lowest to highest timestamp order
+        sendTimestamps.sort()
+        responseData = TargetResponse()
+        msgTimestamp = 0
+        if len(sendTimestamps) == 0:
+            responseData.addTarget(self.targets[minTimestamp])
+            msgTimestamp = minTimestamp
+            print 'HMINT: No targets found with timestamp < %d, adding target with smallest timestamp response data' % timestamp
+            remainingTimestamps.remove(minTimestamp)
+        for ts in sendTimestamps:
+            responseData.addTarget(self.targets[ts])
+            msgTimestamp = ts
+            print 'HMINT: Adding target with timestamp %d to response data' % ts
+        tgtMsg = Message(5, responseData, LogicalProcess.HMINT_ID, LogicalProcess.CAOC_ID, msgTimestamp)        
+        self.sendMessage(tgtMsg) 
+        
+        # update target timestamps list and cleanup
+        self.targetTimestamps = remainingTimestamps
+        if len(self.targetTimestamps) == 0:
+            self.targets = {}
     
     # run
     # Input: None
@@ -125,9 +171,33 @@ class HMINT (LogicalProcess):
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
         LPIDs.extend(self.droneInQs.getLPIDs()) 
         
+        loopInQs_uri = nameserver.lookup('inL.loop')
+        self.Loopcont = Pyro4.Proxy(loopInQs_uri)        
+        
         self.initGVTCounts(LPIDs) 
             
         while self.count < self.numTargets:
             # generate targets and add to CAOC input queue
             time.sleep(0.1)
             self.generateNextTarget()
+        
+        # Event loop
+        count=0
+        while (self.Loopcont.control):
+            count+=1
+            if(count%5000==0):
+                print 'HMINT iteration. Local time:', self.localTime            
+            msg = self.getNextMessage()
+            if msg:
+                self.handleMessage(msg)
+            time.sleep(0.1)
+            sys.stdout.flush()        
+
+
+class TargetResponse():
+    
+    def __init__(self):
+        self.targetData = []
+        
+    def addTarget(self, tgtData):
+        self.targetData.append(tgtData)

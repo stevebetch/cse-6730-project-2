@@ -203,9 +203,6 @@ class IMINT (LogicalProcess):
                     if(debug==1):
                         print "IMINT passed a traget"
             
-            time.sleep(2)
-            
-            #sys.stdout.flush()
 
         self.Loopcont.setCon(0)
         if(debug==1):

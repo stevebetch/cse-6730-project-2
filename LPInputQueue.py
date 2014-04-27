@@ -51,7 +51,15 @@ class LPInputQueue():
         self.insertAtBack(msg)
         
     def remove(self, msg):
-        self.q.remove(msg)        
+        self.q.remove(msg) 
+        
+    def removeByID(self, msgId):
+        removeMsg = None
+        for msg in self.q:
+            if msg.id == msgId:
+                removeMsg = msg
+        if not(removeMsg is None):
+            self.q.remove(removeMsg)
         
     def getNextMessage(self):
         
@@ -88,6 +96,12 @@ class LPInputQueue():
         if not(msg is None):
             self.q.remove(msg)                    
         return msg
+    
+    def getAllMessages(self):
+        msgs = []
+        for msg in self.q:
+            msgs.append(msg)
+        return msgs
     
     def calculateLocalTMin(self):
         self.localTMin = self.localTime
