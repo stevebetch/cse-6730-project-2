@@ -37,7 +37,8 @@ class IMINT (LogicalProcess):
         self.totalValue=0
         self.targetsTracked=0
         self.numTargets=numTargets
-        self.fname= 'Data from '+time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())+'.csv'
+#        self.fname= 'Data from '+time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())+'.csv'
+        self.fname='DATA_FROM_'+str(time.time())+'.csv'
 
     # Call function
     def __call__(self):
@@ -184,7 +185,7 @@ class IMINT (LogicalProcess):
         
         #setup output
         csvLock.acquire()
-        oufile=open(self.fname, "wb")
+        oufile=open(self.fname, "w+")
         c = csv.writer(oufile)
         c.writerow(["Tgt ID","DroneId","Tgt Intel Value","Tgt Intel Priority","Tgt Type","Tgt Stealth","Tgt Speed","Tgt Goal Track Time","Tgt Actual Track Time","Tgt Track Attempts","heuristic", "Timestamp"])
         oufile.close()

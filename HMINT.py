@@ -188,7 +188,7 @@ class HMINT (LogicalProcess):
         
         # Event loop
         count=0
-        while (self.Loopcont.control):
+        while (self.Loopcont.getCon()==1):
             count+=1
             if(count%5000==0):
                 print 'HMINT iteration. Local time:', self.localTime            
