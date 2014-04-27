@@ -157,6 +157,11 @@ class CAOC (LogicalProcess):
                     self.drones[indexCloseDrone][0]='Busy'
         # If the queue is not empty (implying all drones are busy), put the target assignment in the queue in order
         else:
+            if self.heuristic==3:
+                # Adjust tgt priority be intel value/goal track time if the tgt has no track attempts
+                if targetData[9]==0:
+                    targetData[2]=targetData[1]/targetData[7]
+            # Put target data into priority queue in priority order
             if targetData[2]>=self.priorityQueue[len(self.priorityQueue)-1][2]:
                 self.priorityQueue.append(targetData)
             else:
@@ -402,6 +407,11 @@ class CAOC (LogicalProcess):
                     self.drones[indexCloseDrone][0]='Busy'
         # If the queue is not empty (implying all drones are busy), put the target assignment in the queue in order
         else:
+            if self.heuristic==3:
+                # Adjust tgt priority be intel value/goal track time if the tgt has no track attempts
+                if targetData[9]==0:
+                    targetData[2]=targetData[1]/targetData[7]
+            # Put target data into priority queue in priority order
             if targetData[2]>=self.priorityQueue[len(self.priorityQueue)-1][2]:
                 self.priorityQueue.append(targetData)
             else:

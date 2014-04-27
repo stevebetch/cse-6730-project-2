@@ -15,16 +15,17 @@ from state import *
 def main():
     print 'Start'
     
-    x=5
-    a=[2,4,6,8]
-    if x>=a[len(a)-1]:
-        a.append(x)    
-    else:
-        for i in range(len(a)):
-            if x<a[i]:
-                a.insert(i,x)
-                break
-    print a
+    #x=5
+    #a=[2,4,6,8]
+    #if x>=a[len(a)-1]:
+        #a.append(x)    
+    #else:
+        #for i in range(len(a)):
+            #if x<a[i]:
+                #a.insert(i,x)
+                #break
+    #print a
+    #print a.pop()
     
     for i in range(3):
         print ''
@@ -68,7 +69,7 @@ def main():
         print '-------------Initialize Target and Drone Data -------------'
         tData=[]
         for i in range(numTargets):
-            tData.append([i,10+i,random.random(),'Vehicle',1,1,randNodes[i],10+i,0,0])
+            tData.append([i,10+i,random.random(),'Vehicle',1,1,randNodes[i],10*random.random(),0,0])
         print 'Target Data: ' + str(tData)
         
         dData=[]
