@@ -258,6 +258,14 @@ class CAOC (LogicalProcess):
                 
         elif msg.msgType==3:
             
+            # check if a node update
+            if msg.data[1] == 'Busy':
+                print 'setting drone current node'
+                droneid = msg.data[0]
+                node = msg.data[2]
+                self.drones[droneid][1] = node
+                return
+            
             # Call HMINT to update target priority queue to current time
             self.updateTargets(msg.timestamp)
             if(self.Loopcont.getCon()==0):
@@ -269,7 +277,7 @@ class CAOC (LogicalProcess):
                 # If the drone is idle and there are target assignments in the queue, assign that drone a target
                 if (self.drones[msg.data[0]][0]=="Idle") and (len(self.priorityQueue)!=0):
                     newTgtData=self.priorityQueue.pop()
-                    newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
+                    newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],newTgtData[10])
                     self.sendMessage(newTgtMsg)
                     #newTgtMsg.printData()
                     self.drones[msg.data[0]][0]="Busy"
