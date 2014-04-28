@@ -52,16 +52,16 @@ def main():
         
         print '-------------Generate HMINT, CAOC, IMINT, Drone-------------'
         
-        hmint = HMINT(numTargets, randNodes)
+        hmint = HMINT(numTargets, randNodes,0)
         hmintInQ = LPInputQueue()    
         
-        caoc=CAOC(numDrones,heuristic)
+        caoc=CAOC(numDrones,heuristic,1,1)
         caocInQ = LPInputQueue()    
         
         imint=IMINT(heuristic,numTargets)
         imintInQ = LPInputQueue()
         
-        drone=Drone(0,0,heuristic)
+        drone=Drone(0,0,heuristic,34000)
         droneInQ=LPInputQueue()
         
         lp=[hmint,caoc,imint]
