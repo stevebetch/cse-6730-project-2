@@ -29,7 +29,7 @@ class HMINT (LogicalProcess):
         self.targetTimestamps = []
         self.targets = {}
         self.randNodes = randNodes
-        self.tarCont=
+        self.Tartype=Tartype
         
     # Call function
     def __call__(self):
@@ -79,15 +79,25 @@ class HMINT (LogicalProcess):
         tgtID=self.count
         tgtIntelValue=random.triangular(1,100,60)
         tgtIntelPriority=tgtIntelValue
-        r=random.random()
-        if r<0.5:
-            tgtType='Vehicle'
-            tgtStealth=random.triangular(0.5, 0.95, 0.8)
-            tgtSpeed=random.triangular(11.11, 19.44, 15.28)#based on average urban speed for several countries
-        else:
+        if(self.Tartype==0): #want all Pedestrians
             tgtType='Pedestrian'
             tgtStealth=random.triangular(0.1, 0.9, 0.5)
             tgtSpeed=random.normalvariate(1.44, 0.288)#based on project 1 data
+        elif(self.Tartype==1): #want all Vehicles
+            tgtType='Vehicle'
+            tgtStealth=random.triangular(0.5, 0.95, 0.8)
+            tgtSpeed=random.triangular(11.11, 19.44, 15.28)#based on average urban speed for several countries
+
+        else:
+            r=random.random()
+            if r<0.5:
+                tgtType='Vehicle'
+                tgtStealth=random.triangular(0.5, 0.95, 0.8)
+                tgtSpeed=random.triangular(11.11, 19.44, 15.28)#based on average urban speed for several countries
+            else:
+                tgtType='Pedestrian'
+                tgtStealth=random.triangular(0.1, 0.9, 0.5)
+                tgtSpeed=random.normalvariate(1.44, 0.288)#based on project 1 data
         tgtPredLoc=self.randNodes[self.count]
         tgtGoalTrackTime=random.triangular(60,600,300)
         tgtActualTrackTime=0

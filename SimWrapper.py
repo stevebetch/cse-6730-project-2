@@ -35,6 +35,8 @@ class Data:
         self.heuristic=1
         self.typeOfDrone = "DroneType1"
         self.Nuisance=.8
+        self.tarType=2
+        self.Legs=41760
 
     def fillRow(self,row):
         self.numDrones=int(row[0])
@@ -46,6 +48,8 @@ class Data:
         self.mapY=int(row[6])
         self.heuristic=int(row[7])
         self.Nuisance=float(row[8])
+        self.tarType=float(row[9])
+        self.Legs=float(row[10])
 
 if __name__ == '__main__':
     ProgRunner()

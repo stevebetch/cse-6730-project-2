@@ -20,9 +20,9 @@ PYRO_HOST = ''
 PYRO_PORT = 12778
 
 
-def createNewDrone(uid, droneType,heuristic):
+def createNewDrone(uid, droneType,heuristic,Legs):
     print('Creating new drone of type ' + droneType)
-    droneref = Drone(uid, droneType,heuristic)
+    droneref = Drone(uid, droneType,heuristic,Legs)
     droneref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     return droneref
     
@@ -33,7 +33,7 @@ def initIMINT(heuristic,numTargets):
     return imintref
 
 def initHMINT(randNodes,Data):
-    hmintref = HMINT(Data.numTargets, randNodes)
+    hmintref = HMINT(Data.numTargets, randNodes,Data.tarType)
     hmintref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     print('HMINT initialized')
     return hmintref
@@ -134,7 +134,7 @@ def main(Data,daemon,ns):
     for i in range(Data.numDrones):
         dronename = i
         print 'dronename is %s' % dronename
-        drone = createNewDrone(dronename, Data.typeOfDrone,Data.heuristic)
+        drone = createNewDrone(dronename, Data.typeOfDrone,Data.heuristic,Data.Legs)
         drones.append(drone)
         controller.addDrone(drone)
         droneInQs.addDroneInputQueue(dronename)

@@ -34,7 +34,7 @@ class Drone (LogicalProcess):
         self.Bingo=0 #time until we have to leave the ma        self.DistEntry=0.0 #distance from the entry node
         self.DistEntry=0
         self.FlightSpeed=random.randint(46,54)#Random flight speed of the drone based on loiter and top speed, m/s
-        self.DroneLegs=41760 #11.6hrs = 41760s max endurance, 5.8hrs = 20880s median endurance
+        self.DroneLegs=Legs #11.6hrs = 41760s max endurance, 5.8hrs = 20880s median endurance
 
         self.xpos=0 #current x location
         self.ypos=0 #current y location
