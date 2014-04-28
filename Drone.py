@@ -19,7 +19,7 @@ class Drone (LogicalProcess):
     #id - unique id of drone
     #droneType - descriptive
 
-    def __init__(self, uid, droneType,heuristic):
+    def __init__(self, uid, droneType,heuristic,Legs):
         self.uid = uid
         self.heuristic=heuristic
         LogicalProcess.__init__(self)
@@ -193,36 +193,39 @@ class Drone (LogicalProcess):
                             break
                 
                 # Check fuel before anything else!!
-                if(not(self.jokerflag)): #joker not set yet. can search for targets
-                    if(not(self.detectBool)): #dont have a detection
-                        self.search()
-                        self.detection()
-                        self.searchdwell+=self.searchTime
-                    
-                    else: #we have a detection! woooo
-                        self.detection()
-                        self.searchdwell=0
-                
-                
-                else: # joker flag set.
-                    if(not(detectBool)):
-                        #dont have an active detection. RTB.
-                        self.ReturnToBase()
-                    else: # detection flag set. We have a target in active track.
-                        if(self.Bingo>0): #we still have fuel!
-                            # We have fuel and can still start tracking.
+                if(not(self.target==42)):
+                    if(not(self.jokerflag)): #joker not set yet. can search for targets
+                        if(not(self.detectBool)): #dont have a detection
+                            self.search()
                             self.detection()
-                        else:
+                            self.searchdwell+=self.searchTime
+                        
+                        else: #we have a detection! woooo
+                            self.detection()
+                            self.searchdwell=0
+                    
+                    
+                    else: # joker flag set.
+                        if(not(detectBool)):
+                            #dont have an active detection. RTB.
                             self.ReturnToBase()
+                        else: # detection flag set. We have a target in active track.
+                            if(self.Bingo>0): #we still have fuel!
+                                # We have fuel and can still start tracking.
+                                self.detection()
+                            else:
+                                self.ReturnToBase()
 
-                droneRad=math.sqrt((self.xpos-mapObj.xpos)**2+(self.ypos-mapObj.ypos)**2)
-                                    
-                if(droneRad>self.droneRadLim): # searched for the target within the local area
-                    self.ReturnTgt()
-#                    self.removeTgt()
-                elif(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
-                    self.ReturnTgt()
-#                    self.removeTgt()
+                if(not(self.target==42)):
+                
+                    droneRad=math.sqrt((self.xpos-mapObj.xpos)**2+(self.ypos-mapObj.ypos)**2)
+                                        
+                    if(droneRad>self.droneRadLim): # searched for the target within the local area
+                        self.ReturnTgt()
+    #                    self.removeTgt()
+                    elif(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
+                        self.ReturnTgt()
+    #                    self.removeTgt()
 
 
 ################################################
@@ -239,36 +242,36 @@ class Drone (LogicalProcess):
                     except:
                         if(self.Loopcont.getCon()==0):
                             break
-                
-                # Check fuel before anything else!!
-                if(not(self.jokerflag)): #joker not set yet. can search for targets
-                    if(not(self.detectBool)): #dont have a detection
-                        self.search()
-                        self.detection()
-                        self.searchdwell+=self.searchTime
-                    
-                    else: #we have a detection! woooo
-                        self.detection()
-                        self.searchdwell=0
-                
-                
-                else: # joker flag set.
-                    if(not(detectBool)):
-                        #dont have an active detection. RTB.
-                        self.ReturnToBase()
-                    else: # detection flag set. We have a target in active track.
-                        if(self.Bingo>0): #we still have fuel!
-                            # We have fuel and can still start tracking.
+                if(not(self.target==42)):
+                    # Check fuel before anything else!!
+                    if(not(self.jokerflag)): #joker not set yet. can search for targets
+                        if(not(self.detectBool)): #dont have a detection
+                            self.search()
                             self.detection()
-                        else:
+                            self.searchdwell+=self.searchTime
+                        
+                        else: #we have a detection! woooo
+                            self.detection()
+                            self.searchdwell=0
+                    
+                    
+                    else: # joker flag set.
+                        if(not(detectBool)):
+                            #dont have an active detection. RTB.
                             self.ReturnToBase()
-                                
-                                
-                if(self.searchdwell>=10*self.searchTime*(self.target.intelVal/100)): # searched for the target 10*percentMaxValue (i.e. 1 to 10 times)
-                    self.ReturnTgt()
-#                    self.removeTgt()
-                elif(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
-                    self.ReturnTgt()
+                        else: # detection flag set. We have a target in active track.
+                            if(self.Bingo>0): #we still have fuel!
+                                # We have fuel and can still start tracking.
+                                self.detection()
+                            else:
+                                self.ReturnToBase()
+
+                if(not(self.target==42)):
+                    if(self.searchdwell>=10*self.searchTime*(self.target.intelVal/100)): # searched for the target 10*percentMaxValue (i.e. 1 to 10 times)
+                        self.ReturnTgt()
+    #                    self.removeTgt()
+                    elif(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
+                        self.ReturnTgt()
 #                    self.removeTgt()
 
         self.reset()

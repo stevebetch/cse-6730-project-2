@@ -23,15 +23,19 @@ drone.currentNode=a.MapEntryPt #the only time we directly set the current node.
 drone.LocalSimTime=drone.localTime
 drone.setJokerBingo()
 drone.flyTotgt(drone.target.node.xpos,drone.target.node.ypos)
-while(1):
+start_time = time.time()
+targetcount=0
+targetnum=5000
+while(targetcount<targetnum):
     
     if(drone.Bingo<0):
         drone.ReturnToBase()
     
-    print drone.target
+#    print drone.target
     if(drone.target==42): #NO TARGET IN QUEUE
-        drone.getNewTgt()
-    
+        moo=a.RandNode()
+        drone.target=Target(moo)
+        print " Target created at:",drone.target.node.xpos,",",drone.target.node.ypos
     
     
     # Check fuel before anything else!!
@@ -58,8 +62,12 @@ while(1):
                     drone.ReturnToBase()
         if(not(drone.target==42)):
             if(drone.TarTime>=drone.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
-                drone.SendIMINT()
+#                drone.SendIMINT()
+                print"Target tracked! Tracked target for:",drone.TarTime,"sec"
                 drone.removeTgt()
+                targetcount+=1
+
+
 #drone.run(a.MapEntryPt)
 #for i in range(50):
 #    b=a.RandNode()
@@ -75,8 +83,7 @@ while(1):
 #
 #    except:
 #        print pp.node
-
-#    print "Time elapsed to move a target",cntmax,"times on the map: ", time.time() - start_time, "s"
+print "Time elapsed to track",targetnum,"targets", time.time() - start_time, "s"
 
 
 

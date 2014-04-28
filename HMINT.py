@@ -20,7 +20,7 @@ class HMINT (LogicalProcess):
     # Input: numTargets=total number of targets that might need to be targeted, randNodes is a vector of nodes from the map
     # Output: Initializes HMINT class object
     # Description: Intialization of parameters that control target generation    
-    def __init__(self, numTargets, randNodes):  
+    def __init__(self, numTargets, randNodes,Tartype):
         LogicalProcess.__init__(self)
         self.id = LogicalProcess.HMINT_ID        
         self.numTargets = numTargets
@@ -29,6 +29,7 @@ class HMINT (LogicalProcess):
         self.targetTimestamps = []
         self.targets = {}
         self.randNodes = randNodes
+        self.tarCont=
         
     # Call function
     def __call__(self):
