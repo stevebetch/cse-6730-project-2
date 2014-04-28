@@ -38,8 +38,8 @@ def initHMINT(randNodes,Data):
     print('HMINT initialized')
     return hmintref
 
-def initCAOC(Data):
-    caocref = CAOC(Data.numDrones,Data.heuristic)
+def initCAOC(Data,MapEntryPt):
+    caocref = CAOC(Data.numDrones,Data.heuristic,MapEntryPt.xpos,MapEntryPt.ypos)
     caocref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     print('CAOC initialized')
     return caocref
@@ -104,7 +104,7 @@ def main(Data,daemon,ns):
     ns.register("inputqueue.hmint", hmintInQ_uri)        
     
     # Create CAOC, will be separate process started by Controller
-    caoc = initCAOC(Data)
+    caoc = initCAOC(Data,Map.MapEntryPt)
     caocInQ = LPInputQueue()
     caocInQ.setLocalTime(0)
     caocInQ.setLPID(caoc.LPID)
