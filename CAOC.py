@@ -101,10 +101,10 @@ class CAOC (LogicalProcess):
             if self.heuristic==1:
                 # If the queue is empty and there is an idle drone, send it the incoming target assignment
                 for i in range(len(self.drones)):
-                    if self.drones[i][0]=='Idle':
+                    if self.drones[i][1]=='Idle':
                         newTgtMsg=Message(2,targetData,self.id,i,self.localTime) # drone ids start at 2
                         self.sendMessage(newTgtMsg)
-                        self.drones[i][0]='Busy'
+                        self.drones[i][1]='Busy'
                         if(debug==1):
                             print 'sent message to idle drone:',i
                         break
@@ -149,8 +149,8 @@ class CAOC (LogicalProcess):
                 indexCloseDrone=0
                 minDist=999999
                 for i in range(len(self.drones)):
-                    droneX=self.drones[i][1].xpos
-                    droneY=self.drones[i][1].ypos
+                    droneX=self.drones[i][2].xpos
+                    droneY=self.drones[i][2].ypos
                     dist=sqrt((tgtX-droneX)**2+(tgtY-droneY)**2)
                     if dist<minDist and self.drones[i][0]=="Idle":
                         minDist=dist
@@ -287,8 +287,8 @@ class CAOC (LogicalProcess):
                 # If the drone is idle and there are target assignments in the queue, assign that drone the nearest target
                 if (self.drones[msg.data[0]][0]=="Idle") and (len(self.priorityQueue)!=0):
                     droneLocation=self.drones[msg.data[0]][1] #x,y coords
-                    droneX=self.drones[msg.data[0]][1].xpos
-                    droneY=self.drones[msg.data[0]][1].ypos                  
+                    droneX=droneLocation.xpos
+                    droneY=droneLocation.ypos
                     indexCloseTgt=0
                     minDist=999999
                     for i in range(len(self.priorityQueue)):
@@ -299,7 +299,7 @@ class CAOC (LogicalProcess):
                             minDist=dist
                             indexCloseTgt=i   
                     newTgtData=self.priorityQueue.pop(indexCloseTgt)
-                    newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
+                    newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)# Stephan: Andrew, Do you wnat to use msg.data[0] or newTgtData?
                     self.sendMessage(newTgtMsg)
                     self.drones[msg.data[0]][0]=="Busy"
 

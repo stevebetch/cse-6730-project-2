@@ -346,7 +346,8 @@ class Drone (LogicalProcess):
 
 
     def setEntry(self,obj):
-        self.EntNode=copy.deepcopy(obj)
+#        self.EntNode=copy.deepcopy(obj)
+        self.EntNode=obj
         if(debug==1):
             print "\n Drone set Map entry at:" , self.EntNode.xpos,",",self.EntNode.ypos
             print ""
@@ -359,6 +360,7 @@ class Drone (LogicalProcess):
     def updateCurNode(self,obj):
         oldnode=self.currentNode
         flightTime=0
+        length=0
         self.currentNode=obj #may not be needed, but may be expanded later if needed.
         if(self.currentNode==2): #entry node. need to get it on the map.
             self.currentNode=self.currentNode.nextNode
@@ -437,8 +439,12 @@ class Drone (LogicalProcess):
 
     def detection(self):
         # Begin by seeing if we already have a track
+        if(self.target.node.nodeType==3):#entry node....
+            self.target.node=self.target.node.nextNode
+        if(self.currentNode.nodeType==3):#entry node....
+            self.updateCurNode(self.currentNode.nextNode)
         if(self.detectBool==1): #we have a track!
-            if(debug==1):
+            if(1):
                 print "Have a track!"
                 print self.TarTime
             # Check to see if we are on the same node as the target.
@@ -711,14 +717,14 @@ class Drone (LogicalProcess):
                     break
             except:
                 pass
-#            if(count%5000==0):
-#                print "Drone is in the getNewTgt loop. Count=:",count
+            if(count%5000==0):
+                print "Drone is in the getNewTgt loop. Count=:",count
             if(self.Loopcont.getCon()==0):
                 print "ENDING THE SIM!!!!!"
                 break
     
-            if(count>5000):
-                updateTime(1) #penalty
+            if(count>1000):
+                updateTime(100) #penalty
                 data=[self.uid,'Idle',self.currentNode]
                 sendMes=Message(3,data,self.uid,'CAOC',self.LocalSimTime)
                 #        sendMes.printData(1)
