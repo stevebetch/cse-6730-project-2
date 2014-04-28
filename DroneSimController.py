@@ -43,6 +43,7 @@ class DroneSimController(GlobalControlProcess):
 
         # Self
         print('Drone Sim Controller running')
+        sys.stdout.flush()
 
         # Get the message queue objects from Pyro    
         nameserver = Pyro4.locateNS()

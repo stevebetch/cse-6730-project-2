@@ -298,6 +298,8 @@ class Drone (LogicalProcess):
         self.Bingo-=timeDif
         self.MaintenanceActionTime-=timeDif
         self.LocalSimTime+=timeDif
+        if debug==1:
+            print 'drone %d updated LocalSimTime to %d' % (self.uid, self.LocalSimTime)
         self.timeOnNode+=timeDif
         if(not(self.target==42)):
             if(self.timeOnNode>=self.target.transitTime): #The target has had enough time to move.
@@ -406,8 +408,7 @@ class Drone (LogicalProcess):
             
             
             self.target=tgt
-        elif(msg.msgType==1): # Need to fill this out still....
-            pass
+            self.updateTime(msg.timestamp - self.LocalSimTime)
      
      
      
@@ -730,6 +731,9 @@ class Drone (LogicalProcess):
         if(msg.msgType==2):
             print "New target aquired"
         timedif=(self.LocalSimTime-msg.timestamp)
+        print 'LocalSimTime is %d' % self.LocalSimTime
+        print 'msg.timestamp is %d' % msg.timestamp
+        print 'timedif is %d' % timedif
         if(timedif<0):#message is in the future
             self.updateTime(timedif*-1)
         if(not(self.target==42)):

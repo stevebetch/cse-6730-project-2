@@ -214,6 +214,10 @@ class CAOC (LogicalProcess):
                     sys.stdout.flush()
                     responseData = msg.data
                     self.inputQueue.removeByID(msg.id)
+                    if msg.color == LPGVTData.WHITE:
+                        self.gvtData.counts[self.LPID] -= 1
+                        if(debug==1):
+                            print 'LP %d recvd WHITE msg, rcvd count is now %d' % (self.LPID, self.gvtData.counts[self.LPID])                    
                     break
             if not(responseData is None):
                 break

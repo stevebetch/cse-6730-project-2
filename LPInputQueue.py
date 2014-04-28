@@ -163,7 +163,7 @@ class LPInputQueue():
                 self.q.remove(m)
                 return        
             # check if time is before currTime, if so then do rollback
-            if msg.timestamp <= self.localTime:
+            if msg.timestamp < self.localTime:
                 self.insertAtFront(msg) # will trigger rollback
                 if not(isinstance(msg.data, GVTControlMessageData)) and not(isinstance(msg.data, GVTValue)):
                     

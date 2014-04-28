@@ -74,6 +74,8 @@ def main(Data,daemon,ns):
     #
     print 'Starting run'
     
+    #sys.setrecursionlimit(10000)
+    
     random.seed(Data.seedNum)
     #print "Using Nuisance mean of:", Nuisance
     
@@ -156,6 +158,7 @@ def main(Data,daemon,ns):
     while not(pController.is_alive):
         time.sleep(0.1)
     print 'Controller process is alive'
+    sys.stdout.flush()
     
     # HMINT
     print 'starting hmint'

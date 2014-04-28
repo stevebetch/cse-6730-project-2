@@ -20,8 +20,6 @@ class DroneInputQueueContainer:
         lpids = []
         for droneid in self.queues:
             q = self.queues[droneid]
-            if(debug==1):
-                print 'LPID for drone %d = %d' % (droneid, q.LPID)
             lpids.append(q.LPID)
         return lpids
     
