@@ -26,17 +26,9 @@ class LPInputQueue():
         return len(self.q)
     
     def extend(self, list):
-        removal=[]
-        for a in list:
-            for b in self.q:
-                if a.timestamp==b.timestamp and a.data==b.data and a.sender==b.sender : #the same message!!! DELETE!
-                    removal.append(b)
-        
-        for v in removal:
-            self.q.remove(v)
-        
+    
         self.q.extend(list)
-        
+    
     def hasMessages(self):
         hasMsgs = 0
         if len(self.q) > 0:
@@ -74,9 +66,6 @@ class LPInputQueue():
         
         if len(self.q) == 0:
             return None
-        
-        
-        
         msg = None
         removeMsg = None
         smallestTimestamp = 99999999999999
@@ -133,7 +122,20 @@ class LPInputQueue():
         if msg.timestamp < self.localTMin:
             self.localTMin = msg.timestamp        
         self.q.append(msg)
+        self.q=self.sortAndUniq()
+
+    def sortAndUniq(self):
+        output = []
+        for x in self.q:
+            if x not in output:
+                output.append(x)
+        output.sort()
+        return output
         
+        for v in removal:
+            self.q.remove(v)
+
+
     def insertAtBack(self, msg):
         if msg.timestamp < self.localTMin:
             self.localTMin = msg.timestamp        
@@ -177,8 +179,8 @@ class LPInputQueue():
             if msg.timestamp < self.localTime:
                 self.insertAtFront(msg) # will trigger rollback
                 if not(isinstance(msg.data, GVTControlMessageData)) and not(isinstance(msg.data, GVTValue)):
-                    
-                    print 'Straggler message found, should trigger rollback'
+                    if(1):
+                        print 'Straggler message found, should trigger rollback'
             else:
                 self.q.insert(0, msg) #inserts at end of queue
                 if(debug==1):

@@ -4,6 +4,7 @@ from LogicalProcess import *
 from Target import *
 import random
 from state import HMINTState
+from Message import *
 
 class HMINT (LogicalProcess):
     "Human intelligence"
@@ -36,7 +37,8 @@ class HMINT (LogicalProcess):
         self.run()
 
     def saveState(self):
-        print 'Saving current HMINT state'
+        if(debug==1):
+            print 'Saving current HMINT state'
         saver=HMINTState(self)
         self.stateQueue.append(saver)
 
@@ -113,7 +115,8 @@ class HMINT (LogicalProcess):
         
         if msg.msgType == 4 and isinstance(msg.data, TargetRequest):
             timestamp = msg.data.timestamp
-            print 'HMINT: Received target request with timestamp %d' % timestamp
+            if(1):
+                print 'HMINT: Received target request with timestamp %d' % timestamp
             self.sendTargets(timestamp)
         
         
@@ -139,13 +142,16 @@ class HMINT (LogicalProcess):
             if not(minTimestamp == HMINT.INF):
                 responseData.addTarget(self.targets[minTimestamp])
                 msgTimestamp = minTimestamp
-                print 'HMINT: No targets found with timestamp < %d, adding target with smallest timestamp response data' % timestamp
+                if(1):
+                    print 'HMINT: No targets found with timestamp < %d, adding target with smallest timestamp response data' % timestamp
                 remainingTimestamps.remove(minTimestamp)
             else:
-                print 'HMINT: No targets remaining'
+                if(1):
+                    print 'HMINT: No targets remaining'
         for ts in sendTimestamps:
             responseData.addTarget(self.targets[ts])
             msgTimestamp = ts
+            
             print 'HMINT: Adding target with timestamp %d to response data' % ts
         tgtMsg = Message(5, responseData, LogicalProcess.HMINT_ID, LogicalProcess.CAOC_ID, msgTimestamp)        
         self.sendMessage(tgtMsg) 

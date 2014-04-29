@@ -125,8 +125,8 @@ class LogicalProcess(SharedMemoryClient):
         self.saveAntiMessage(msg)
     
     def rollback(self, msg):
-        
-        print 'ROLLBACK!!'
+        if(debug==1):
+            print 'ROLLBACK!!'
         # restore state to that at time of straggler message
         self.restoreState(msg.timestamp) # define restoreState(timestamp) in subclass
         
@@ -285,7 +285,7 @@ class LogicalProcess(SharedMemoryClient):
                 if self.inputQueue is None:
                     self.droneInQs.setInputQueue(self.uid, q)
             elif msg.isAnti:
-                if msg.timestamp <= self.localTime:
+                if msg.timestamp < self.localTime:
                     self.rollback(msg)
                 elif msg.timestamp < self.localTime:
                     self.rollback(msg)
@@ -315,12 +315,12 @@ class LogicalProcess(SharedMemoryClient):
                     sys.stdout.flush()
     
     def getNextMessage(self):
-        a.acquire()
-        b.acquire()
-        c.acquire()
-        d.acquire()
-        e.acquire()
-        
+#        a.acquire()
+#        b.acquire()
+#        c.acquire()
+#        d.acquire()
+#        e.acquire()
+
         msg = None
         q = None
         
@@ -341,12 +341,12 @@ class LogicalProcess(SharedMemoryClient):
         if self.inputQueue is None:
             self.droneInQs.setInputQueue(self.uid, q)
         
-        a.release()
-        b.release()
-        c.release()
-        d.release()
-        e.release()
-        return msg 
+#        a.release()
+#        b.release()
+#        c.release()
+#        d.release()
+#        e.release()
+        return msg
     
     def matchingMessageAlreadyProcessed(self, msg):
         for histMsg in self.inputMsgHistory:

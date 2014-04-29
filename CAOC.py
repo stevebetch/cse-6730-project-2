@@ -192,8 +192,9 @@ class CAOC (LogicalProcess):
     def updateTargets(self, timestamp):
         
         # send request to HMINT for targets available as of self.localTime
-        print 'CAOC: Sending target request for time %d to HMINT' % timestamp
-        sys.stdout.flush()
+        if(debug==1):
+            print 'CAOC: Sending target request for time %d to HMINT' % timestamp
+            sys.stdout.flush()
         requestData = TargetRequest(timestamp)
         msg = Message(4, requestData, LogicalProcess.CAOC_ID, LogicalProcess.HMINT_ID, timestamp)
         self.sendMessage(msg) 
@@ -201,8 +202,9 @@ class CAOC (LogicalProcess):
         # wait for response
         responseData = None
         while True:
-            print 'CAOC: Waiting for target response from HMINT'
-            sys.stdout.flush()
+            if(1):
+                print 'CAOC: Waiting for target response from HMINT'
+                sys.stdout.flush()
             time.sleep(1)
             if(self.Loopcont.getCon()==0):
                 break
@@ -210,8 +212,9 @@ class CAOC (LogicalProcess):
             for msg in msgs:
                 msg.printData(1)
                 if msg.msgType == 5:
-                    print 'CAOC: Received target response for time %d from HMINT' % self.localTime
-                    sys.stdout.flush()
+                    if(1):
+                        print 'CAOC: Received target response for time %d from HMINT' % self.localTime
+                        sys.stdout.flush()
                     responseData = msg.data
                     self.inputQueue.removeByID(msg.id)
                     if msg.color == LPGVTData.WHITE:
@@ -226,8 +229,9 @@ class CAOC (LogicalProcess):
         if(self.Loopcont.getCon()==0):
             return
         for target in responseData.targetData:
-            print 'CAOC: Adding target to priority queue:', target
-            self.addTarget(target)        
+            if(1):
+                print 'CAOC: Adding target to priority queue:', target
+                self.addTarget(target)
             
         sys.stdout.flush()
                     
@@ -250,8 +254,9 @@ class CAOC (LogicalProcess):
             pass
         
         elif msg.msgType==5:
-            print 'CAOC: Received target response from HMINT with %d targets' % len(msg.data.targetData)
-            sys.stdout.flush()
+            if(debug==1):
+                print 'CAOC: Received target response from HMINT with %d targets' % len(msg.data.targetData)
+                sys.stdout.flush()
             # Start the add target process with the target data of the message
             for target in msg.data.targetData:
                 self.addTarget(target)
