@@ -26,6 +26,15 @@ class LPInputQueue():
         return len(self.q)
     
     def extend(self, list):
+        removal=[]
+        for a in list:
+            for b in self.q:
+                if a.timestamp==b.timestamp and a.data==b.data and a.sender==b.sender : #the same message!!! DELETE!
+                    removal.append(b)
+        
+        for v in removal:
+            self.q.remove(v)
+        
         self.q.extend(list)
         
     def hasMessages(self):
@@ -65,6 +74,8 @@ class LPInputQueue():
         
         if len(self.q) == 0:
             return None
+        
+        
         
         msg = None
         removeMsg = None

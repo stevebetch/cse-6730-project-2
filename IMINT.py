@@ -40,6 +40,7 @@ class IMINT (LogicalProcess):
 #        self.fname= 'Data from '+time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())+'.csv'
         self.fname = os.path.abspath(os.path.join('DATA_FROM_'+str(time.time())+'.csv'))
 #        self.fname='DATA_FROM_'+str(time.time())+'.csv'
+        self.uniqueID=[]
 
     # Call function
     def __call__(self):
@@ -62,15 +63,24 @@ class IMINT (LogicalProcess):
     def restoreState(self, timestamp):
         if(debug==1):
             print 'restoring to last IMINT state stored <= %d' % (timestamp)
-        index=0
-        for i in range(len(self.stateQueue)-1,-1,-1):
-            if(timestamp>=self.stateQueue[i].key):
+#        index=0
+#        for i in range(len(self.stateQueue)-1,-1,-1):
+#            if(timestamp>=self.stateQueue[i].key):
+#                index=i
+#                break
+#            else:
+#                self.stateQueue.pop(i)            
+#        self.restore(self.stateQueue[index])
+        a=[]
+        for i in self.stateQueue:
+            if(timestamp>=i.key):
+                #                print "Key:",i.key
                 index=i
-                break
-            else:
-                self.stateQueue.pop(i)            
-        self.restore(self.stateQueue[index])
-        
+                a.append(i)
+
+        self.restore(index)
+        self.stateQueue=a
+
     def restore(self,obj):
         self.key=obj.localTime
         self.id=obj.id
@@ -105,17 +115,27 @@ class IMINT (LogicalProcess):
                 else:
                     # if goal track time has been achieved, update the total value and number of tracked targets 
                     #    In the current implementation we allow IMINT to clear out it's backlog of unprocessed images at the sim end time
-                    self.totalValue+=msg.data[1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
-                    self.targetsTracked+=1
-                    if(debug==1):
-                        print 'Total Value: ' + str(self.totalValue)
-                        print 'Total Targets Tracked: ' + str(self.targetsTracked)
-                    csvLock.acquire()
-                    oufile=open(self.fname, "a")
-                    c = csv.writer(oufile)
-                    c.writerow([msg.data[0],msg.sender,msg.data[1],msg.data[2],msg.data[3],msg.data[4],msg.data[5],msg.data[7],msg.data[8],msg.data[9],self.heuristic,msg.timestamp])
-                    oufile.close()
-                    csvLock.release()
+                    processFlag=1 #assume different. Gets rid of duplicate outputs.
+                    for i in self.uniqueID:
+#                        print "UNIQUE IDS SENT TO IMINT:",i
+                        if(msg.data[0]==i):
+                            processFlag=0
+                            break
+                    
+                    
+                    if(processFlag):
+                        self.uniqueID.append(msg.data[0])
+                        self.totalValue+=msg.data[1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
+                        self.targetsTracked+=1
+                        if(debug==1):
+                            print 'Total Value: ' + str(self.totalValue)
+                            print 'Total Targets Tracked: ' + str(self.targetsTracked)
+                        csvLock.acquire()
+                        oufile=open(self.fname, "a")
+                        c = csv.writer(oufile)
+                        c.writerow([msg.data[0],msg.sender,msg.data[1],msg.data[2],msg.data[3],msg.data[4],msg.data[5],msg.data[7],msg.data[8],msg.data[9],self.heuristic,msg.timestamp])
+                        oufile.close()
+                        csvLock.release()
             elif self.heuristic==3 or self.heuristic==2:
                 if (msg.data[8]/msg.data[7])<random.random():
                     # if goal track time has not been achieved, adjsut priority and send updated tgt assignment to CAOC after processing time
@@ -124,18 +144,28 @@ class IMINT (LogicalProcess):
                     self.sendMessage(newTgtMsg)
                 else:
                     # if goal track time has been achieved, update the total value and number of tracked targets 
-                    #    In the current implementation we allow IMINT to clear out it's backlog of unprocessed images at the sim end time                    
-                    self.totalValue+=msg.data[1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
-                    self.targetsTracked+=1
-                    if(debug==1):
-                        print 'Total Value: ' + str(self.totalValue)
-                        print 'Total Targets Tracked: ' + str(self.targetsTracked)
-                    csvLock.acquire()
-                    oufile=open(self.fname, "a")
-                    c = csv.writer(oufile)
-                    c.writerow([msg.data[0],msg.sender,msg.data[1],msg.data[2],msg.data[3],msg.data[4],msg.data[5],msg.data[7],msg.data[8],msg.data[9],self.heuristic,msg.timestamp])
-                    oufile.close()
-                    csvLock.release()
+                    #    In the current implementation we allow IMINT to clear out it's backlog of unprocessed images at the sim end time
+                    processFlag=1 #assume different. Gets rid of duplicate outputs.
+                    for i in self.uniqueID:
+#                        print "UNIQUE IDS SENT TO IMINT:",i
+                        if(msg.data[0]==i):
+                            processFlag==0
+                            break
+                    
+                    
+                    if(processFlag==1):
+                        self.uniqueID.append(msg.data[0])
+                        self.totalValue+=msg.data[1] # this isn't quite right - we don't really get this value until AFTER the processing time...but I'm trying to avoid a message here
+                        self.targetsTracked+=1
+                        if(debug==1):
+                            print 'Total Value: ' + str(self.totalValue)
+                            print 'Total Targets Tracked: ' + str(self.targetsTracked)
+                        csvLock.acquire()
+                        oufile=open(self.fname, "a")
+                        c = csv.writer(oufile)
+                        c.writerow([msg.data[0],msg.sender,msg.data[1],msg.data[2],msg.data[3],msg.data[4],msg.data[5],msg.data[7],msg.data[8],msg.data[9],self.heuristic,msg.timestamp])
+                        oufile.close()
+                        csvLock.release()
                         
         elif msg.msgType==3:
             # print error message
