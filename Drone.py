@@ -110,8 +110,8 @@ class Drone (LogicalProcess):
         self.LocalSimTime=self.localTime
         self.setJokerBingo()
 #        need to send a message that tells caoc where the drones are. Not ready for a target, therefore, busy.
-        initMes=Message(3,[self.uid,'Busy',self.currentNode],self.uid,'CAOC',self.localTime)
-        self.sendMessage(initMes)
+        #initMes=Message(3,[self.uid,'Busy',self.currentNode],self.uid,'CAOC',self.localTime)
+        #self.sendMessage(initMes)
 
         # Event loop iteration
         #count = 10
@@ -220,10 +220,10 @@ class Drone (LogicalProcess):
                 
                     droneRad=math.sqrt((self.xpos-mapObj.xpos)**2+(self.ypos-mapObj.ypos)**2)
                                         
-                    if(droneRad>self.droneRadLim): # searched for the target within the local area
-                        self.ReturnTgt()
-    #                    self.removeTgt()
-                    elif(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
+                    #if(droneRad>self.droneRadLim): # searched for the target within the local area
+                        #self.ReturnTgt()
+                        #self.removeTgt()
+                    if(self.TarTime>=self.target.ObsTime):# Observation time is larger than needed time. Target satisfied.
                         self.ReturnTgt()
     #                    self.removeTgt()
 
@@ -346,8 +346,7 @@ class Drone (LogicalProcess):
 
 
     def setEntry(self,obj):
-#        self.EntNode=copy.deepcopy(obj)
-        self.EntNode=obj
+        self.EntNode=copy.deepcopy(obj)
         if(debug==1):
             print "\n Drone set Map entry at:" , self.EntNode.xpos,",",self.EntNode.ypos
             print ""
@@ -360,7 +359,6 @@ class Drone (LogicalProcess):
     def updateCurNode(self,obj):
         oldnode=self.currentNode
         flightTime=0
-        length=0
         self.currentNode=obj #may not be needed, but may be expanded later if needed.
         if(self.currentNode==2): #entry node. need to get it on the map.
             self.currentNode=self.currentNode.nextNode
@@ -439,12 +437,8 @@ class Drone (LogicalProcess):
 
     def detection(self):
         # Begin by seeing if we already have a track
-        if(self.target.node.nodeType==3):#entry node....
-            self.target.node=self.target.node.nextNode
-        if(self.currentNode.nodeType==3):#entry node....
-            self.updateCurNode(self.currentNode.nextNode)
         if(self.detectBool==1): #we have a track!
-            if(1):
+            if(debug==1):
                 print "Have a track!"
                 print self.TarTime
             # Check to see if we are on the same node as the target.
@@ -717,14 +711,14 @@ class Drone (LogicalProcess):
                     break
             except:
                 pass
-            if(count%5000==0):
-                print "Drone is in the getNewTgt loop. Count=:",count
+#            if(count%5000==0):
+#                print "Drone is in the getNewTgt loop. Count=:",count
             if(self.Loopcont.getCon()==0):
                 print "ENDING THE SIM!!!!!"
                 break
     
-            if(count>1000):
-                updateTime(100) #penalty
+            if(count>5000):
+                updateTime(1) #penalty
                 data=[self.uid,'Idle',self.currentNode]
                 sendMes=Message(3,data,self.uid,'CAOC',self.LocalSimTime)
                 #        sendMes.printData(1)
@@ -736,12 +730,12 @@ class Drone (LogicalProcess):
         self.handleMessage(msg)
         if(msg.msgType==2):
             print "New target aquired"
-            timedif=(self.LocalSimTime-msg.timestamp)
-            print 'LocalSimTime is %d' % self.LocalSimTime
-            print 'msg.timestamp is %d' % msg.timestamp
-            print 'timedif is %d' % timedif
-            if(timedif<0):#message is in the future
-                self.updateTime(timedif*-1)
+        timedif=(self.LocalSimTime-msg.timestamp)
+        print 'LocalSimTime is %d' % self.LocalSimTime
+        print 'msg.timestamp is %d' % msg.timestamp
+        print 'timedif is %d' % timedif
+        if(timedif<0):#message is in the future
+            self.updateTime(timedif*-1)
         if(not(self.target==42)):
             self.updateCurNode(self.target.node)
 
