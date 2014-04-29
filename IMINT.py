@@ -149,7 +149,7 @@ class IMINT (LogicalProcess):
                     for i in self.uniqueID:
 #                        print "UNIQUE IDS SENT TO IMINT:",i
                         if(msg.data[0]==i):
-                            processFlag==0
+                            processFlag=0
                             break
                     
                     
