@@ -346,7 +346,8 @@ class Drone (LogicalProcess):
 
 
     def setEntry(self,obj):
-        self.EntNode=copy.deepcopy(obj)
+#        self.EntNode=copy.deepcopy(obj)
+        self.EntNode=obj
         if(debug==1):
             print "\n Drone set Map entry at:" , self.EntNode.xpos,",",self.EntNode.ypos
             print ""
@@ -359,6 +360,7 @@ class Drone (LogicalProcess):
     def updateCurNode(self,obj):
         oldnode=self.currentNode
         flightTime=0
+        length=0
         self.currentNode=obj #may not be needed, but may be expanded later if needed.
         if(self.currentNode==2): #entry node. need to get it on the map.
             self.currentNode=self.currentNode.nextNode
@@ -437,6 +439,11 @@ class Drone (LogicalProcess):
 
     def detection(self):
         # Begin by seeing if we already have a track
+        if(self.target.node.nodeType==3):#entry node....
+            self.target.node=self.target.node.nextNode
+        if(self.currentNode.nodeType==3):#entry node....
+            self.updateCurNode(self.currentNode.nextNode)
+        
         if(self.detectBool==1): #we have a track!
             if(debug==1):
                 print "Have a track!"
@@ -717,8 +724,8 @@ class Drone (LogicalProcess):
                 print "ENDING THE SIM!!!!!"
                 break
     
-            if(count>5000):
-                updateTime(1) #penalty
+            if(count>1000):
+                updateTime(100) #penalty
                 data=[self.uid,'Idle',self.currentNode]
                 sendMes=Message(3,data,self.uid,'CAOC',self.LocalSimTime)
                 #        sendMes.printData(1)
@@ -731,12 +738,13 @@ class Drone (LogicalProcess):
         if(msg.msgType==2):
             print "New target aquired"
         timedif=(self.LocalSimTime-msg.timestamp)
-        if(debug==1):
-            print 'LocalSimTime is %d' % self.LocalSimTime
-            print 'msg.timestamp is %d' % msg.timestamp
-            print 'timedif is %d' % timedif
+        
         if(timedif<0):#message is in the future
             self.updateTime(timedif*-1)
+            if(debug==1):
+                print 'LocalSimTime is %d' % self.LocalSimTime
+                print 'msg.timestamp is %d' % msg.timestamp
+                print 'timedif is %d' % timedif
         if(not(self.target==42)):
             self.updateCurNode(self.target.node)
 

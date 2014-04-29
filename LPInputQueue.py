@@ -66,6 +66,8 @@ class LPInputQueue():
         
         if len(self.q) == 0:
             return None
+        self.q=self.sortAndUniq()
+        
         msg = None
         removeMsg = None
         smallestTimestamp = 99999999999999

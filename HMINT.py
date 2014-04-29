@@ -105,7 +105,7 @@ class HMINT (LogicalProcess):
         tgtActualTrackTime=0
         tgtTrackAttempts=0
         self.currTargetTimestamp=self.currTargetTimestamp+random.triangular(1380,4200,2100)
-        tgtData = [tgtID,tgtIntelValue,tgtIntelPriority,tgtType,tgtStealth,tgtSpeed,tgtPredLoc,tgtGoalTrackTime,tgtActualTrackTime,tgtTrackAttempts]
+        tgtData = [tgtID,tgtIntelValue,tgtIntelPriority,tgtType,tgtStealth,tgtSpeed,tgtPredLoc,tgtGoalTrackTime,tgtActualTrackTime,tgtTrackAttempts,self.currTargetTimestamp]
         self.targetTimestamps.append(self.currTargetTimestamp)
         self.targets[self.currTargetTimestamp] = tgtData
         self.count = self.count + 1

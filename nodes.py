@@ -77,10 +77,11 @@ class EntryNode:
         self.xpos=0
         self.ypos=0
         self.nodeType=2
+        self.prob=0
     
     def setNextNode(self,obj):
         self.nextNode=obj
-
+        self.prob=self.nextNode.prob #Nuisance value
 
 class EndNode: #this node is a terminator node for the outskirts of the map. it allows targets to move out of the map
     def __init__(self,obj,mid):
