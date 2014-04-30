@@ -38,8 +38,8 @@ def initHMINT(randNodes,Data):
     print('HMINT initialized')
     return hmintref
 
-def initCAOC(Data,MapEntryPt):
-    caocref = CAOC(Data.numDrones,Data.heuristic,MapEntryPt.xpos,MapEntryPt.ypos)
+def initCAOC(Data,node):
+    caocref = CAOC(Data.numDrones,Data.heuristic,node)
     caocref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     print('CAOC initialized')
     return caocref
@@ -88,6 +88,10 @@ def main(Data,daemon,ns):
     randNodes=[]
     for i in range(Data.numTargets):
         randNodes.append(Map.RandNode())
+        
+    print '############################## MAP ENTRY PT'    
+    print Map.MapEntryPt
+    
     
     # Create PYRO remote object daemon
 #    daemon = Pyro4.Daemon(host=PYRO_HOST, port=PYRO_PORT)

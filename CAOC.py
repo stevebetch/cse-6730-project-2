@@ -23,16 +23,15 @@ class CAOC (LogicalProcess):
     # Input: numDrones=total number of drones for this sim run, heuristicNum=1,2, or 3 (naive, local, or timer heuristic)
     # Output: Initializes CAOC logical process
     # Description: Intialization of parameters that control target prioritization and drone-target assignments   
-    def __init__(self, numDrones, heuristicNum,entryX,entryY):
+    def __init__(self, numDrones, heuristicNum, node):
         LogicalProcess.__init__(self)
         self.id = LogicalProcess.CAOC_ID
         self.priorityQueue = []
         self.drones=[]
         for i in range(numDrones):
-            self.drones.insert(i,["Busy",0])
+            self.drones.insert(i,["Busy",node])
         self.heuristic=heuristicNum
-        self.entryX=entryX
-        self.entryY=entryY
+
     # Call function
     def __call__(self):
         self.run()
@@ -124,14 +123,8 @@ class CAOC (LogicalProcess):
                 if(debug==1):
                     print self.drones
                 for i in range(len(self.drones)):
-                    droneLocation=self.drones[i][1] #x,y coords
-                    try:
-                        droneX=droneLocation.xpos
-                        droneY=droneLocation.ypos
-                    except:
-                        droneX=self.entryX
-                        droneY=self.entryY #assuming at the entry node....
-                    
+                    droneX=self.drones[i][1].xpos
+                    droneY=self.drones[i][1].ypos
                     dist=sqrt((tgtX-droneX)**2+(tgtY-droneY)**2)
                     if dist<minDist and self.drones[i][0]=="Idle":
                         minDist=dist
@@ -156,8 +149,8 @@ class CAOC (LogicalProcess):
                 indexCloseDrone=0
                 minDist=999999
                 for i in range(len(self.drones)):
-                    droneX=self.drones[i][2].xpos
-                    droneY=self.drones[i][2].ypos
+                    droneX=self.drones[i][1].xpos
+                    droneY=self.drones[i][1].ypos
                     dist=sqrt((tgtX-droneX)**2+(tgtY-droneY)**2)
                     if dist<minDist and self.drones[i][0]=="Idle":
                         minDist=dist
@@ -265,14 +258,6 @@ class CAOC (LogicalProcess):
                 
         elif msg.msgType==3:
             
-            # check if a node update
-            if msg.data[1] == 'Busy':
-                print 'setting drone current node'
-                droneid = msg.data[0]
-                node = msg.data[2]
-                self.drones[droneid][1] = node
-                return
-            
             # Call HMINT to update target priority queue to current time
             self.updateTargets(msg.timestamp)
             if(self.Loopcont.getCon()==0):
@@ -284,7 +269,7 @@ class CAOC (LogicalProcess):
                 # If the drone is idle and there are target assignments in the queue, assign that drone a target
                 if (self.drones[msg.data[0]][0]=="Idle") and (len(self.priorityQueue)!=0):
                     newTgtData=self.priorityQueue.pop()
-                    newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],newTgtData[10])
+                    newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
                     self.sendMessage(newTgtMsg)
                     #newTgtMsg.printData()
                     self.drones[msg.data[0]][0]="Busy"
@@ -294,8 +279,8 @@ class CAOC (LogicalProcess):
                 # If the drone is idle and there are target assignments in the queue, assign that drone the nearest target
                 if (self.drones[msg.data[0]][0]=="Idle") and (len(self.priorityQueue)!=0):
                     droneLocation=self.drones[msg.data[0]][1] #x,y coords
-                    droneX=droneLocation.xpos
-                    droneY=droneLocation.ypos
+                    droneX=self.drones[msg.data[0]][1].xpos
+                    droneY=self.drones[msg.data[0]][1].ypos                  
                     indexCloseTgt=0
                     minDist=999999
                     for i in range(len(self.priorityQueue)):
@@ -306,9 +291,9 @@ class CAOC (LogicalProcess):
                             minDist=dist
                             indexCloseTgt=i   
                     newTgtData=self.priorityQueue.pop(indexCloseTgt)
-                    newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)# Stephan: Andrew, Do you wnat to use msg.data[0] or newTgtData?
+                    newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
                     self.sendMessage(newTgtMsg)
-                    self.drones[msg.data[0]][0]=="Busy"
+                    self.drones[msg.data[0]][0]="Busy"
 
     # Run
     # Input: None
@@ -417,7 +402,7 @@ class CAOC (LogicalProcess):
                     if(debug==1):
                         print 'CAOC sending message: '
                         newTgtMsg.printData(1)                    
-                    self.drones[msg.data[0]][0]=="Busy"
+                    self.drones[msg.data[0]][0]="Busy"
 
 
     # ############ TEST METHODS ############
