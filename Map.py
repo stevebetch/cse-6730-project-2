@@ -105,14 +105,14 @@ class GenMap:
                     
                     if(int(modnum)==int(modmax)): #cant devide the length by an even number. Crap. pick a rough length we want and go with it.
                         if(length>20):
-                            modnum=length/10.0 #have a node every 10 feet.
+                            modnum=length/10.0 #have a node every 10 m.
                         elif(length==1):
                             modnum=1
                         elif(length<10):
                             modnum=length/2.0
 
                         else: #need to capture where the length is between 4 and 20 and prime.
-                            modnum=length/3.0 #need to decide still. Discussions may be needed.
+                            modnum=length/3.0
                         
                         break
                     if(length%modnum==0 and length!=int(modnum)):
@@ -129,14 +129,14 @@ class GenMap:
                     
                         if(int(modnum)==int(modmax)): #cant devide the length by an even number. Crap. pick a rough length we want and go with it.
                             if(length2>20):
-                                modnum=length/10.0 #have a node every 10 feet.
+                                modnum=length/10.0 #have a node every 10 m.
                             elif(length2==1):
                                 modnum=1
                             elif(length2<10):
                                 modnum=length/2.0
                         
                             else: #need to capture where the length is between 4 and 20 and prime.
-                                    modnum=length/3.0 #need to decide still. Discussions may be needed.
+                                    modnum=length/3.0
                         
                                     break
                         if(length2%modnum==0 and length2!=int(modnum)):
@@ -216,8 +216,7 @@ class GenMap:
                                         if(a.xpos==EWf and a.ypos==NSf):
                                             index=self.intersectionNodes.index(a)
                                     
-                                    ######## STOPPING POINT #####
-                                    # Then copy/paste code and run thru the N/S streets.
+                                  
                                     self.streetNodes[nextNum+1].prevNode=self.intersectionNodes[index]#intersection
                                     self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
                                     self.intersectionNodes[index].setLeng(length2)
@@ -228,7 +227,7 @@ class GenMap:
                                     self.streetNodes[nextNum].nextNode=self.streetNodes[nextNum+1]
                                     self.streetNodes[nextNum+1].prevNode=self.streetNodes[nextNum]
                 if(modnum==1 and EWfcount==0):
-                #Need to connect the intersection to an end pont? or do we just act like its a T-section? Im thinking we act like its a T intersection
+                #we act like its a T intersection
                     a=1
                 elif(modnum==1 and EWfcount!=int(EW)): #and EWfcount==int(NS)):
                 # Need to connect to another intersection
@@ -276,14 +275,14 @@ class GenMap:
                     
                     if(int(modnum)==int(modmax)): #cant devide the length by an even number. Crap. pick a rough length we want and go with it.
                         if(length>20):
-                            modnum=length/10.0 #have a node every 10 feet.
+                            modnum=length/10.0 #have a node every 10 m.
                         elif(length==1):
                             modnum=1
                         elif(length<10):
                             modnum=length/2.0
                         
                         else: #need to capture where the length is between 4 and 20 and prime.
-                            modnum=length/3.0 #need to decide still. Discussions may be needed.
+                            modnum=length/3.0
                         
                         break
                     if(length%modnum==0 and length!=int(modnum)):
@@ -300,14 +299,14 @@ class GenMap:
                     
                         if(int(modnum)==int(modmax)): #cant devide the length by an even number. Crap. pick a rough length we want and go with it.
                             if(length2>20):
-                                modnum=length/10.0 #have a node every 10 feet.
+                                modnum=length/10.0 #have a node every 10 m.
                             elif(length2==1):
                                 modnum=1
                             elif(length2<10):
                                 modnum=length/2.0
                         
                             else: #need to capture where the length is between 4 and 20 and prime.
-                                modnum=length/3.0 #need to decide still. Discussions may be needed.
+                                modnum=length/3.0
                         
                                 break
                         if(length2%modnum==0 and length2!=int(modnum)):
@@ -409,8 +408,7 @@ class GenMap:
                                         if(a.xpos==EWf and a.ypos==NSf):
                                             index=self.intersectionNodes.index(a)
                                     
-                                    ######## STOPPING POINT #####
-                                    # Then copy/paste code and run thru the N/S streets.
+                                 
                                     self.streetNodes[nextNum+1].prevNode=self.intersectionNodes[index]#intersection
                                     self.intersectionNodes[index].setRoadnode(self.streetNodes[nextNum+1])
                                     self.intersectionNodes[index].setLeng(length2)
@@ -423,7 +421,7 @@ class GenMap:
                 
                 
                 if(modnum==1 and NSfcount==0):
-                #Need to connect the intersection to an end pont? or do we just act like its a T-section? Im thinking we act like its a T intersection
+
                     pass
                 
                 elif(modnum==1 and NSfcount!=0): #and EWfcount==int(NS)):

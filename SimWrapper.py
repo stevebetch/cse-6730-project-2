@@ -40,7 +40,7 @@ class Data:
 
     def fillRow(self,row):
         self.numDrones=int(row[0])
-        self.typeOfDrone = row[1] # does this need to be a string? or int? or float?
+        self.typeOfDrone = row[1]
         self.numTargets=int(row[2])*2
         self.numStreets=int(row[3])
         self.seedNum=float(row[4])

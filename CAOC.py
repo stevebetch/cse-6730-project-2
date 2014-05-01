@@ -306,7 +306,7 @@ class CAOC (LogicalProcess):
                             minDist=dist
                             indexCloseTgt=i   
                     newTgtData=self.priorityQueue.pop(indexCloseTgt)
-                    newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)# Stephan: Andrew, Do you wnat to use msg.data[0] or newTgtData?
+                    newTgtMsg=Message(2,newTgtData,self.id,msg.data[0],self.localTime)
                     self.sendMessage(newTgtMsg)
                     self.drones[msg.data[0]][0]=="Busy"
 

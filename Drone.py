@@ -31,8 +31,8 @@ class Drone (LogicalProcess):
         self.Joker=0 #how much time we have to search
         self.jokerflag=0
 
-        self.Bingo=0 #time until we have to leave the ma        self.DistEntry=0.0 #distance from the entry node
-        self.DistEntry=0
+        self.Bingo=0 #time until we have to leave the map
+        self.DistEntry=0 # distance from entry node
         self.FlightSpeed=random.randint(46,54)#Random flight speed of the drone based on loiter and top speed, m/s
         self.DroneLegs=Legs #11.6hrs = 41760s max endurance, 5.8hrs = 20880s median endurance
 
@@ -61,10 +61,7 @@ class Drone (LogicalProcess):
         self.run(mapObj)
         
     def getCurrentState(self):
-        return None        
-
-    # Mark: SHOULD MOVE THIS TO run() METHOD OR CALL IT FROM run() METHOD
-    #Stephan: moved old run() up here and renamed start() to run()
+        return None
     
     def run(self,mapObj):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
@@ -78,6 +75,7 @@ class Drone (LogicalProcess):
         nameserver = Pyro4.locateNS()
         LPIDs = []
         
+        # Pyro4 startup code
         controllerInQ_uri = nameserver.lookup('inputqueue.controller')
         self.controllerInQ = Pyro4.Proxy(controllerInQ_uri)
         
@@ -99,39 +97,23 @@ class Drone (LogicalProcess):
 
         loopInQs_uri = nameserver.lookup('inL.loop')
         self.Loopcont = Pyro4.Proxy(loopInQs_uri)
-        
+    
         self.initGVTCounts(LPIDs)  
         dLock.release()
         
         count=0
-        
+        #Start setting up the drone
         self.setEntry(mapObj) #MUST PASS THE ENTRY NODE!!! (map.MapEntryPt)
         self.currentNode=mapObj #the only time we directly set the current node.
         self.LocalSimTime=self.localTime
-        self.setJokerBingo()
+        self.setJokerBingo() # fuel settings
 #        need to send a message that tells caoc where the drones are. Not ready for a target, therefore, busy.
         initMes=Message(3,[self.uid,'Busy',self.currentNode],self.uid,'CAOC',self.localTime)
         self.sendMessage(initMes)
 
-        # Event loop iteration
-        #count = 10
-        #while True:
-            #time.sleep(2)
-            #print 'Drone %d event loop iteration' % (self.uid)
-            #msg = self.getNextMessage()
-            #if msg:
-                #self.handleMessage(msg)
-                #break
-            #sys.stdout.flush()
-            #data = [1,2,3,4,5,6,7,8,9,1,2,3,4]
-            #self.sendMessage(Message(2, data, self.uid, 'IMINT', count))
-            #self.sendMessage(Message(2, data, self.uid, 'CAOC', count))
-            #count += 70
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         # Begin at entry node. aka, only pass drone the entry node!!!
         
-       
-#        self.removeTgt() #Starts the logic to get a new target
 
         if(self.heuristic==1): #Naive heuristic
             while(self.Loopcont.getCon()==1):
@@ -150,12 +132,12 @@ class Drone (LogicalProcess):
                 
                 
          # Check fuel before anything else!!
-                if(not(self.target==42)):
+                if(not(self.target==42)): #make sure we have a target
                     if(not(self.jokerflag)): #joker not set yet. can search for targets
                         if(not(self.detectBool)): #dont have a detection
                             self.search()
                             self.detection()
-                            self.searchdwell+=self.searchTime
+                            self.searchdwell+=self.searchTime #keep track of time
                         
                         else: #we have a detection! woooo
                             self.detection()
@@ -339,6 +321,7 @@ class Drone (LogicalProcess):
 
 
     def resetMaintenanceTimer(self):
+        #call this to reset the maintenance clock
         self.MaintenanceActionTime=75600
 
 
@@ -346,7 +329,7 @@ class Drone (LogicalProcess):
 
 
     def setEntry(self,obj):
-#        self.EntNode=copy.deepcopy(obj)
+# set the entry node on the drone
         self.EntNode=obj
         if(debug==1):
             print "\n Drone set Map entry at:" , self.EntNode.xpos,",",self.EntNode.ypos
@@ -358,6 +341,7 @@ class Drone (LogicalProcess):
 
 
     def updateCurNode(self,obj):
+        #update the current node the drone is at. Also update time with how long it takes to fly.
         oldnode=self.currentNode
         flightTime=0
         length=0
@@ -389,7 +373,7 @@ class Drone (LogicalProcess):
        # 
     
     def subclassHandleMessage(self, msg):
-
+        #handle incoming target messages. only care about type 2 messages.
         if(msg.msgType==2): # New target
             # tgtData = [tgtID 0,tgtIntelValue 1,tgtIntelPriority 2,tgtType 3,tgtStealth 4,tgtSpeed 5,tgtPredLoc 6,tgtGoalTrackTime 7,tgtActualTrackTime 8,tgtTrackAttempts 9]
             Data=msg.data
@@ -420,11 +404,10 @@ class Drone (LogicalProcess):
     def probTest(self,probVal):
         #This function will be called to determine if we get a positive detection on the target
 
-        testprob=random.uniform(0,1)# JANE, this is the distribution you wanted to work on.
-        
+        testprob=random.uniform(0,1)
         #Fuseing the probVal, which is the map Nusicnce factor, with target properties.
         TotProb= probVal*self.target.Stealth
-
+        # This is the probability of detect.
         
         if(TotProb<=testprob):
             # Weve got a positive hit!
@@ -480,8 +463,8 @@ class Drone (LogicalProcess):
 
 
 
-    def search(self): # this function needs a lot of work. How are we actually doing the search method?!?
-        
+    def search(self):
+        #this is the search method.
         if(self.xpos!=self.target.node.xpos or self.ypos!=self.target.node.ypos): # we know we arnt looking at the right node.
             #Assume our intel came with a direction of movement and speed
             choice=random.random()
@@ -489,7 +472,7 @@ class Drone (LogicalProcess):
                 if(self.currentNode.nodeType==0): #curent node is a street
                     if(self.target.node.xpos>self.xpos):
                         self.updateCurNode(self.currentNode.nextNode)
-                        # Only need flight time here. We will have to be more elegant when actually tracking.
+                        # Only need flight time here. We will be more elegant when actually tracking.
                     else:
                         self.updateCurNode(self.currentNode.prevNode)
                 elif(self.currentNode.nodeType==1): # an intersection.
@@ -542,11 +525,10 @@ class Drone (LogicalProcess):
 
 
     def ReturnToBase(self):
-    #cant have any new assignments durning this time. May need to look at the messages to reject taskers.
+    #cant have any new assignments durning this time.
     # need to delete target, return it to the queue.
         if(not(self.target==42)):
             self.ReturnTgt()
-#        self.removeTgt()
         if(debug==1):
             print "xpos:",self.xpos
             print "ypos:",self.ypos
@@ -588,25 +570,7 @@ class Drone (LogicalProcess):
 
     def restoreState(self,timestamp):
         print 'restoring to last Drone state stored <= %d' % (timestamp)
-#        index=0
-#        for i in range(len(self.stateQueue)-1,-1,-1):
-#            if(timestamp>=self.stateQueue[i].LocalSimTime):
-#                index=i
-#                break
-#            else:
-#                self.stateQueue.pop(i)
-#        self.restore(self.stateQueue[index])    
-#            print "restoring to last CAOC state stored <=",timestamp
-        #        index=0
-        #        for i in range(len(self.stateQueue)-1,-1,-1):
-        #            if(timestamp>=self.stateQueue[i].key):
-        #                index=i
-        #                break
-        #            else:
-        #                self.stateQueue.pop(i)
-#        print "Queue times:"
-#        for i in self.stateQueue:
-#            print i.key
+
         a=[]
         for i in self.stateQueue:
             if(timestamp>=i.key):
@@ -637,7 +601,7 @@ class Drone (LogicalProcess):
         self.EntNode=obj.EntNode
         self.currentNode=obj.currentNode
         
-        self.target=obj.target #Stephan: How are we handling this? On roll back, will we just restore to this time stamp and roll with it?
+        self.target=obj.target
         
         self.detectBool=obj.detectBool
         self.sNeedBool=obj.sNeedBool
@@ -662,22 +626,6 @@ class Drone (LogicalProcess):
 
 
 
-
-
-#    def SendIMINT(self):
-#        self.ReturnTgt()
-#        #update the target
-#        self.target.ActTracTime+=self.TarTime
-#        self.target.trackAttempts+=1
-#        tgtData=[self.target.ID,self.target.intelVal,self.target.intelPriority,self.target.Type,self.target.Stealth,self.target.speed,self.target.node,self.target.goalTime,self.target.ActTracTime,self.target.trackAttempts]
-#        print "Target Data:", tgtData
-#        sendMsg=Message(2,tgtData,self.uid,'IMINT',self.LocalSimTime)
-#        self.sendMessage(sendMsg)
-#        self.removeTgt()
-#        self.setLocalTime(self.LocalSimTime)
-#
-
-
     def removeTgt(self):
         self.IMINTtgt=self.target
         self.target=42
@@ -685,11 +633,9 @@ class Drone (LogicalProcess):
         #self.setLocalTime(self.LocalSimTime)
 
 
-
-
     def getNewTgt(self):
        # self.setLocalTime(self.LocalSimTime)
-        if(not(self.IMINTtgt==None)):
+        if(not(self.IMINTtgt==None)): #Return the target to imint.
             tgtData=[self.IMINTtgt.ID,self.IMINTtgt.intelVal,self.IMINTtgt.intelPriority,self.IMINTtgt.Type,self.IMINTtgt.Stealth,self.IMINTtgt.speed,self.IMINTtgt.node,self.IMINTtgt.goalTime,self.IMINTtgt.ActTracTime,self.IMINTtgt.trackAttempts]
             if(debug==1):
                    print "Target Data:", tgtData
@@ -744,9 +690,6 @@ class Drone (LogicalProcess):
                 self.updateTime(timedif*-1)
         if(not(self.target==42)):
             self.updateCurNode(self.target.node)
-
-        #else: #message arrived in the past, but we have done work since receiving it.
-            #self.setLocalTime(self.LocalSimTime)
 
 
 

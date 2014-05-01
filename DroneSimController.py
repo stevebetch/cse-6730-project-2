@@ -66,14 +66,6 @@ class DroneSimController(GlobalControlProcess):
         loopInQs_uri = nameserver.lookup('inL.loop')
         self.Loopcont = Pyro4.Proxy(loopInQs_uri)
         
-        # Mark: Test code can be commented out
-        #self.imintInQ.addMessage(Message(1, 'Data', 'Controller', 'IMINT', 5))
-        #self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 2))
-        #self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 3))
-        #self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 4))
-        #self.caocInQ.addMessage(Message(1, 'Data', 'Controller', 'CAOC', 5))
-        #self.inputQueue.addMessage(Message(1, 'Data', 'Controller', 'Controller', 3))
-        #self.droneInQs.addMessage(0, Message(2, 'Data', 'Controller', 0, 3))
          
         while (self.Loopcont.getCon()==1):
             

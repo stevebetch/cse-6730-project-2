@@ -31,7 +31,6 @@ class Target:
     
         
     def movement(self):
-        #random.seed() # this is for debugging only. Should be removed in the final code.
 # step1: check what kind of node. 0= street, 1= intersection, 2=entry node, 3=End node
 # Can only move on street and road nodes. If in entry or end, remove self from sim. Send message to caoc
         if(self.node.nodeType==2):
