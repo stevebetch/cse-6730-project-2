@@ -58,12 +58,13 @@ class LogicalProcess(SharedMemoryClient):
         self.gvtData = LPGVTData()
         self.nextLPInTokenRingInQ = None
         
+    # initializes the vector of message counts in the gvtData data structure
     def initGVTCounts(self, lpids):
         self.gvtData.initCounts(lpids)
         
+    # sends the passed message to its internally specified recipient
     def sendMessage(self, msg):
         
-        #msg.printData(1)
         msg.color = self.gvtData.color            
         if(debug==1):
             if (msg.isAntiMessage()):
@@ -110,8 +111,6 @@ class LogicalProcess(SharedMemoryClient):
             # Drone
             d.acquire()
             droneid = msg.recipient
-            
-#            print "Drone ID for message:", droneid
             self.droneInQs.addMessage(droneid, msg) # assumes recipient set to drone's ID in msg
             if msg.color == LPGVTData.WHITE:
                 if(debug==1):
@@ -119,11 +118,12 @@ class LogicalProcess(SharedMemoryClient):
                 self.gvtData.counts[self.droneInQs.getLPID(droneid)] += 1
             else:
                 if(debug==1):
-                    print 'updating tRed value for drone %d' % (droneid)
+                    print 'updating tRed value'
                 self.gvtData.tRed = min(self.gvtData.tRed, msg.timestamp)
             d.release()
         self.saveAntiMessage(msg)
     
+    # Executes rollback procedure initiated by given message
     def rollback(self, msg):
         
         print 'ROLLBACK!!'
@@ -159,6 +159,7 @@ class LogicalProcess(SharedMemoryClient):
         if (not msg.isAntiMessage()):
             self.handleMessage(msg)  
             
+    # Forwards the GVTControlData message to the next LP in the token ring
     def forwardGVTControlMessage(self, msg):
         self.calculateLocalTMin()
         msg.data.tMin = min(msg.data.tMin, self.gvtData.tMin)
@@ -175,7 +176,8 @@ class LogicalProcess(SharedMemoryClient):
             if(debug==1):
                 print 'Forwarding GVT control message to drone %d' % (self.nextDroneID)
             self.nextLPInTokenRingInQ.addMessage(self.nextDroneID, msg)
-            
+
+    # Forwards the GVT Value message to next LP in token ring
     def forwardGVTValueMessage(self, msg):
         if self.nextLPInTokenRingInQ is None:
             self.getNextLPInTokenRing(msg.data.LPIDs)
@@ -189,6 +191,7 @@ class LogicalProcess(SharedMemoryClient):
                 print 'Forwarding GVT value message to drone %d' % (self.nextDroneID)
             self.nextLPInTokenRingInQ.addMessage(self.nextDroneID, msg)        
         
+    # Gets the input queue for the next LP in the GVT token ring
     def getNextLPInTokenRing(self, lpids):
         if(debug==1):
             print self.LPID
@@ -217,6 +220,8 @@ class LogicalProcess(SharedMemoryClient):
                 if(debug==1):
                     print 'next LP is a drone'
                 
+    # Calculates and stores the local tMin value used for GVT calculations.  This is the
+    # lowest valued timestamp among unprocessed messages in the LP's input queue
     def calculateLocalTMin(self):
         # if a drone, get local copy of input queue from DroneInputQueueContainer shared object 
         if self.inputQueue is None:
@@ -225,6 +230,9 @@ class LogicalProcess(SharedMemoryClient):
             q = self.inputQueue        
         self.gvtData.tMin = q.calculateLocalTMin()        
     
+    # Callback executed when the GVT thread that waits for the count white messages
+    # received by this LP to be equal to the number of white messages sent to this LP
+    # has completed
     def onGVTThreadFinished(self, lpids, msg):
         self.gvtData.initCounts(lpids)
         if not(self.gvtData.tMin is None):
@@ -233,6 +241,7 @@ class LogicalProcess(SharedMemoryClient):
         if(debug==1):
             print 'LP %d: GVT thread (cut C2) callback executed' % (self.LPID)
     
+    # Message handler executed after the next message has been pulled from the LP's input queue
     def handleMessage(self, msg):
         if(debug==1):
             print ''
@@ -314,6 +323,8 @@ class LogicalProcess(SharedMemoryClient):
                     self.subclassHandleMessage(msg)
                     sys.stdout.flush()
     
+    # Gets the next message from the LP's input queue. This will be the message in the input
+    # queue with the smallest timestamp that is not an anti-message.
     def getNextMessage(self):
         a.acquire()
         b.acquire()
@@ -348,12 +359,14 @@ class LogicalProcess(SharedMemoryClient):
         e.release()
         return msg 
     
+    # Tells whether the matching message for the given anti-message has already been processed
     def matchingMessageAlreadyProcessed(self, msg):
         for histMsg in self.inputMsgHistory:
             if histMsg.id == msg.id:
                 return True
         return False
                 
+    # Sets the LP's local time value
     def setLocalTime(self, time):
         self.localTime = time
         try:
@@ -361,13 +374,17 @@ class LogicalProcess(SharedMemoryClient):
         except:
             self.droneInQs.setLocalTime(self.uid, time)
         
+    # Saves an anti-message for the given message in the LP's output queue
     def saveAntiMessage(self, msg):
         antimsg = msg.getAntiMessage()
         self.outputQueue[msg.id] = antimsg
                 
+    # gets the currently stored local tMin value
     def getLocalMinTimeForGVT(self):
         return self.gvtData.tMin
     
+    # Sets the LP's GVT value to the given value, and triggers reclaiming of memory and
+    # execution of any cached I/O operations scheduled for times prior to the new GVT
     def setGVT(self, gvt):
         if(debug==1):
             print 'LP %d setting GVT value to %d' % (self.LPID, gvt)
@@ -375,6 +392,7 @@ class LogicalProcess(SharedMemoryClient):
         self.releaseResources(gvt)
         self.executeIO(gvt)
         
+    # Releases memory resources based on the given GVT value
     def releaseResources(self, gvt):
         # delete items in state/history/output queues prior to GVT
         if(debug==1):
@@ -409,6 +427,7 @@ class LogicalProcess(SharedMemoryClient):
         if(debug==1):
             print 'inputMsgHistory length after reclaim: %d' % (len(self.inputMsgHistory))
     
+    # Executes I/O operations scheduled for times prior to the given GVT value (not yet implemented)
     def executeIO(self, gvt):
         # commit IO operations for times prior to GVT
         if(debug==1):

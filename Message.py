@@ -57,6 +57,7 @@ class Message:
     def __eq__(self, other): # Stephan: What does this do??
         return self.__dict__ == other.__dict__   
     
+    # Returns a clone of the message, with identical id
     def clone(self):
         return Message(self.msgType, self.data, self.sender, self.recipient, self.timestamp, self.id)
     
@@ -69,6 +70,7 @@ class Message:
         antimsg.isAnti = 1
         return antimsg
     
+    # Tells whether the message is an anti-message
     def isAntiMessage(self):
         return self.isAnti
 

@@ -2,6 +2,8 @@ import time
 from Message import *
 from threading import Thread
 
+# Thread object executed wait for a logical process' white messages received
+# count to equal total number of white messages sent to that process
 class GVTWaitForThread(Thread):
     
     def onGVTThreadFinished(self, lpids, msg):
@@ -13,6 +15,7 @@ class GVTWaitForThread(Thread):
         self.LPID = parent.LPID
         self.controlMsg = controlMsg
         
+    # executes the thread
     def run(self):
         numMsgsSentToThisLP = 0
         LPIDs = []
@@ -31,6 +34,8 @@ class GVTWaitForThread(Thread):
             return
         self.parent and self.parent.onGVTThreadFinished(LPIDs, self.controlMsg)
         
+# Message representing GVT token used to accumulate message counts among all logical
+# processes in token ring
 class GVTControlMessageData():
     'Data content for GVT Control Message'
     
@@ -42,6 +47,7 @@ class GVTControlMessageData():
             self.counts[i] = 0
         self.LPIDs = lpids
             
+    # Adds the message counts for the local logical process to the accumulated totals
     def addLocalCounts(self, localCounts, lpid):
         if(debug==1):
             print 'self.counts'
@@ -54,6 +60,7 @@ class GVTControlMessageData():
             if (key != lpid):
                 self.counts[key] += localCounts[key]
             
+    # prints out token's parameters
     def dump(self):
         if(debug==1):
             print 'GVTControlMessageData dump:'
@@ -62,6 +69,8 @@ class GVTControlMessageData():
             for i in self.counts:
                 print 'self.counts[%d] = %d' % (i,self.counts[i])  
 
+# Data structure used by a logical process to store its local GVT data
+# including vector of message counts, local tMin and tRed values
 class LPGVTData:
     "Local GVT data for a logical process"
     
@@ -77,10 +86,12 @@ class LPGVTData:
         self.gvt = 0
         self.counts = {}
         
+    # initializes vector of message counts
     def initCounts(self, lpids):
         for i in range(len(lpids)):
             self.counts[i] = 0
-            
+        
+    # prints contents of data structure    
     def dump(self):
         if(debug==1):
             print 'LPGVTData dump'
@@ -94,7 +105,7 @@ class LPGVTData:
                 print 'self.counts[%d] = %d' % (i,self.counts[i])
             print 'self.gvt = %d' % (self.gvt)
 
-
+    # resets the local values
     def reset(self):
         self.tMin = 0 # smallest timestamp of any unprocessed message in inputqueue
         self.tRed = 0 # smallest timestamp of any red message (sent between cut C1 and C2)
@@ -102,6 +113,7 @@ class LPGVTData:
         self.gvt = 0
         self.counts = []
 
+# Message data containing GVT value to be propagated to all LPs
 class GVTValue:
     
     def __init__(self, gvt):
