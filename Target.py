@@ -31,7 +31,10 @@ class Target:
     
         
     def movement(self):
-# step1: check what kind of node. 0= street, 1= intersection, 2=entry node, 3=End node
+    # step1: check what kind of node. 0= street, 1= intersection, 2=entry node, 3=End node
+    #Input: none Output: None. 
+    # Description: This function controls the movement of the target.It looks at what type of node the target is on and has set behavior as a result. 
+
 # Can only move on street and road nodes. If in entry or end, remove self from sim. Send message to caoc
         if(self.node.nodeType==2):
             length=math.sqrt((self.node.xpos-self.node.nextNode.xpos)**2 +(self.node.ypos-self.node.nextNode.ypos)**2)
@@ -83,4 +86,5 @@ class Target:
             
             
     def setObsTime(self,time):
-        self.ObsTime=time
+    self.ObsTime=time 
+    #Input: Time Output: none. Description: Sets the amount of time necessary for observation.
