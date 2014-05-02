@@ -58,14 +58,9 @@ class Drone (LogicalProcess):
     
     
     def __call__(self, mapObj):
-        self.run(mapObj)
-        
-    def getCurrentState(self):
-        return None        
+        self.run(mapObj)  
 
-    # Mark: SHOULD MOVE THIS TO run() METHOD OR CALL IT FROM run() METHOD
-    #Stephan: moved old run() up here and renamed start() to run()
-    
+    # starts the drone logical process
     def run(self,mapObj):
         # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         
