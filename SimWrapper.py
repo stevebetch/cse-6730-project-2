@@ -4,6 +4,11 @@ import csv
 
 
 def ProgRunner ():
+#Input: none 
+#Output: None 
+#Description: Initializes PYRO4, opens and takes data from control.csv, pasrses the data up and starts the sim running.
+# This is a wrapper script to control multiple simulation runs.
+
 
 #initialize
     PYRO_HOST=get_local_ip_address()
@@ -25,6 +30,8 @@ def ProgRunner ():
 
 
 class Data:
+#Input: none Output: None. Description: Initializes the class of data that controls the simulation
+
     def __init__(self):
         self.numDrones=0
         self.numStreets=50
@@ -38,7 +45,9 @@ class Data:
         self.tarType=2
         self.Legs=41760
 
+
     def fillRow(self,row):
+    #Input: a row of data Output: None. Description: Sets the data for a simulation based on what is passed to it from the Control.csv file
         self.numDrones=int(row[0])
         self.typeOfDrone = row[1]
         self.numTargets=int(row[2])*2
