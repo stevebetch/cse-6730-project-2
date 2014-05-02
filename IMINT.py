@@ -79,7 +79,7 @@ class IMINT (LogicalProcess):
         self.targetsTracked=obj.targetsTracked
         self.localTime=obj.localTime 
 
-    # Handle Message [IN PROGRESS]
+    # Handle Message
     # Input: Message data structure (see Message.py for documentation)
     # Output: Updates target attributes, reporting attributes and may send target assignment to CAOC [or TBD for msg type 1]
     # Description: Handles message based on message type

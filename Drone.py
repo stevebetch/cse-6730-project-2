@@ -64,8 +64,10 @@ class Drone (LogicalProcess):
         return None
     
     def run(self,mapObj):
-        # Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
-        
+        # Run
+        # Input: entry map node
+        # Output: None
+        # Description: Begin process of selecting target from CAOC priority queue, tracking, check when refueling needed, etc.
         dLock.acquire()
         
         print('Drone process running')
