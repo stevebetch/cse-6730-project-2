@@ -10,6 +10,9 @@ from nodes import *
 
 class GenMap:
     def __init__(self,XgridSize,YgridSize):
+    #Input: x/y gride size   
+    #Output: A map object 
+#Description: This initializes the map. 
         self.streetNodes=[] #array containing all of the street nodes
         self.intersectionNodes=[] #array containing all of the intersection nodes
         #self.endNodes=[]
@@ -24,6 +27,9 @@ class GenMap:
         #random.seed(3) #PUT IN FOR DEBUGGING ONLY!!!
 
     def map(self, numStreets,Nuisance):
+    #Input: Number of streets in the sim, nuisance factor Output:None. 
+    #Description: This function drives the creation of the map. It dynamically places the streets at vairous x and y lines, then creates the intersection nodes
+#Then generates the steet nodes and end nodes. It finally finds the node closest to 0,0 and attaches an entry node.
         self.Nuisance=Nuisance
         
         start_time = time.time()
@@ -81,6 +87,8 @@ class GenMap:
         
 
     def connectNSNodes(self,NS,EW):
+    #Input: Arrays of vertical and horizontal streets Output: None. 
+#Description: This function generates all fo the vertical street nodes and end node. Connectes all of the street nodes and intersection nodes.
         EWfcount=0
         NSfcount=0
         # print 'NS pos',self.NSpos
@@ -250,7 +258,8 @@ class GenMap:
                 NSfcount+=1
             EWfcount+=1
 
-    def connectEWNodes(self,NS,EW):
+    def connectEWNodes(self,NS,EW):    #Input: Arrays of vertical and horizontal streets Output: None. 
+#Description: This function generates all fo the horizontal street nodes and end node. Connectes all of the street nodes and intersection nodes.
         EWfcount=0
         NSfcount=0
         # print 'NS pos',self.NSpos
@@ -444,7 +453,8 @@ class GenMap:
             EWfcount+=1
 
 
-    def RandNode(self):
+    def RandNode(self): 
+    #Input: None. Output: None Description: This function returns a random node in the map.
         RDvINT=random.random()
         if(RDvINT>.5): # use a road
             moo=len(self.streetNodes)
