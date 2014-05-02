@@ -21,36 +21,59 @@ PYRO_PORT = 12778
 
 
 def createNewDrone(uid, droneType,heuristic,Legs):
+#Input: Drone id, type, heuristic, and fuel flight time. 
+# Output: a drone object
+#Description: This function initalizes a drone for the simulation.
+
     print('Creating new drone of type ' + droneType)
     droneref = Drone(uid, droneType,heuristic,Legs)
     droneref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     return droneref
     
 def initIMINT(heuristic,numTargets):
+#Input: heuristic, and number of targets Output: Imint object
+#Description: This function initalizes the imint object.
+
     imintref = IMINT(heuristic,numTargets)
     imintref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     print('IMINT initialized')
     return imintref
 
 def initHMINT(randNodes,Data):
+#Input: A random node on the map, and the simulation data class Output: HMINT object
+#Description: This function initalizes the HMINT object.
+
+
     hmintref = HMINT(Data.numTargets, randNodes,Data.tarType)
     hmintref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     print('HMINT initialized')
     return hmintref
 
 def initCAOC(Data,MapEntryPt):
+#Input: the simulation data class and the map entry point Output: CAOC object
+#Description: This function initalizes the CAOC object
+
+
     caocref = CAOC(Data.numDrones,Data.heuristic,MapEntryPt.xpos,MapEntryPt.ypos)
     caocref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     print('CAOC initialized')
     return caocref
 
 def Loop():
+#Input: none Output: loop controlelr object
+#Description: This function initalizes the loop control object.
+
+
     loopref = Loops()
     loopref.setConnectionParams(PYRO_HOST, PYRO_PORT)
     print('Loopref initialized')
     return loopref
 
 def get_local_ip_address():
+#Input: none Output: local ip address
+#Description: This function gets your computer's IP address. Needed for PYRO.
+
+
     ipaddr = ''
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -243,7 +266,8 @@ def main(Data,daemon,ns):
  #   main()
 
 class Loops:
-    
+#Input: none Output: none
+#Description: This class is a shared memeory object used to end the simulation when IMINT gets enough targets.
     def __init__(self):
         self.control=1
     def getCon(self):
