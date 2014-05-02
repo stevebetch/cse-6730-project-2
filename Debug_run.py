@@ -5,7 +5,11 @@ from Drone import *
 from Target import *
 
 a=GenMap(600,600)
-a.map(100,.8)
+a.map(20,.8)
+
+
+### Test 1
+
 #ger=LogicalProcess()
 #
 #drone=Drone(3,ger,1,41760)
@@ -68,23 +72,26 @@ a.map(100,.8)
 #                targetcount+=1
 
 
-#drone.run(a.MapEntryPt)
-for i in range(50):
-    b=a.RandNode()
-    pp=Target(b)
-    pp.movement()
-    count=0
-    start_time = time.time()
-    cntmax=50000
-    try:
-        while(count<cntmax):
-            count+=1
-            pp.movement()
-
-    except:
-        print pp.node
-print "Time elapsed to move",cntmax,"targets", time.time() - start_time, "s"
-
+#TEST 2
+#cntmax=5
+#
+##drone.run(a.MapEntryPt)
+#for i in range(5):
+#    b=a.RandNode()
+#    pp=Target(b)
+#    pp.movement()
+#    count=0
+#    start_time = time.time()
+#    cntmax=5
+#    try:
+#        while(count<cntmax):
+#            count+=1
+#            pp.movement()
+#
+#    except:
+#        print pp.node
+#print "Time elapsed to move",cntmax,"targets", time.time() - start_time, "s"
+#
 
 
 

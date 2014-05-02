@@ -30,9 +30,9 @@ class GenMap:
         EW=math.floor(numStreets/2.0)
         NS=math.ceil(numStreets/2.0)
         
-        #print '\nNumber of East\West streets',EW
-        #print '\nNumber of North\South streets:',NS
-        
+        print '\nNumber of East\West streets',EW
+        print '\nNumber of North\South streets:',NS
+
         self.NSpos=random.sample(xrange(self.xleng),int(NS))
         #print 'NS Street ',i,' is at position ', point
         # print '\n'
@@ -40,7 +40,7 @@ class GenMap:
         
         self.EWpos=random.sample(xrange(self.yleng),int(EW))
 
-        #   print 'EW Street ', j,' is at position ', point
+#        print 'EW Street ', j,' is at position ', point
         # print '\n'
         b=EntryNode(23)
         self.MapEntryPt=b
@@ -53,10 +53,10 @@ class GenMap:
                 a=intersecNode(42,self.Nuisance)
                 a.setXY(l,k)
                 self.intersectionNodes.append(a)
-#        for a in self.NSpos:
-#            print "NS Street at:", a
-#        for a in self.EWpos:
-#            print "EW Street at:", a
+        for a in self.NSpos:
+            print "NS Street at:", a
+        for a in self.EWpos:
+            print "EW Street at:", a
         self.connectNSNodes(NS,EW)
         self.connectEWNodes(NS,EW)
         

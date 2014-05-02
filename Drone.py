@@ -417,9 +417,6 @@ class Drone (LogicalProcess):
 
 
 
-
-
-
     def detection(self):
         # Begin by seeing if we already have a track
         if(self.target.node.nodeType==3):#entry node....
@@ -556,15 +553,10 @@ class Drone (LogicalProcess):
 
 
 
-
-
     def saveState(self):
         saver=DRONEState(self)
         print 'Drone %d saving state for timestamp %d' % (self.uid, saver.localTime)
         self.stateQueue.append(saver)
-
-
-
 
 
 
@@ -580,7 +572,6 @@ class Drone (LogicalProcess):
         
         self.restore(index)
         self.stateQueue=a
-
 
 
 
@@ -613,9 +604,6 @@ class Drone (LogicalProcess):
 
 
 
-
-
-
     def ReturnTgt(self):
         #update the target
         self.target.ActTracTime+=self.TarTime
@@ -623,7 +611,6 @@ class Drone (LogicalProcess):
         # tgtData = [tgtID 0,tgtIntelValue 1,tgtIntelPriority 2,tgtType 3,tgtStealth 4,tgtSpeed 5,tgtPredLoc 6,tgtGoalTrackTime 7,tgtActualTrackTime 8,tgtTrackAttempts 9]
         self.removeTgt()
         #self.setLocalTime(self.LocalSimTime)
-
 
 
     def removeTgt(self):

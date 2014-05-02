@@ -39,7 +39,7 @@ class Target:
             self.transitTime=int(length/self.speed)
         
         elif(self.node.nodeType==3):
-            #print"At an END NODE!!"
+            print"At an END NODE!!"
             #Treating as a culd-a-sac
             self.transitTime=int(self.node.nextNode.length/self.speed)
             self.node=self.node.nextNode
@@ -55,20 +55,20 @@ class Target:
                 if(nextPrev<random.uniform(0,1)):
                     self.transitTime=int(self.node.length/self.speed)
                     self.node=self.node.nextNode
-                
-                    #print "Going Right!"
+            
+                    print "Going Right!"
                 else:
                     self.transitTime=int(self.node.length/self.speed)
                     self.node=self.node.prevNode
                     
-                #   print "Going Left!"
+                    print "Going Left!"
         else: #its an intersection. Randomly choose a new direction. We will not loiter in an intersection node.
             dir=random.uniform(0,1)
             #print "At an intersection"
             num=len(self.node.Nodes)
             #print "Num",num
             for a in range(num):
-                #   print "a:",a,"dir:",dir, "if val:",((1./num)*(a+1))
+                print "a:",a,"dir:",dir, "if val:",((1./num)*(a+1))
                 if(dir<((1.0/num)*(a+1))):
                     
                       if(self.node.Nodes[a].nodeType==1): #Going to another intersection.
@@ -79,7 +79,7 @@ class Target:
                           self.node=self.node.Nodes[a]
                           self.transitTime=int(self.node.length/self.speed) #use the new node length to calc dist and time.
                       break
-                          #print "Moved to:",self.node.xpos,",",self.node.ypos," Node type:",self.node.nodeType
+        print "Moved to:",self.node.xpos,",",self.node.ypos," Node type:",self.node.nodeType
             
             
     def setObsTime(self,time):

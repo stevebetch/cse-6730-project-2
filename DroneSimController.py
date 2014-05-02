@@ -35,9 +35,9 @@ class DroneSimController(GlobalControlProcess):
     def addDrone(self, drone):
         self.drones.append(drone)
         self.gvtTokenRing.append(drone.LPID)
-
+    
     def run(self):
-
+        #Main runfile for the drone sim controller
         #Start the timer
         start_time = time.time()        
 
