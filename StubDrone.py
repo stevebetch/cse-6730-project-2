@@ -46,9 +46,9 @@ class StubDrone (LogicalProcess):
         
         self.initGVTCounts(LPIDs)  
         
-        # GVT Test 3
-        msg8 = Message(2, 'Data8', 0, LogicalProcess.STUBLP_ID, 8)
-        self.sendMessage(msg8)        
+        # Uncomment for GVT Test 3
+        #msg8 = Message(2, 'Data8', 0, LogicalProcess.STUBLP_ID, 8)
+        #self.sendMessage(msg8)        
         
         # Event loop iteration
         count = 10

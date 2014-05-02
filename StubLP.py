@@ -62,13 +62,13 @@ class StubLP (LogicalProcess):
         # Test messages
         #
         
-        # GVT tests 2 and 3: 3 msgs to same drone
-        msg3 = Message(2, 'Data3', LogicalProcess.STUBLP_ID, 0, 3)
-        msg4 = Message(2, 'Data4', LogicalProcess.STUBLP_ID, 0, 4)
-        msg7 = Message(2, 'Data7', LogicalProcess.STUBLP_ID, 0, 7)
-        self.sendMessage(msg3)
-        self.sendMessage(msg4)
-        self.sendMessage(msg7)
+        # Uncomment for GVT tests 2 and 3: 3 msgs to same drone
+        #msg3 = Message(2, 'Data3', LogicalProcess.STUBLP_ID, 0, 3)
+        #msg4 = Message(2, 'Data4', LogicalProcess.STUBLP_ID, 0, 4)
+        #msg7 = Message(2, 'Data7', LogicalProcess.STUBLP_ID, 0, 7)
+        #self.sendMessage(msg3)
+        #self.sendMessage(msg4)
+        #self.sendMessage(msg7)
         
         ## Event loop iteration
         while True:
