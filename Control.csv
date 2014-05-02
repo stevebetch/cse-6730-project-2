@@ -1,1 +1,1 @@
-Number of Drones,Type of drone,number of Targets,number of streets,seed number,mapx,mapy,heuristic,Nuisance,"Target type(0=All Ped,1=All Veh, 2=Mixed",DroneLegs (in sec. 41760is max)3,"""DroneType1""",15,20,3,500,500,2,0.8,0,20880
+Number of Drones,Type of drone,number of Targets,number of streets,seed number,mapx,mapy,heuristic,Nuisance,"Target type(0=All Ped,1=All Veh, 2=Mixed",DroneLegs (in sec. 41760is max)1,"""DroneType1""",2,20,3,300,300,3,0.8,0,20880

@@ -37,9 +37,7 @@ class IMINT (LogicalProcess):
         self.totalValue=0
         self.targetsTracked=0
         self.numTargets=numTargets
-#        self.fname= 'Data from '+time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())+'.csv'
         self.fname = os.path.abspath(os.path.join('DATA_FROM_'+str(time.time())+'.csv'))
-#        self.fname='DATA_FROM_'+str(time.time())+'.csv'
 
     # Call function
     def __call__(self):
@@ -71,6 +69,7 @@ class IMINT (LogicalProcess):
                 self.stateQueue.pop(i)            
         self.restore(self.stateQueue[index])
         
+    # restores IMINT state to values contained in passed State object
     def restore(self,obj):
         self.key=obj.localTime
         self.id=obj.id
@@ -215,5 +214,4 @@ class IMINT (LogicalProcess):
             print "IMINT IS DONE!!!!! FINISHED!!!! WOOOO!!!"
 
         time.sleep(2)
-#        daemon.shutdown()
 

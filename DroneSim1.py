@@ -97,13 +97,7 @@ def main(Data,daemon,ns):
     #
     print 'Starting run'
     
-    #sys.setrecursionlimit(10000)
-    
     random.seed(Data.seedNum)
-    #print "Using Nuisance mean of:", Nuisance
-    
-#    PYRO_HOST=get_local_ip_address()
-#    print "Using IP address:", PYRO_HOST
 
     # Urban network/map
     Map = GenMap(Data.mapX,Data.mapY)
@@ -111,10 +105,7 @@ def main(Data,daemon,ns):
     randNodes=[]
     for i in range(Data.numTargets):
         randNodes.append(Map.RandNode())
-    
-    # Create PYRO remote object daemon
-#    daemon = Pyro4.Daemon(host=PYRO_HOST, port=PYRO_PORT)
-#    ns = Pyro4.locateNS()
+
 
     # Create HMINT, will be separate process started by Controller
     hmint = initHMINT(randNodes,Data)
@@ -221,8 +212,8 @@ def main(Data,daemon,ns):
     # Run shared object requests loop
     print 'starting shared objects request loop'
     daemon.requestLoop(loopCondition=lambda:loopInQs.loopC())
-    #time.sleep(.5)
-#    daemon.close()
+
+    # Request loop exited, simulation complete, release resources
     daemon.unregister("inL.loop")
     daemon.unregister("inputqueue.drones")
     daemon.unregister("inputqueue.controller")
@@ -251,7 +242,6 @@ def main(Data,daemon,ns):
         print "Deleted controller!"
         del controllerInQ
         print "Deleted controller!"
-#        del loopInQs
         print "Deleted all variables!"
 
     except:
@@ -260,10 +250,6 @@ def main(Data,daemon,ns):
 
     daemon.close()
     print "\n\n\n"
-# Start of Execution
-#
-#if __name__ == '__main__':
- #   main()
 
 class Loops:
 #Input: none Output: none

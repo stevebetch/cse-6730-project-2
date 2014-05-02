@@ -23,6 +23,10 @@ class ProducerClient():
         nameserver = Pyro4.locateNS()
         stublpInQ_uri = nameserver.lookup('inputqueue.stublp')
         stublpInQ = Pyro4.Proxy(stublpInQ_uri)
+        
+        #
+        # Messaging Tests: Uncomment one by one and run
+        #
 
         #Test 1 - single message
         #stublpInQ.addMessage(Message(2, 'Data', 'Test Message Generator', LogicalProcess.STUBLP_ID, 5))
@@ -83,13 +87,13 @@ class ProducerClient():
         #stublpInQ.addMessage(msg3) 
         
         #Test 9 - Rollback caused by anti-message
-        #msg3 = Message(2, ['Data3'], 'Test Message Generator', LogicalProcess.STUBLP_ID, 3)
-        #msg7 = Message(2, ['Data7'], 'Test Message Generator', LogicalProcess.STUBLP_ID, 7)
-        #am3 = msg3.getAntiMessage()
-        #stublpInQ.addMessage(msg3)        
-        #stublpInQ.addMessage(msg7)
-        #time.sleep(5)
-        #stublpInQ.addMessage(am3) 
+        msg3 = Message(2, ['Data3'], 'Test Message Generator', LogicalProcess.STUBLP_ID, 3)
+        msg7 = Message(2, ['Data7'], 'Test Message Generator', LogicalProcess.STUBLP_ID, 7)
+        am3 = msg3.getAntiMessage()
+        stublpInQ.addMessage(msg3)        
+        stublpInQ.addMessage(msg7)
+        time.sleep(5)
+        stublpInQ.addMessage(am3) 
         
         #
         # GVT Tests

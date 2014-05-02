@@ -51,92 +51,67 @@ class StubController(GlobalControlProcess):
         droneInQs_uri = nameserver.lookup('inputqueue.stubdrones')
         self.droneInQs = Pyro4.Proxy(droneInQs_uri)
         
-        loopInQs_uri = nameserver.lookup('inL.loop')
-        self.Loopcont = Pyro4.Proxy(loopInQs_uri)
-        
-        while (self.Loopcont.getCon()==1):
-        
-            for i in range(1,11):
-                time.sleep(1)
-                if(self.Loopcont.getCon()==0):
-                    break
+        # Change to 'while True:' for GVT test
+        while False:
+            
+            time.sleep(10)
             
             # GVT: Trigger round for cut C1 (Stup LP is first LP in token ring)
-            if(debug==1):
-                print 'Controller sending cut C1 token to first LP'
-                print self.gvtTokenRing
+            print 'Controller sending cut C1 token to first LP'
+            print self.gvtTokenRing
             self.stublpInQ.addMessage(Message(1, GVTControlMessageData(self.gvtTokenRing), GlobalControlProcess.CONTROLLER_ID, LogicalProcess.STUBLP_ID, -1))
             msg = None
-            if(debug==1):
-                print 'Controller waiting for cut C1 token'
-                sys.stdout.flush()
+            print 'Controller waiting for cut C1 token'
+            sys.stdout.flush()            
             while True:
-                if(self.Loopcont.getCon()==0):
-                    break
                 time.sleep(0)
                 msg = self.inputQueue.getNextMessage()
                 if not(msg is None):
                     if isinstance(msg.data, GVTControlMessageData):
                         break
-            if(self.Loopcont.getCon()==0):
-                break
-            if(debug==1):
-                print 'Controller received GVT control token back from LPs (Cut C1)'
-                sys.stdout.flush()
+            
+            print 'Controller received GVT control token back from LPs (Cut C1)'
+            sys.stdout.flush()
         
             count = 0
             for i in msg.data.counts:
-                if(debug==1):
-                    print 'GVT counts[%d] = %d (after cut C1)' % (i, msg.data.counts[i])
+                print 'GVT counts[%d] = %d (after cut C1)' % (i, msg.data.counts[i])
                 count += msg.data.counts[i]
-                
-            if(debug==1):
-                print 'Total counts in GVT = %d (after cut C1)' % (count)
+            print 'Total counts in GVT = %d (after cut C1)' % (count)
             if count <= 0:
                 # GVT: Send GVT value to all LPs
-                if(debug==1):
-                    print 'Controller sending GVT value to first LP'
-                    sys.stdout.flush()
+                print 'Controller sending GVT value to first LP'
+                sys.stdout.flush()
                 gvt = min(msg.data.tMin, msg.data.tRed)
                 self.stublpInQ.addMessage(Message(1, GVTValue(gvt), GlobalControlProcess.CONTROLLER_ID, LogicalProcess.STUBLP_ID, -1))                  
             else:
                 # GVT: Trigger round for cut C2
-                if(debug==1):
-                    print 'Controller sending cut C2 token to first LP'
-                    sys.stdout.flush()
+                print 'Controller sending cut C2 token to first LP'
+                sys.stdout.flush()
                 self.stublpInQ.addMessage(msg)
-                if(debug==1):
-                    print 'Controller waiting for cut C2 token'
-                    sys.stdout.flush()
+                print 'Controller waiting for cut C2 token'
+                sys.stdout.flush()                
                 while True:
-                    if(self.Loopcont.getCon()==0):
-                        break
                     time.sleep(0)                    
                     msg = self.inputQueue.getNextMessage()
                     if not(msg is None):
                         if isinstance(msg.data, GVTControlMessageData):
                             break
-                if(self.Loopcont.getCon()==0):
-                    break
-                if(debug==1):
-                    print 'Controller received GVT control token back from LPs (Cut C2)'
+                
+                print 'Controller received GVT control token back from LPs (Cut C2)'
                 count = 0
                 for i in msg.data.counts:
-                    if(debug==1):
-                        print 'GVT counts[%d] = %d (after cut C2)' % (i, msg.data.counts[i])
+                    print 'GVT counts[%d] = %d (after cut C2)' % (i, msg.data.counts[i])
                     count += msg.data.counts[i]
-                if(debug==1):
-                    print 'Total counts in GVT = %d (after cut C2)' % (count)
+                print 'Total counts in GVT = %d (after cut C2)' % (count)  
                 # GVT: Send GVT value to all LPs
-                if(debug==1):
-                    print 'Controller sending GVT value to first LP'
-                    sys.stdout.flush()
+                print 'Controller sending GVT value to first LP'
+                sys.stdout.flush()
                 gvt = min(msg.data.tMin, msg.data.tRed)
-                if(debug==1):
-                    print 'GVT value is %d' % (gvt)
+                print 'GVT value is %d' % (gvt)
                 self.stublpInQ.addMessage(Message(1, GVTValue(gvt), GlobalControlProcess.CONTROLLER_ID, LogicalProcess.STUBLP_ID, -1))                 
-#                sys.stdout.flush()                
+                sys.stdout.flush()                
             break
-        
+
         print "Time elapsed: ", time.time() - start_time, "s"
 

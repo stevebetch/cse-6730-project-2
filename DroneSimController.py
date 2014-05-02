@@ -32,12 +32,14 @@ class DroneSimController(GlobalControlProcess):
     def __call__(self):
         self.run()
 
+    # Adds a drone to the simulation controller drone list
     def addDrone(self, drone):
         self.drones.append(drone)
         self.gvtTokenRing.append(drone.LPID)
-    
+
+    # Run the controller process
     def run(self):
-        #Main runfile for the drone sim controller
+
         #Start the timer
         start_time = time.time()        
 
@@ -66,7 +68,7 @@ class DroneSimController(GlobalControlProcess):
         loopInQs_uri = nameserver.lookup('inL.loop')
         self.Loopcont = Pyro4.Proxy(loopInQs_uri)
         
-         
+        # Main event loop, for controller this executes GVT cycles 
         while (self.Loopcont.getCon()==1):
             
             for i in range(1,11):

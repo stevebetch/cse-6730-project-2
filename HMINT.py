@@ -35,11 +35,13 @@ class HMINT (LogicalProcess):
     def __call__(self):
         self.run()
 
+    # saves HMINT state into State object and adds to the stateQueue
     def saveState(self):
         print 'Saving current HMINT state'
         saver=HMINTState(self)
         self.stateQueue.append(saver)
 
+    # restores state to last state stored <= given timestamp
     def restoreState(self,timestamp):
         print 'restoring to last HMINT state stored <= %d' % (timestamp)
         index=0
@@ -51,6 +53,7 @@ class HMINT (LogicalProcess):
                 self.stateQueue.pop(i)
         self.restore(self.stateQueue[index])    
 
+    # restores HMINT state to values contained in passed State object
     def restore(self,obj):
         self.id = obj.id
         self.localTime=obj.localTime
@@ -108,7 +111,7 @@ class HMINT (LogicalProcess):
         self.targets[self.currTargetTimestamp] = tgtData
         self.count = self.count + 1
         
-        
+    # handles incoming message
     def subclassHandleMessage(self, msg):
         
         if msg.msgType == 4 and isinstance(msg.data, TargetRequest):
@@ -116,14 +119,14 @@ class HMINT (LogicalProcess):
             print 'HMINT: Received target request with timestamp %d' % timestamp
             self.sendTargets(timestamp)
         
-        
+    # sends targets with timestamp <= given timestamp to CAOC.  If none found
+    # then send target with lowest timestamp even if greater than given timestamp
     def sendTargets(self, timestamp):
         
         # separate out targets with ts <= passed timestamp value
         sendTimestamps = []
         remainingTimestamps = []
         minTimestamp = HMINT.INF
-        print 'current target timestamps:', self.targetTimestamps
         for ts in self.targetTimestamps:
             if ts <= timestamp:
                 sendTimestamps.append(ts)
@@ -210,7 +213,7 @@ class HMINT (LogicalProcess):
             time.sleep(0.1)
             sys.stdout.flush()        
 
-
+# Data type for target response messages from HMINT
 class TargetResponse():
     
     def __init__(self):

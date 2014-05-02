@@ -1,4 +1,4 @@
-
+# Stores the state of a Drone object
 class DRONEState(): 
      def __init__(self, obj):
             self.uid = obj.uid
@@ -34,6 +34,7 @@ class DRONEState():
             self.searchdwell=obj.searchdwell
             self.TarTime=obj.TarTime
 
+# Stores the state of a IMINT object
 class IMINTState():
         def __init__(self,obj):
                 self.key=obj.localTime
@@ -43,6 +44,7 @@ class IMINTState():
                 self.targetsTracked=obj.targetsTracked
                 self.localTime=obj.localTime
 
+# Stores the state of a CAOC object
 class CAOCState():
         def __init__(self,obj):
                 self.key=obj.localTime
@@ -52,6 +54,7 @@ class CAOCState():
                 self.drones=obj.drones
                 self.heuristic=obj.heuristic
 
+# Stores the state of a HMINT object
 class HMINTState():
         def __init__(self,obj):
                 self.key=obj.localTime
@@ -63,7 +66,8 @@ class HMINTState():
                 self.targets = obj.targets
                 self.targetTimestamps = obj.targetTimestamps
                 self.randNodes = obj.randNodes
-                
+             
+# Stores the state of a stub object (for testing only)
 class StubState():
      def __init__(self, time):
           self.localTime = time

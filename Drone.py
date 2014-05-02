@@ -60,8 +60,6 @@ class Drone (LogicalProcess):
     def __call__(self, mapObj):
         self.run(mapObj)
         
-    def getCurrentState(self):
-        return None
     
     def run(self,mapObj):
         # Run
@@ -650,7 +648,7 @@ class Drone (LogicalProcess):
 #Input: 
 # Output: 
 #Description: This function attempts to get a new target form CAOC
-k
+
     def getNewTgt(self):
        # self.setLocalTime(self.LocalSimTime)
         if(not(self.IMINTtgt==None)): #Return the target to imint.

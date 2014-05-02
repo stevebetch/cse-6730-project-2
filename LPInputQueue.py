@@ -1,6 +1,7 @@
 import Queue
 from GVT import *
 
+# Input message queue for a logical process
 class LPInputQueue():
     
     def __init__(self):
@@ -8,6 +9,7 @@ class LPInputQueue():
         self.localTMin = 0
         self.LPID = None
         
+    # prints contents of queue
     def dump(self):
         if(debug==1):
             if len(self.q) == 0:
@@ -15,44 +17,55 @@ class LPInputQueue():
             else:
                 for i in self.q:
                     i.printData(0)
-        
+       
+    # sets the LPID value for the input queue 
     def setLPID(self, lpid):
         self.LPID = lpid
-        
+      
+    # gets the LPID value  
     def getLPID(self):
         return self.LPID
-        
+       
+    # gets the length of the input queue 
     def getLength(self):
         return len(self.q)
     
+    # appends the contents of the given list to the end of this queue
     def extend(self, list):
         self.q.extend(list)
-        
+      
+    # tells whether this input queue contains messages  
     def hasMessages(self):
         hasMsgs = 0
         if len(self.q) > 0:
             hasMsgs = 1
         return hasMsgs
-        
+       
+    # sets the local time currently associated with the input queue 
     def setLocalTime(self, time):
         self.localTime = time
         
+    # Gets the number of white messages contained in the input queue
     def numWhiteMessages(self):
         count = 0
         for msg in self.q:
             if msg.color == LPGVTData.WHITE:
                 count += 1
         return count
-        
+
+    # Puts the given message in the queue without the normal checks
     def justPut(self, msg):
         self.q.insert(0, msg)
         
+    # adds the given message to the queue, with the normal checks
     def addMessage(self, msg):
         self.insertAtBack(msg)
         
+    # removes the given message from the queue
     def remove(self, msg):
         self.q.remove(msg) 
         
+    # Removes the message with the given ID from the queue
     def removeByID(self, msgId):
         removeMsg = None
         for msg in self.q:
@@ -60,7 +73,9 @@ class LPInputQueue():
                 removeMsg = msg
         if not(removeMsg is None):
             self.q.remove(removeMsg)
-        
+      
+    # Gets the next message from the queue, normally the message with the lowest timestamp.
+    # Also includes normal checks for anti-messages and other special cases.
     def getNextMessage(self):
         
         if len(self.q) == 0:
@@ -97,32 +112,31 @@ class LPInputQueue():
             self.q.remove(msg)                    
         return msg
     
+    # gets a list of all messages in the queue
     def getAllMessages(self):
         msgs = []
         for msg in self.q:
             msgs.append(msg)
         return msgs
     
+    # Calculates the local tMin for the queue, which is the timestamp of the lowest-
+    # timestamp message in the queue
     def calculateLocalTMin(self):
         self.localTMin = self.localTime
-#        if self.LPID is None:
-#            print 'Controller calculateLocalTMin()'
-#        else:
-#            print 'LP %d calculateLocalTMin()' % (self.LPID)
-#        print 'Local Time = %d' % (self.localTime)
         for msg in self.q:
-#            print 'msg.timestamp = %d' % (msg.timestamp)
             if msg.timestamp >= 0:
                 if msg.timestamp < self.localTMin:
                         self.localTMin = msg.timestamp
-#        print 'tMin = %d' % (self.localTMin)
         return self.localTMin
     
+    # inserts a message at the front of the queue
     def insertAtFront(self, msg):
         if msg.timestamp < self.localTMin:
             self.localTMin = msg.timestamp        
         self.q.append(msg)
         
+    # Inserts into the queue, but also contains logic to identify and handle anti-messages,
+    # annihilation, etc.
     def insertAtBack(self, msg):
         if msg.timestamp < self.localTMin:
             self.localTMin = msg.timestamp        
@@ -162,14 +176,15 @@ class LPInputQueue():
                     print 'Anti-message for message found, both are ANNIHILATED!'
                 self.q.remove(m)
                 return        
-            # check if time is before currTime, if so then do rollback
+            # check if time is before currTime
             if msg.timestamp < self.localTime:
                 self.insertAtFront(msg) # will trigger rollback
                 if not(isinstance(msg.data, GVTControlMessageData)) and not(isinstance(msg.data, GVTValue)):
                     
                     print 'Straggler message found, should trigger rollback'
             else:
-                self.q.insert(0, msg) #inserts at end of queue
+                # normal case adds valid message to queue
+                self.q.insert(0, msg)
                 if(debug==1):
                     print 'Adding message to queue'
                         

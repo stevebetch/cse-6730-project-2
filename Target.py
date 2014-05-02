@@ -1,6 +1,7 @@
 import sys
 import random
 
+# Represents a target to be tracked
 class Target:
     #"Target"
     #node = predicted location (random variate)
@@ -31,18 +32,18 @@ class Target:
     
         
     def movement(self):
-    # step1: check what kind of node. 0= street, 1= intersection, 2=entry node, 3=End node
     #Input: none Output: None. 
     # Description: This function controls the movement of the target.It looks at what type of node the target is on and has set behavior as a result. 
-
-# Can only move on street and road nodes. If in entry or end, remove self from sim. Send message to caoc
+		
+		# step1: check what kind of node. 0= street, 1= intersection, 2=entry node, 3=End node
+		# Can only move on street and road nodes. If in entry or end, remove self from sim. Send message to caoc
         if(self.node.nodeType==2):
             length=math.sqrt((self.node.xpos-self.node.nextNode.xpos)**2 +(self.node.ypos-self.node.nextNode.ypos)**2)
             self.node=self.node.nextNode # move onto the map
             self.transitTime=int(length/self.speed)
         
         elif(self.node.nodeType==3):
-            print"At an END NODE!!"
+            #print"At an END NODE!!"
             #Treating as a culd-a-sac
             self.transitTime=int(self.node.nextNode.length/self.speed)
             self.node=self.node.nextNode
@@ -58,20 +59,20 @@ class Target:
                 if(nextPrev<random.uniform(0,1)):
                     self.transitTime=int(self.node.length/self.speed)
                     self.node=self.node.nextNode
-            
-                    print "Going Right!"
+                
+                    #print "Going Right!"
                 else:
                     self.transitTime=int(self.node.length/self.speed)
                     self.node=self.node.prevNode
                     
-                    print "Going Left!"
+                #   print "Going Left!"
         else: #its an intersection. Randomly choose a new direction. We will not loiter in an intersection node.
             dir=random.uniform(0,1)
             #print "At an intersection"
             num=len(self.node.Nodes)
             #print "Num",num
             for a in range(num):
-                print "a:",a,"dir:",dir, "if val:",((1./num)*(a+1))
+                #   print "a:",a,"dir:",dir, "if val:",((1./num)*(a+1))
                 if(dir<((1.0/num)*(a+1))):
                     
                       if(self.node.Nodes[a].nodeType==1): #Going to another intersection.
@@ -82,9 +83,9 @@ class Target:
                           self.node=self.node.Nodes[a]
                           self.transitTime=int(self.node.length/self.speed) #use the new node length to calc dist and time.
                       break
-        print "Moved to:",self.node.xpos,",",self.node.ypos," Node type:",self.node.nodeType
+                          #print "Moved to:",self.node.xpos,",",self.node.ypos," Node type:",self.node.nodeType
             
             
-    def setObsTime(self,time):
-    self.ObsTime=time 
-    #Input: Time Output: none. Description: Sets the amount of time necessary for observation.
+    def setObsTime(self,time): 
+    	#Input: Time Output: none. Description: Sets the amount of time necessary for observation.
+		self.ObsTime=time
