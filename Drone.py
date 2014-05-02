@@ -270,9 +270,10 @@ class Drone (LogicalProcess):
 
 
 
-
-
-
+#UpdateTime
+#Input: Time delta 
+#Output: None
+#Description: This function updates the sim time by the time delta. Also controls joker/bingo and maintenance timers.
     def updateTime(self,timeDif): # timeDif= time delta. How much you want to update the clock by,
         #Update the timers with each timestep
         #timeDif=newDroneSimTime-self.LocalSimTime
@@ -303,7 +304,10 @@ class Drone (LogicalProcess):
 
 
 
-
+#SetJokerBingo
+#Input: none
+# Output: none
+#Description: This function resets the joker/bingo timers
 
     def setJokerBingo(self):
     # Call this funtion after the drone returns from a maintainance action, refuleing or at the start of the sim
@@ -328,7 +332,10 @@ class Drone (LogicalProcess):
 
 
 
-
+#SetEntry
+#Input: Entry node
+# Output: none
+#Description: This function sets the entry node x/y
 
     def setEntry(self,obj):
 # set the entry node on the drone
@@ -339,6 +346,10 @@ class Drone (LogicalProcess):
         self.entryX=self.EntNode.xpos
         self.entryY=self.EntNode.ypos
 
+#UpdateCurNode
+#Input: map opbject
+# Output: none
+#Description: This function updates the drone location, determines how long it will take to get there and calls to update the time.
 
 
 
@@ -372,7 +383,10 @@ class Drone (LogicalProcess):
             self.startNode=obj
 
 
-       # 
+#SetsubclassHandleMessage
+#Input: message
+# Output: none
+#Description: This function takes in a message, and if its a target assignement, generates a new target.
     
     def subclassHandleMessage(self, msg):
         #handle incoming target messages. only care about type 2 messages.
@@ -400,8 +414,11 @@ class Drone (LogicalProcess):
      
      
      
-     
-            
+#ProbTest
+#Input: pobability
+# Output: 1 or 0 for track or no track
+#Description: This function detemines if we actually get a track
+        
 
     def probTest(self,probVal):
         #This function will be called to determine if we get a positive detection on the target
@@ -417,6 +434,10 @@ class Drone (LogicalProcess):
         else:
             return 0
 
+#detection
+#Input: none
+# Output: none
+#Description: This function detemines if we actually get a detection and controls the target timer.
 
 
     def detection(self):
@@ -458,9 +479,10 @@ class Drone (LogicalProcess):
 
 
 
-
-
-
+#Seatch
+#Input: none
+# Output: none
+#Description: This function controls the search movememnt of the target. Trys to get the drone looking at the correct node.
 
     def search(self):
         #this is the search method.
@@ -521,7 +543,10 @@ class Drone (LogicalProcess):
 
 
 
-
+#Return to Base
+#Input: none
+# Output: none
+#Description: This function returns the drone to base for fuel or maintenance.
 
     def ReturnToBase(self):
     #cant have any new assignments durning this time.
@@ -607,7 +632,7 @@ class Drone (LogicalProcess):
 
 
     def ReturnTgt(self):
-        #update the target
+        #Returns the target to its initial state
         self.target.ActTracTime+=self.TarTime
         self.target.trackAttempts+=1
         # tgtData = [tgtID 0,tgtIntelValue 1,tgtIntelPriority 2,tgtType 3,tgtStealth 4,tgtSpeed 5,tgtPredLoc 6,tgtGoalTrackTime 7,tgtActualTrackTime 8,tgtTrackAttempts 9]
@@ -621,7 +646,11 @@ class Drone (LogicalProcess):
         self.TarTime=0
         #self.setLocalTime(self.LocalSimTime)
 
-
+#Getnewtarget
+#Input: 
+# Output: 
+#Description: This function attempts to get a new target form CAOC
+k
     def getNewTgt(self):
        # self.setLocalTime(self.LocalSimTime)
         if(not(self.IMINTtgt==None)): #Return the target to imint.
