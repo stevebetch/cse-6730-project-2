@@ -156,8 +156,8 @@ class CAOC (LogicalProcess):
                 indexCloseDrone=0
                 minDist=999999
                 for i in range(len(self.drones)):
-                    droneX=self.drones[i][2].xpos
-                    droneY=self.drones[i][2].ypos
+                    droneX=self.drones[i][1].xpos
+                    droneY=self.drones[i][1].ypos
                     dist=sqrt((tgtX-droneX)**2+(tgtY-droneY)**2)
                     if dist<minDist and self.drones[i][0]=="Idle":
                         minDist=dist
