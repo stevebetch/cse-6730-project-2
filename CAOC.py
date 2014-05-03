@@ -196,6 +196,11 @@ class CAOC (LogicalProcess):
     def getPriorityQueue(self):
         return self.priorityQueue
     
+    
+    #updateTargets
+    # Input: timestamp
+    # Output: new target
+    # Description: requests targets from HMINT and adds them to the priority queue
     def updateTargets(self, timestamp):
         
         # send request to HMINT for targets available as of self.localTime
